@@ -1,192 +1,262 @@
-// Main JavaScript for TiqtaQo Frontend
-// This file handles product display and interactions
-
-// Load products for a specific category
-async function loadProducts(category) {
-    try {
-        const products = await ProductsAPI.getAll({ category });
-        displayProducts(products);
-    } catch (error) {
-        console.error('Error loading products:', error);
-        showError('فشل تحميل المنتجات. يرجى المحاولة مرة أخرى.');
+// Enhanced Icon Mapping for Collections
+const collectionIcons = {
+    'packs': {
+        icon: 'fa-box-open',
+        gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        description: 'Ensembles complets pour un style parfait'
+    },
+    'wallets': {
+        icon: 'fa-wallet',
+        gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        description: 'Portefeuilles élégants et pratiques'
+    },
+    'belts': {
+        icon: 'fa-user-tie',
+        gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+        description: 'Ceintures raffinées pour tous les styles'
+    },
+    'glasses': {
+        icon: 'fa-glasses',
+        gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
+        description: 'Lunettes modernes et sophistiquées'
+    },
+    'homme': {
+        icon: 'fa-user-tie',
+        gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+        description: 'Montres masculines raffinées'
+    },
+    'femme': {
+        icon: 'fa-user-crown',
+        gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        description: 'Élégance féminine intemporelle'
+    },
+    'accessoires': {
+        icon: 'fa-gem',
+        gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
+        description: 'Complétez votre look avec style'
     }
+};
+
+// Get categories from localStorage
+function getCategories() {
+    const categories = localStorage.getItem('luxury_categories');
+    if (categories) {
+        return JSON.parse(categories);
+    }
+
+    // Default categories with new additions
+    const defaultCategories = [
+        { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
+        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 2},
+        { id: 'belts', name: 'Belts', icon: 'fa-user-tie', visible: true, order: 3},
+        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 4},
+        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 5}
+    ];
+
+    localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
+    return defaultCategories;
 }
 
-// Display products in the grid
-function displayProducts(products) {
+// Load collections dynamically
+function loadCollections() {
+    const categories = getCategories();
+    const collectionsGrid = document.getElementById('collectionsGrid');
+
+    if (!collectionsGrid) return;
+
+    // Filter visible categories and sort by order
+    const visibleCategories = categories
+        .filter(cat => cat.visible)
+        .sort((a, b) => a.order - b.order);
+
+    collectionsGrid.innerHTML = visibleCategories.map(category => {
+        const iconData = collectionIcons[category.id] || {
+            icon: category.icon || 'fa-box',
+            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            description: 'Découvrez notre collection'
+        };
+
+        // Link to selection page for categories with gender options
+        const link = ['packs', 'wallets', 'belts', 'glasses', 'accessoires'].includes(category.id) 
+            ? `${category.id}-selection.html` 
+            : `${category.id}.html`;
+
+        return `
+            <div class="collection-card" onclick="location.href='${link}'">
+                <div class="card-image" style="background: ${iconData.gradient};">
+                    <i class="fas ${iconData.icon}"></i>
+                </div>
+                <h3>${category.name}</h3>
+                <p>${iconData.description}</p>
+                <button class="btn-secondary">Explorer</button>
+            </div>
+        `;
+    }).join('');
+}
+
+// Get products from localStorage
+function getProducts() {
+    const products = localStorage.getItem('luxury_products');
+    return products ? JSON.parse(products) : [];
+}
+
+// Load products for specific category and gender
+function loadCategoryGenderProducts(category, gender) {
+    const products = getProducts();
     const productsGrid = document.getElementById('productsGrid');
-    
+
     if (!productsGrid) return;
 
-    if (products.length === 0) {
+    // Filter by category and gender
+    const categoryProducts = products.filter(p =>
+        p.category === category && p.gender === gender && p.visible
+    );
+
+    if (categoryProducts.length === 0) {
         productsGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
-                <i class="fas fa-box-open" style="font-size: 64px; color: var(--gold); margin-bottom: 20px; display: block;"></i>
-                <h3 style="color: #666; margin-bottom: 10px;">لا توجد منتجات متاحة حالياً</h3>
-                <p style="color: #999;">سيتم إضافة منتجات جديدة قريباً</p>
+            <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <p>Aucun produit disponible pour le moment</p>
             </div>
         `;
         return;
     }
 
-    productsGrid.innerHTML = products.map(product => `
-        <div class="product-card" data-product-id="${product.id}">
-            ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
-            <div class="product-image">
-                <img src="http://localhost:3000${product.image}" alt="${product.name}" onerror="this.src='images/placeholder.jpg'">
-            </div>
-            <div class="product-info">
-                <h3 class="product-name">${product.name}</h3>
-                ${product.description ? `<p class="product-description">${product.description}</p>` : ''}
-                <div class="product-price">
-                    <span class="current-price">${formatPrice(product.price)}</span>
-                    ${product.old_price ? `<span class="old-price">${formatPrice(product.old_price)}</span>` : ''}
+    productsGrid.innerHTML = categoryProducts.map(product => {
+        const hasPromotion = product.promotion && product.promotion > 0;
+        const finalPrice = hasPromotion
+            ? product.price - (product.price * product.promotion / 100)
+            : product.price;
+
+        return `
+            <div class="product-card">
+                ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
+                <div class="product-image">
+                    <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                 </div>
-                <button class="btn-primary" onclick="contactWhatsApp('${product.name}', ${product.price})">
-                    <i class="fab fa-whatsapp"></i> اطلب الآن
-                </button>
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p>${product.description || ''}</p>
+                    <div class="product-price">
+                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                        <span class="price">${Math.round(finalPrice)} DH</span>
+                    </div>
+                    <button class="btn-primary" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
+                        <i class="fab fa-whatsapp"></i> Commander
+                    </button>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-// Format price
-function formatPrice(price) {
-    return `${parseFloat(price).toFixed(2)} DH`;
-}
+// Load products for specific category (old function for backward compatibility)
+function loadCategoryProducts(category) {
+    const products = getProducts();
+    const productsGrid = document.getElementById('productsGrid');
 
-// Contact via WhatsApp
-function contactWhatsApp(productName, price) {
-    const message = `مرحباً، أنا مهتم بـ ${productName} بسعر ${formatPrice(price)}`;
-    const whatsappNumber = '212600000000'; // Replace with actual number
-    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-}
+    if (!productsGrid) return;
 
-// Show error message
-function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #ff4444;
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
-    errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle"></i> ${message}
-    `;
-    document.body.appendChild(errorDiv);
+    const categoryProducts = products.filter(p =>
+        p.category === category && p.visible
+    );
 
-    setTimeout(() => {
-        errorDiv.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => errorDiv.remove(), 300);
-    }, 3000);
-}
-
-// Show success message
-function showSuccess(message) {
-    const successDiv = document.createElement('div');
-    successDiv.className = 'success-message';
-    successDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
-    successDiv.innerHTML = `
-        <i class="fas fa-check-circle"></i> ${message}
-    `;
-    document.body.appendChild(successDiv);
-
-    setTimeout(() => {
-        successDiv.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => successDiv.remove(), 300);
-    }, 3000);
-}
-
-// Initialize page
-document.addEventListener('DOMContentLoaded', async () => {
-    // Get current page category from URL or body class
-    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    
-    // Map page names to category IDs
-    const categoryMap = {
-        'packs': 'packs',
-        'homme': 'homme',
-        'femme': 'femme',
-        'accessoires': 'accessoires'
-    };
-
-    const category = categoryMap[currentPage];
-    
-    if (category) {
-        await loadProducts(category);
+    if (categoryProducts.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <p>Aucun produit disponible pour le moment</p>
+            </div>
+        `;
+        return;
     }
 
-    // Sidebar menu functionality
+    productsGrid.innerHTML = categoryProducts.map(product => {
+        const hasPromotion = product.promotion && product.promotion > 0;
+        const finalPrice = hasPromotion
+            ? product.price - (product.price * product.promotion / 100)
+            : product.price;
+
+        return `
+            <div class="product-card">
+                ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
+                <div class="product-image">
+                    <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
+                </div>
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p>${product.description || ''}</p>
+                    <div class="product-price">
+                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                        <span class="price">${Math.round(finalPrice)} DH</span>
+                    </div>
+                    <button class="btn-primary" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
+                        <i class="fab fa-whatsapp"></i> Commander
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// WhatsApp contact function
+function contactWhatsApp(productName, price) {
+    const phoneNumber = '212XXXXXXXXX'; // Replace with actual number
+    const message = `Bonjour, je suis intéressé(e) par: ${productName} - ${price} DH`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+// Sidebar functionality
+document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
     const closeSidebar = document.getElementById('closeSidebar');
+    const overlay = document.getElementById('overlay');
 
     if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
+        menuToggle.addEventListener('click', function() {
             sidebar.classList.add('active');
             overlay.classList.add('active');
         });
     }
 
     if (closeSidebar) {
-        closeSidebar.addEventListener('click', () => {
+        closeSidebar.addEventListener('click', function() {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         });
     }
 
     if (overlay) {
-        overlay.addEventListener('click', () => {
+        overlay.addEventListener('click', function() {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         });
     }
+
+    // Load collections on homepage
+    if (document.getElementById('collectionsGrid')) {
+        loadCollections();
+    }
+
+    // Load products on category pages (old pages without gender)
+    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+    if (['homme', 'femme'].includes(currentPage)) {
+        loadCategoryProducts(currentPage);
+    }
 });
 
-// Add CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
         }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
+    });
+});

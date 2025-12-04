@@ -144,6 +144,7 @@ async function editProduct(id) {
         document.getElementById('productPrice').value = product.price;
         document.getElementById('productOldPrice').value = product.old_price || '';
         document.getElementById('productCategory').value = product.category;
+        document.getElementById('productGender').value = product.gender || 'homme';
         document.getElementById('productBadge').value = product.badge || '';
         document.getElementById('productFeatured').checked = product.featured === 1;
         document.getElementById('productVisible').checked = product.visible === 1;
@@ -177,6 +178,7 @@ async function saveProduct(event) {
         price: document.getElementById('productPrice').value,
         old_price: document.getElementById('productOldPrice').value || null,
         category: document.getElementById('productCategory').value,
+        gender: document.getElementById('productGender').value,
         badge: document.getElementById('productBadge').value || null,
         featured: document.getElementById('productFeatured').checked ? 1 : 0,
         visible: document.getElementById('productVisible').checked ? 1 : 0,
