@@ -28,3 +28,7 @@ logs
 
 # OS
 Thumbs.db
+
+# Uploads
+uploads/
+database/

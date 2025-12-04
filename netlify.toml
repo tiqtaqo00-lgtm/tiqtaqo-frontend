@@ -1,6 +1,6 @@
 [build]
-  # مجلد النشر - حيث توجد ملفات HTML
-  publish = "public"
+  # مجلد النشر - الملفات موجودة في الجذر مباشرة
+  publish = "."
   
   # لا نحتاج لأمر بناء لأن الموقع HTML ثابت
   command = "echo 'Static site - no build needed'"
