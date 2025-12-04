@@ -19,6 +19,21 @@ const collectionIcons = {
         icon: 'fa-gem',
         gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
         description: 'Complétez votre look avec style'
+    },
+    'wallets': {
+        icon: 'fa-wallet',
+        gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+        description: 'Portefeuilles élégants et pratiques'
+    },
+    'belts': {
+        icon: 'fa-belt',
+        gradient: 'linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)',
+        description: 'Ceintures de qualité supérieure'
+    },
+    'glasses': {
+        icon: 'fa-glasses',
+        gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        description: 'Lunettes tendance et sophistiquées'
     }
 };
 
@@ -34,7 +49,10 @@ function getCategories() {
         { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
         { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
         { id: 'femme', name: 'Femme', icon: 'fa-user-crown', visible: true, order: 3 },
-        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4 }
+        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4 },
+        { id: 'wallets', name: 'Portefeuilles', icon: 'fa-wallet', visible: true, order: 5 },
+        { id: 'belts', name: 'Ceintures', icon: 'fa-belt', visible: true, order: 6 },
+        { id: 'glasses', name: 'Lunettes', icon: 'fa-glasses', visible: true, order: 7 }
     ];
     
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
@@ -171,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load products on category pages
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    if (['homme', 'femme', 'packs', 'accessoires'].includes(currentPage)) {
+    if (['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'].includes(currentPage)) {
         loadCategoryProducts(currentPage);
     }
 });
