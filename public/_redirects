@@ -1,0 +1,4 @@
+# Netlify Redirects File
+# إعادة توجيه جميع الطلبات إلى index.html للتعامل مع التوجيه من جانب العميل
+
+/*    /index.html   200
