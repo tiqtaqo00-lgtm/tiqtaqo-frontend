@@ -3,25 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - TiqtaQo</title>
+    <title>Connexion Admin - TiqtaQo</title>
+    <link rel="stylesheet" href="../css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --black: #000000;
-            --white: #ffffff;
-            --gold: #d4af37;
-            --dark-gray: #1a1a1a;
-        }
-
         body {
-            font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, var(--black) 0%, var(--dark-gray) 100%);
             min-height: 100vh;
             display: flex;
@@ -32,9 +19,9 @@
 
         .login-container {
             background-color: var(--white);
-            padding: 50px 40px;
+            padding: 50px;
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             max-width: 450px;
             width: 100%;
         }
@@ -44,32 +31,24 @@
             margin-bottom: 40px;
         }
 
-        .login-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            background: linear-gradient(135deg, var(--black), var(--dark-gray));
-            border-radius: 50%;
+        .login-logo {
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid var(--gold);
-        }
-
-        .login-icon i {
-            font-size: 35px;
+            gap: 10px;
             color: var(--gold);
-        }
-
-        .login-header h1 {
-            font-size: 28px;
-            color: var(--black);
+            font-size: 36px;
+            font-weight: 700;
             margin-bottom: 10px;
         }
 
-        .login-header p {
+        .login-logo i {
+            font-size: 42px;
+        }
+
+        .login-subtitle {
             color: #666;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .form-group {
@@ -116,9 +95,28 @@
             font-size: 14px;
             margin-top: 10px;
             display: none;
+            padding: 10px;
+            background-color: #fee;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
         }
 
         .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+            padding: 10px;
+            background-color: #efd;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .success-message.show {
             display: block;
         }
 
@@ -127,7 +125,7 @@
             padding: 15px;
             background-color: var(--gold);
             color: var(--black);
-            border: 2px solid var(--gold);
+            border: none;
             border-radius: 8px;
             font-size: 18px;
             font-weight: 600;
@@ -140,8 +138,32 @@
         }
 
         .login-btn:hover {
-            background-color: transparent;
-            color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .login-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .info-box {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-box strong {
+            color: var(--black);
         }
 
         .back-home {
@@ -153,40 +175,44 @@
             color: var(--gold);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .back-home a:hover {
             color: var(--black);
         }
 
-        .info-box {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border-left: 4px solid var(--gold);
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--black);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
-        .info-box p {
-            font-size: 13px;
-            color: #666;
-            margin: 0;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .info-box strong {
-            color: var(--black);
+        .login-btn.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        .login-btn.loading .btn-text {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
-            <div class="login-icon">
+            <div class="login-logo">
                 <i class="fas fa-crown"></i>
+                <span>TiqtaQo</span>
             </div>
-            <h1>Admin Panel</h1>
-            <p>TiqtaQo - Espace Administrateur</p>
+            <p class="login-subtitle">Panneau d'Administration</p>
         </div>
 
         <form id="loginForm">
@@ -194,7 +220,7 @@
                 <label for="email">Email</label>
                 <div class="input-wrapper">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" name="email" required placeholder="tiqtaqo00@gmail.com">
+                    <input type="email" id="email" name="email" required placeholder="admin@tiqtaqo.com">
                 </div>
             </div>
 
@@ -207,19 +233,29 @@
             </div>
 
             <div class="error-message" id="errorMessage">
-                <i class="fas fa-exclamation-circle"></i> Email ou mot de passe incorrect
+                <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
             </div>
 
-            <button type="submit" class="login-btn">
-                <i class="fas fa-sign-in-alt"></i>
-                Se Connecter
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i> Connexion réussie! Redirection...
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span class="btn-text">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se Connecter
+                </span>
+                <div class="loading-spinner"></div>
             </button>
         </form>
 
         <div class="info-box">
-            <p><strong>Identifiants par défaut:</strong></p>
-            <p>Email: tiqtaqo00@gmail.com</p>
-            <p>Mot de passe: Med123med</p>
+            <p><strong>📌 Identifiants par défaut:</strong></p>
+            <p><strong>Email:</strong> admin@tiqtaqo.com</p>
+            <p><strong>Mot de passe:</strong> Admin@123</p>
+            <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                <i class="fas fa-info-circle"></i> Ces identifiants sont configurés dans le Backend
+            </p>
         </div>
 
         <div class="back-home">
@@ -229,27 +265,72 @@
         </div>
     </div>
 
+    <!-- Load API -->
+    <script src="../js/api.js"></script>
+    
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const successMessage = document.getElementById('successMessage');
+
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-            
-            // Simple authentication (in production, use proper backend authentication)
-            if (email === 'tiqtaqo00@gmail.com' && password === 'Med123med') {
-                // Store admin session
-                localStorage.setItem('admin_logged_in', 'true');
-                localStorage.setItem('admin_email', email);
+
+            // Hide messages
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+
+            // Show loading
+            loginBtn.disabled = true;
+            loginBtn.classList.add('loading');
+
+            try {
+                // Call API login
+                const response = await AuthAPI.login(email, password);
+
+                if (response.success && response.token) {
+                    // Show success message
+                    successMessage.classList.add('show');
+
+                    // Redirect to dashboard after 1 second
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    throw new Error('Réponse invalide du serveur');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
                 
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-            } else {
+                // Show error message
+                errorText.textContent = error.message || 'Email ou mot de passe incorrect';
                 errorMessage.classList.add('show');
+
+                // Hide loading
+                loginBtn.disabled = false;
+                loginBtn.classList.remove('loading');
+
+                // Hide error after 5 seconds
                 setTimeout(() => {
                     errorMessage.classList.remove('show');
-                }, 3000);
+                }, 5000);
+            }
+        });
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await AuthAPI.verify();
+                // If token is valid, redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                // Not logged in, stay on login page
+                console.log('Not authenticated, showing login form');
             }
         });
     </script>
