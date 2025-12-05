@@ -39,12 +39,7 @@ const collectionIcons = {
 
 // Get categories from localStorage
 function getCategories() {
-    const categories = localStorage.getItem('luxury_categories');
-    if (categories) {
-        return JSON.parse(categories);
-    }
-
-    // Default categories
+    // Default categories - ALWAYS use these as the source of truth
     const defaultCategories = [
         { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
         { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
@@ -54,7 +49,26 @@ function getCategories() {
         { id: 'belts', name: 'Ceintures', icon: 'fa-belt', visible: true, order: 6 },
         { id: 'glasses', name: 'Lunettes', icon: 'fa-glasses', visible: true, order: 7 }
     ];
+
+    const categories = localStorage.getItem('luxury_categories');
     
+    // Check if localStorage needs update (missing new categories)
+    if (categories) {
+        const storedCategories = JSON.parse(categories);
+        const storedIds = storedCategories.map(cat => cat.id);
+        const defaultIds = defaultCategories.map(cat => cat.id);
+        
+        // If any default category is missing, update localStorage
+        const needsUpdate = defaultIds.some(id => !storedIds.includes(id));
+        
+        if (needsUpdate) {
+            localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
+            return defaultCategories;
+        }
+        
+        return storedCategories;
+    }
+
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
     return defaultCategories;
 }
