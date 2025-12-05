@@ -472,13 +472,22 @@ body {
     color: var(--gold);
     font-weight: 700;
     margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.product-price.old-price {
+.product-price .old-price {
     text-decoration: line-through;
     color: #999;
     font-size: 18px;
-    margin-right: 10px;
+    font-weight: 400;
+}
+
+.product-price .price {
+    color: #e74c3c;
+    font-size: 26px;
+    font-weight: 700;
 }
 
 /* ===== Footer ===== */
