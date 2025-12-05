@@ -47,9 +47,9 @@ function getCategories() {
         { id: 'homme', name: 'Homme', icon: 'fa-watch', visible: true, order: 2 },
         { id: 'femme', name: 'Femme', icon: 'fa-gem', visible: true, order: 3 },
         { id: 'accessoires', name: 'Accessoires', icon: 'fa-ring', visible: true, order: 4 },
-        { id: 'wallets', name: 'Portefeuilles', icon: 'fa-wallet', visible: true, order: 5 },
-        { id: 'belts', name: 'Ceintures', icon: 'fa-belt', visible: true, order: 6 },
-        { id: 'glasses', name: 'Lunettes', icon: 'fa-glasses', visible: true, order: 7 }
+        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
+        { id: 'belts', name: 'Belts', icon: 'fa-belt', visible: true, order: 6 },
+        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 }
     ];
     
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
