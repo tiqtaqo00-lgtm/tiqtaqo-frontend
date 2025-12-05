@@ -37,6 +37,9 @@ const collectionIcons = {
     }
 };
 
+// Version control for localStorage - increment this when adding new categories
+const CATEGORIES_VERSION = 2;
+
 // Get categories from localStorage
 function getCategories() {
     // Default categories - ALWAYS use these as the source of truth
@@ -50,26 +53,24 @@ function getCategories() {
         { id: 'glasses', name: 'Lunettes', icon: 'fa-glasses', visible: true, order: 7 }
     ];
 
+    // Check version
+    const storedVersion = localStorage.getItem('luxury_categories_version');
+    
+    if (!storedVersion || parseInt(storedVersion) < CATEGORIES_VERSION) {
+        // Force update if version is old or missing
+        localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
+        localStorage.setItem('luxury_categories_version', CATEGORIES_VERSION.toString());
+        return defaultCategories;
+    }
+
     const categories = localStorage.getItem('luxury_categories');
     
-    // Check if localStorage needs update (missing new categories)
     if (categories) {
-        const storedCategories = JSON.parse(categories);
-        const storedIds = storedCategories.map(cat => cat.id);
-        const defaultIds = defaultCategories.map(cat => cat.id);
-        
-        // If any default category is missing, update localStorage
-        const needsUpdate = defaultIds.some(id => !storedIds.includes(id));
-        
-        if (needsUpdate) {
-            localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
-            return defaultCategories;
-        }
-        
-        return storedCategories;
+        return JSON.parse(categories);
     }
 
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
+    localStorage.setItem('luxury_categories_version', CATEGORIES_VERSION.toString());
     return defaultCategories;
 }
 
