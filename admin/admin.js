@@ -253,6 +253,7 @@ function editProduct(id) {
         document.getElementById('productName').value = product.name;
         document.getElementById('productPrice').value = product.price;
         document.getElementById('productCategory').value = product.category;
+        document.getElementById('productGender').value = product.gender || 'unisex';
         document.getElementById('productDescription').value = product.description || '';
         document.getElementById('productPromotion').value = product.promotion || 0;
         document.getElementById('productVisible').checked = product.visible;
@@ -308,6 +309,7 @@ function saveProduct(event) {
         name: document.getElementById('productName').value,
         price: parseFloat(document.getElementById('productPrice').value),
         category: document.getElementById('productCategory').value,
+        gender: document.getElementById('productGender').value,
         description: document.getElementById('productDescription').value,
         promotion: parseInt(document.getElementById('productPromotion').value) || 0,
         visible: document.getElementById('productVisible').checked
