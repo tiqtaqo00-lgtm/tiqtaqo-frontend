@@ -175,10 +175,11 @@ async function saveProduct(event) {
         name: document.getElementById('productName').value,
         description: document.getElementById('productDescription').value,
         price: document.getElementById('productPrice').value,
-        old_price: document.getElementById('productOldPrice').value || null,
+        old_price: document.getElementById('productOldPrice')?.value || null,
         category: document.getElementById('productCategory').value,
-        badge: document.getElementById('productBadge').value || null,
-        featured: document.getElementById('productFeatured').checked ? 1 : 0,
+        gender: document.getElementById('productGender').value,
+        badge: document.getElementById('productBadge')?.value || null,
+        featured: document.getElementById('productFeatured')?.checked ? 1 : 0,
         visible: document.getElementById('productVisible').checked ? 1 : 0,
     };
 
