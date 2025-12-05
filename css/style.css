@@ -501,46 +501,106 @@ body {
 }
 
 .collection-card {
-    background-color: var(--white);
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
     padding: 40px 30px;
-    border-radius: 10px;
+    border-radius: 20px;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 
+                0 1px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.collection-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.collection-card:hover::before {
+    opacity: 1;
 }
 
 .collection-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(212, 175, 55, 0.25), 
+                0 10px 30px rgba(0, 0, 0, 0.15);
+    border-color: rgba(212, 175, 55, 0.3);
 }
 
 .card-image {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 20px;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 25px;
     background: linear-gradient(135deg, var(--black), var(--dark-gray));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid var(--gold);
+    border: 4px solid var(--gold);
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3),
+                inset 0 -5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.collection-card:hover .card-image {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5),
+                inset 0 -5px 20px rgba(0, 0, 0, 0.3);
+    border-width: 5px;
 }
 
 .card-image i {
-    font-size: 50px;
+    font-size: 60px;
     color: var(--gold);
+    transition: all 0.4s ease;
+    filter: drop-shadow(0 5px 10px rgba(212, 175, 55, 0.5));
+}
+
+.collection-card:hover .card-image i {
+    transform: scale(1.15);
+    filter: drop-shadow(0 8px 15px rgba(212, 175, 55, 0.8));
 }
 
 .collection-card h3 {
-    font-size: 24px;
+    font-size: 26px;
     margin-bottom: 15px;
     color: var(--black);
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.collection-card:hover h3 {
+    color: var(--gold);
+    transform: scale(1.05);
 }
 
 .collection-card p {
     color: #666;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    font-size: 15px;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.collection-card:hover p {
+    color: #444;
 }
 
 /* ===== About Preview Section ===== */

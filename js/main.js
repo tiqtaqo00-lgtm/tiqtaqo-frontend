@@ -1,39 +1,46 @@
 // Enhanced Icon Mapping for Collections
 const collectionIcons = {
     'packs': {
-        icon: 'fa-box-open',
+        icon: 'fa-gift',
         gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        description: 'Ensembles complets pour un style parfait'
+        description: 'Ensembles complets pour un style parfait',
+        animation: 'bounce'
     },
     'homme': {
         icon: 'fa-user-tie',
         gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-        description: 'Montres masculines raffinées'
+        description: 'Montres masculines raffinées',
+        animation: 'pulse'
     },
     'femme': {
-        icon: 'fa-user-crown',
+        icon: 'fa-crown',
         gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        description: 'Élégance féminine intemporelle'
+        description: 'Élégance féminine intemporelle',
+        animation: 'sparkle'
     },
     'accessoires': {
         icon: 'fa-gem',
         gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
-        description: 'Complétez votre look avec style'
+        description: 'Complétez votre look avec style',
+        animation: 'shine'
     },
     'wallets': {
         icon: 'fa-wallet',
         gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-        description: 'Portefeuilles élégants et pratiques'
+        description: 'Portefeuilles élégants et pratiques',
+        animation: 'slide'
     },
     'belts': {
-        icon: 'fa-belt',
+        icon: 'fa-ribbon',
         gradient: 'linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)',
-        description: 'Ceintures de qualité supérieure'
+        description: 'Ceintures de qualité supérieure',
+        animation: 'rotate'
     },
     'glasses': {
         icon: 'fa-glasses',
         gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        description: 'Lunettes tendance et sophistiquées'
+        description: 'Lunettes tendance et sophistiquées',
+        animation: 'swing'
     }
 };
 
