@@ -42,6 +42,17 @@ async function apiRequest(endpoint, options = {}) {
         const data = await response.json();
 
         if (!response.ok) {
+            // Handle authentication errors
+            if (response.status === 401 || response.status === 403) {
+                // Token expired or invalid
+                if (data.error && (data.error.includes('token') || data.error.includes('expired'))) {
+                    removeAuthToken();
+                    // Show user-friendly message
+                    alert('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.');
+                    window.location.href = '/admin/login.html';
+                    throw new Error('Session expired. Please login again.');
+                }
+            }
             throw new Error(data.error || 'Request failed');
         }
 
