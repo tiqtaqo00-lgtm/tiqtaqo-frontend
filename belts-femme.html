@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Packs - TiqtaQo</title>
+    <title>Belts Femme - TiqtaQo</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -33,11 +33,11 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
-            <li><a href="packs.html"><i class="fas fa-gift"></i> Packs</a></li>
-            <li><a href="homme.html"><i class="fas fa-user-tie"></i> Homme</a></li>
+            <li><a href="belts-select.html"><i class="fas fa-gift"></i> Belts</a></li>
+            <li><a href="femme.html"><i class="fas fa-user-tie"></i> Homme</a></li>
             <li><a href="femme.html"><i class="fas fa-crown"></i> Femme</a></li>
-            <li><a href="accessoires.html"><i class="fas fa-gem"></i> Accessoires</a></li>
-<li><a href="about.html"><i class="fas fa-info-circle"></i> À propos</a></li>
+            <li><a href="accessoires-select.html"><i class="fas fa-gem"></i> Accessoires</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> À propos</a></li>
             <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
             <li class="admin-link"><a href="admin/login.html"><i class="fas fa-lock"></i> Admin</a></li>
         </ul>
@@ -49,15 +49,22 @@
     <!-- Page Header -->
     <section class="page-header">
         <div class="container">
-            <h1><i class="fas fa-gifts"></i> Packs</h1>
+            <h1><i class="fas fa-belt"></i> Belts Femme</h1>
             <p>Ensembles complets pour un style parfait</p>
+            <a href="belts-select.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Retour à la sélection
+            </a>
         </div>
     </section>
 
-    <!-- Redirect to selection page -->
-    <script>
-        window.location.href = 'packs-select.html';
-    </script>
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -96,5 +103,45 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script>
+        // Load products filtered by category and gender
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts('belts', 'femme');
+        });
+
+        async function loadProducts(category, gender) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/products?category=${category}&gender=${gender}`);
+                const products = await response.json();
+                
+                const grid = document.getElementById('productsGrid');
+                
+                if (products.length === 0) {
+                    grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 3rem; color: #666;">Aucun produit disponible pour le moment.</p>';
+                    return;
+                }
+                
+                grid.innerHTML = products.map(product => `
+                    <div class="product-card">
+                        ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
+                        <div class="product-image">
+                            <img src="${API_BASE_URL}${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-description">${product.description || ''}</p>
+                            <div class="product-price">
+                                ${product.old_price ? `<span class="old-price">${product.old_price} DH</span>` : ''}
+                                <span class="current-price">${product.price} DH</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsGrid').innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 3rem; color: #666;">Erreur lors du chargement des produits.</p>';
+            }
+        }
+    </script>
 </body>
 </html>
