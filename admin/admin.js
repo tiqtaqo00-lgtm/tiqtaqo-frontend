@@ -1,5 +1,5 @@
 // Backend API URL
-const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
+const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app';
 
 // Get JWT token from localStorage
 function getToken() {
