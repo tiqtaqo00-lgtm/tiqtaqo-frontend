@@ -223,7 +223,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
+        const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app';
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -242,7 +242,7 @@
             loginBtn.classList.add('loading');
 
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
