@@ -1,5 +1,5 @@
 // Backend API URL
-const API_BASE_URL = 'https://3000-b710c3f2-c6dc-471d-b712-7fb6622b9db5.proxy.daytona.works';
+const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
 
 // Get JWT token from localStorage
 function getToken() {
