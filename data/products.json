@@ -1,0 +1,35 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Luxury Gold Watch",
+      "price": 299.99,
+      "category": "Watches",
+      "description": "Premium luxury gold watch with Swiss movement",
+      "image": "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=500",
+      "stock": 10,
+      "featured": true
+    },
+    {
+      "id": 2,
+      "name": "Silver Bracelet",
+      "price": 149.99,
+      "category": "Accessories",
+      "description": "Elegant silver bracelet with premium finish",
+      "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500",
+      "stock": 15,
+      "featured": true
+    },
+    {
+      "id": 3,
+      "name": "Diamond Ring",
+      "price": 499.99,
+      "category": "Jewelry",
+      "description": "Stunning diamond ring with 18K gold band",
+      "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500",
+      "stock": 5,
+      "featured": false
+    }
+  ],
+  "lastUpdated": "2025-12-09T12:45:00Z"
+}
