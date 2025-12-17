@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'https://3000-b710c3f2-c6dc-471d-b712-7fb6622b9db5.proxy.daytona.works/api';
+const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
 
 // Get auth token from localStorage
 function getAuthToken() {
