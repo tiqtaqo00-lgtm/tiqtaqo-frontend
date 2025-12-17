@@ -242,23 +242,18 @@
             loginBtn.classList.add('loading');
 
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
+                // Simple authentication check
+                // For now, we'll use a simple password check
+                const ADMIN_EMAIL = 'tiqtaqo00@gmail.com';
+                const ADMIN_PASSWORD = 'Med123med lgtm';
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'فشل تسجيل الدخول');
+                if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+                    throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
                 }
 
-                // Save token and email
-                localStorage.setItem('admin_token', data.token);
-                localStorage.setItem('admin_email', data.admin.email);
+                // Save admin session
+                localStorage.setItem('admin_token', 'authenticated');
+                localStorage.setItem('admin_email', email);
 
                 // Redirect to dashboard
                 window.location.href = 'dashboard.html';

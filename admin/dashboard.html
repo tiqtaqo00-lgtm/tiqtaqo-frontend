@@ -775,7 +775,14 @@
         }
 
         // Initialize
-        render();
+        if (localStorage.getItem('github_token')) {
+            state.isAuthenticated = true;
+            CONFIG.GITHUB_TOKEN = localStorage.getItem('github_token');
+            github = new GitHubAPI(CONFIG.GITHUB_TOKEN, CONFIG.GITHUB_OWNER, CONFIG.GITHUB_REPO);
+            loadProducts();
+        } else {
+            render();
+        }
     </script>
 </body>
 </html>
