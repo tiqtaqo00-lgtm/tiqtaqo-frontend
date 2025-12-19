@@ -190,7 +190,8 @@
         }
 
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select {
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -200,9 +201,56 @@
         }
 
         .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group textarea:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #000;
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .image-preview.show {
+            display: block;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background-color: #f0f0f0;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background-color: #e8e8e8;
+            border-color: #000;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
         }
 
         .form-group.checkbox {
@@ -505,8 +553,26 @@
             `;
         }
 
+        // Get categories list
+        function getCategoriesList() {
+            return [
+                { value: 'Packs', label: 'الحزم (Packs)' },
+                { value: 'Homme', label: 'رجالي (Homme)' },
+                { value: 'Femme', label: 'نسائي (Femme)' },
+                { value: 'Accessoires', label: 'الاكسسوارات (Accessoires)' },
+                { value: 'Wallets', label: 'محافظ (Wallets)' },
+                { value: 'Belts', label: 'أحزمة (Belts)' },
+                { value: 'Glasses', label: 'نظارات (Glasses)' }
+            ];
+        }
+
         // Render product form
         function renderProductForm() {
+            const categories = getCategoriesList();
+            const categoryOptions = categories.map(cat => 
+                `<option value="${cat.value}" ${state.formData.category === cat.value ? 'selected' : ''}>${cat.label}</option>`
+            ).join('');
+
             return `
                 <div class="product-form">
                     <h2>${state.editingId ? 'تعديل المنتج' : 'إضافة منتج جديد'}</h2>
@@ -527,13 +593,7 @@
                                 <label>الفئة</label>
                                 <select id="category" required>
                                     <option value="">-- اختر القسم --</option>
-                                    <option value="Packs">\u0627\u0644\u062d\u0632\u0645 (Packs)</option>
-                                    <option value="Homme">\u0631\u062c\u0627\u0644\u064a (Homme)</option>
-                                    <option value="Femme">\u0646\u0633\u0627\u0626\u064a (Femme)</option>
-                                    <option value="Accessoires">\u0627\u0644\u0627\u0643\u0633\u0633\u0648\u0627\u0631\u0627\u062a (Accessoires)</option>
-                                    <option value="Wallets">\u0645\u062d\u0627\u0641\u0638 (Wallets)</option>
-                                    <option value="Belts">\u0623\u062d\u0632\u0645\u0629 (Belts)</option>
-                                    <option value="Glasses">\u0646\u0638\u0627\u0631\u0627\u062a (Glasses)</option>
+                                    ${categoryOptions}
                                 </select>
                             </div>
                             <div class="form-group">
