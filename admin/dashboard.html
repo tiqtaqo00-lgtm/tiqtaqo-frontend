@@ -213,6 +213,7 @@
             max-height: 200px;
             border-radius: 4px;
             display: none;
+            border: 2px solid #ddd;
         }
 
         .image-preview.show {
@@ -233,8 +234,8 @@
 
         .file-input-label {
             display: block;
-            padding: 12px;
-            background-color: #f0f0f0;
+            padding: 20px;
+            background-color: #f9f9f9;
             border: 2px dashed #ddd;
             border-radius: 4px;
             text-align: center;
@@ -243,6 +244,11 @@
         }
 
         .file-input-label:hover {
+            background-color: #f0f0f0;
+            border-color: #000;
+        }
+
+        .file-input-label.dragover {
             background-color: #e8e8e8;
             border-color: #000;
         }
@@ -251,6 +257,26 @@
             margin-top: 8px;
             font-size: 12px;
             color: #666;
+        }
+
+        .upload-progress {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #000;
+            width: 0%;
+            transition: width 0.3s;
         }
 
         .form-group.checkbox {
@@ -468,7 +494,8 @@
             GITHUB_OWNER: 'tiqtaqo00-lgtm',
             GITHUB_REPO: 'tiqtaqo-frontend',
             PRODUCTS_FILE: 'data/products.json',
-            ADMIN_PASSWORD: 'admin123'
+            ADMIN_PASSWORD: 'admin123',
+            MAX_IMAGE_SIZE: 5 * 1024 * 1024 // 5MB
         };
 
         // State
@@ -477,16 +504,18 @@
             products: [],
             loading: false,
             error: null,
+            success: null,
             showForm: false,
             editingId: null,
+            uploadingImage: false,
             formData: {
                 name: '',
                 price: '',
                 category: '',
                 subcategory: '',
                 description: '',
-                images: [],
-                image: '',
+                image: '', // Base64 encoded image
+                imageFile: null,
                 stock: '',
                 featured: false
             }
@@ -498,11 +527,12 @@
         // Render function
         function render() {
             const app = document.getElementById('app');
-            
+
             if (!state.isAuthenticated) {
                 app.innerHTML = renderLoginForm();
             } else {
                 app.innerHTML = renderDashboard();
+                attachEventListeners();
             }
         }
 
@@ -539,6 +569,7 @@
                     </div>
 
                     ${state.error ? `<div class="error-message">${state.error}</div>` : ''}
+                    ${state.success ? `<div class="success-message">${state.success}</div>` : ''}
 
                     <div class="dashboard-content">
                         ${!state.showForm ? `
@@ -578,12 +609,12 @@
         // Render product form
         function renderProductForm() {
             const categories = getCategoriesList();
-            const categoryOptions = categories.map(cat => 
+            const categoryOptions = categories.map(cat =>
                 `<option value="${cat.value}" ${state.formData.category === cat.value ? 'selected' : ''}>${cat.label}</option>`
             ).join('');
 
             const subcategories = getSubcategoriesForCategory(state.formData.category);
-            const subcategoryOptions = subcategories.map(sub => 
+            const subcategoryOptions = subcategories.map(sub =>
                 `<option value="${sub}" ${state.formData.subcategory === sub ? 'selected' : ''}>${sub}</option>`
             ).join('');
 
@@ -632,8 +663,21 @@
                         </div>
 
                         <div class="form-group">
-                            <label>رابط الصورة</label>
-                            <input type="url" id="image" value="${state.formData.image}" placeholder="https://example.com/image.jpg">
+                            <label>صورة المنتج *</label>
+                            <div class="file-input-wrapper">
+                                <label for="image-input" class="file-input-label" id="file-label">
+                                    <div>📁 اضغط هنا أو اسحب الصورة هنا</div>
+                                    <div style="font-size: 12px; color: #999; margin-top: 8px;">الصيغ المدعومة: JPG, PNG, GIF (الحد الأقصى: 5MB)</div>
+                                </label>
+                                <input type="file" id="image-input" accept="image/*" onchange="handleImageSelect(event)">
+                            </div>
+                            <div class="file-name" id="file-name"></div>
+                            <div class="upload-progress" id="upload-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                            </div>
+                            ${state.formData.image ? `<img src="${state.formData.image}" class="image-preview show" alt="معاينة الصورة">` : ''}
                         </div>
 
                         <div class="form-group checkbox">
@@ -644,7 +688,7 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" ${state.uploadingImage ? 'disabled' : ''}>
                                 ${state.editingId ? 'تحديث' : 'إضافة'}
                             </button>
                             <button type="button" onclick="handleCancelForm()" class="btn btn-secondary">
@@ -654,6 +698,80 @@
                     </form>
                 </div>
             `;
+        }
+
+        // Handle image selection
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file size
+            if (file.size > CONFIG.MAX_IMAGE_SIZE) {
+                state.error = 'حجم الصورة كبير جداً. الحد الأقصى: 5MB';
+                render();
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                state.error = 'الملف يجب أن يكون صورة';
+                render();
+                return;
+            }
+
+            state.uploadingImage = true;
+            state.error = null;
+            state.success = null;
+
+            const reader = new FileReader();
+            reader.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    document.getElementById('progress-fill').style.width = percentComplete + '%';
+                }
+            };
+
+            reader.onload = (e) => {
+                state.formData.image = e.target.result;
+                state.formData.imageFile = file;
+                state.uploadingImage = false;
+                document.getElementById('file-name').textContent = `✓ تم تحميل: ${file.name}`;
+                render();
+            };
+
+            reader.onerror = () => {
+                state.error = 'فشل تحميل الصورة';
+                state.uploadingImage = false;
+                render();
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Attach event listeners for drag and drop
+        function attachEventListeners() {
+            const fileLabel = document.getElementById('file-label');
+            if (!fileLabel) return;
+
+            fileLabel.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileLabel.classList.add('dragover');
+            });
+
+            fileLabel.addEventListener('dragleave', () => {
+                fileLabel.classList.remove('dragover');
+            });
+
+            fileLabel.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileLabel.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const input = document.getElementById('image-input');
+                    input.files = files;
+                    handleImageSelect({ target: input });
+                }
+            });
         }
 
         // Handle category change
@@ -669,7 +787,7 @@
             return `
                 <div class="products-list">
                     <h2>المنتجات (${state.products.length})</h2>
-                    
+
                     ${state.loading ? `
                         <div class="loading">جاري التحميل...</div>
                     ` : state.products.length === 0 ? `
@@ -679,7 +797,7 @@
                             ${state.products.map(product => `
                                 <div class="product-card">
                                     <div class="product-image">
-                                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                                        <img src="${product.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                                         ${product.featured ? '<span class="featured-badge">مميز</span>' : ''}
                                     </div>
                                     <div class="product-info">
@@ -710,7 +828,7 @@
         // Handle login
         async function handleLogin(event) {
             event.preventDefault();
-            
+
             const token = document.getElementById('token-input').value;
             const password = document.getElementById('password-input').value;
 
@@ -726,7 +844,7 @@
 
             state.isAuthenticated = true;
             state.error = null;
-            
+
             await loadProducts();
             render();
         }
@@ -765,7 +883,7 @@
                     lastUpdated: new Date().toISOString()
                 };
 
-                const message = state.editingId 
+                const message = state.editingId
                     ? `تحديث المنتج: ${state.formData.name}`
                     : `إضافة منتج جديد: ${state.formData.name}`;
 
@@ -777,6 +895,7 @@
 
                 state.products = updatedProducts;
                 state.error = null;
+                state.success = state.editingId ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح';
                 return true;
             } catch (err) {
                 state.error = 'فشل حفظ المنتجات: ' + err.message;
@@ -791,9 +910,16 @@
 
             const name = document.getElementById('name').value;
             const price = document.getElementById('price').value;
+            const image = state.formData.image;
 
             if (!name || !price) {
                 state.error = 'الرجاء ملء جميع الحقول المطلوبة';
+                render();
+                return;
+            }
+
+            if (!image) {
+                state.error = 'الرجاء اختيار صورة للمنتج';
                 render();
                 return;
             }
@@ -804,7 +930,7 @@
                 price: parseFloat(price),
                 category: document.getElementById('category').value,
                 description: document.getElementById('description').value,
-                image: document.getElementById('image').value,
+                image: image, // Base64 encoded image
                 stock: parseInt(document.getElementById('stock').value) || 0,
                 featured: document.getElementById('featured').checked
             };
@@ -836,7 +962,7 @@
         function handleEditProduct(id) {
             const product = state.products.find(p => p.id === id);
             if (product) {
-                state.formData = { ...product };
+                state.formData = { ...product, imageFile: null };
                 state.editingId = id;
                 state.showForm = true;
                 render();
@@ -853,9 +979,12 @@
                 category: '',
                 description: '',
                 image: '',
+                imageFile: null,
                 stock: '',
                 featured: false
             };
+            state.error = null;
+            state.success = null;
             render();
         }
 
@@ -869,9 +998,12 @@
                 category: '',
                 description: '',
                 image: '',
+                imageFile: null,
                 stock: '',
                 featured: false
             };
+            state.error = null;
+            state.success = null;
             render();
         }
 
