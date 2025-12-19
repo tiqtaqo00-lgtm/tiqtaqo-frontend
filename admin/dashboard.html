@@ -483,7 +483,9 @@
                 name: '',
                 price: '',
                 category: '',
+                subcategory: '',
                 description: '',
+                images: [],
                 image: '',
                 stock: '',
                 featured: false
@@ -556,14 +558,21 @@
         // Get categories list
         function getCategoriesList() {
             return [
-                { value: 'Packs', label: 'الحزم (Packs)' },
-                { value: 'Homme', label: 'رجالي (Homme)' },
-                { value: 'Femme', label: 'نسائي (Femme)' },
-                { value: 'Accessoires', label: 'الاكسسوارات (Accessoires)' },
-                { value: 'Wallets', label: 'محافظ (Wallets)' },
-                { value: 'Belts', label: 'أحزمة (Belts)' },
-                { value: 'Glasses', label: 'نظارات (Glasses)' }
+                { value: 'Packs', label: 'الحزم (Packs)', subcategories: [] },
+                { value: 'Homme', label: 'رجالي (Homme)', subcategories: ['Montres', 'Accessoires'] },
+                { value: 'Femme', label: 'نسائي (Femme)', subcategories: ['Montres', 'Accessoires'] },
+                { value: 'Accessoires', label: 'الاكسسوارات (Accessoires)', subcategories: ['Bracelets', 'Colliers', 'Bagues'] },
+                { value: 'Wallets', label: 'محافظ (Wallets)', subcategories: ['جلد', 'قماش'] },
+                { value: 'Belts', label: 'أحزمة (Belts)', subcategories: ['جلد', 'قماش'] },
+                { value: 'Glasses', label: 'نظارات (Glasses)', subcategories: ['شمسية', 'عادية'] }
             ];
+        }
+
+        // Get subcategories for selected category
+        function getSubcategoriesForCategory(categoryValue) {
+            const categories = getCategoriesList();
+            const category = categories.find(c => c.value === categoryValue);
+            return category ? category.subcategories : [];
         }
 
         // Render product form
@@ -571,6 +580,11 @@
             const categories = getCategoriesList();
             const categoryOptions = categories.map(cat => 
                 `<option value="${cat.value}" ${state.formData.category === cat.value ? 'selected' : ''}>${cat.label}</option>`
+            ).join('');
+
+            const subcategories = getSubcategoriesForCategory(state.formData.category);
+            const subcategoryOptions = subcategories.map(sub => 
+                `<option value="${sub}" ${state.formData.subcategory === sub ? 'selected' : ''}>${sub}</option>`
             ).join('');
 
             return `
@@ -591,11 +605,21 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>الفئة</label>
-                                <select id="category" required>
+                                <select id="category" onchange="handleCategoryChange()" required>
                                     <option value="">-- اختر القسم --</option>
                                     ${categoryOptions}
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label>القسم الفرعي</label>
+                                <select id="subcategory">
+                                    <option value="">-- اختر القسم الفرعي --</option>
+                                    ${subcategoryOptions}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
                             <div class="form-group">
                                 <label>المخزون</label>
                                 <input type="number" id="stock" value="${state.formData.stock}" placeholder="المخزون">
@@ -630,6 +654,14 @@
                     </form>
                 </div>
             `;
+        }
+
+        // Handle category change
+        function handleCategoryChange() {
+            const categorySelect = document.getElementById('category');
+            state.formData.category = categorySelect.value;
+            state.formData.subcategory = '';
+            render();
         }
 
         // Render products list
