@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل دخول المسؤول - TiqtaQo</title>
+    <title>تسجيل دخول المسؤول - Tiqtaqo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -49,7 +49,7 @@
         }
 
         .login-header h1 {
-            color: #000;
+            color: #d4af37;
             font-size: 28px;
             margin-bottom: 10px;
         }
@@ -57,20 +57,6 @@
         .login-header p {
             color: #666;
             font-size: 14px;
-        }
-
-        .info-box {
-            background-color: #e3f2fd;
-            border-left: 4px solid #2196F3;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #1565c0;
-        }
-
-        .info-box i {
-            margin-left: 10px;
         }
 
         .form-group {
@@ -99,14 +85,14 @@
         input[type="email"]:focus,
         input[type="password"]:focus {
             outline: none;
-            border-color: #000;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
         .login-btn {
             width: 100%;
             padding: 12px;
-            background: #000;
+            background: linear-gradient(135deg, #d4af37 0%, #c9a227 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -118,9 +104,8 @@
         }
 
         .login-btn:hover {
-            background: #333;
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
         }
 
         .login-btn:active {
@@ -147,26 +132,12 @@
             display: block;
         }
 
-        .success-message {
-            color: #4caf50;
-            font-size: 14px;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #e8f5e9;
-            border-radius: 5px;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
         .loading-spinner {
             display: none;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-top: 3px solid #000;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto;
@@ -191,12 +162,26 @@
         .login-btn.loading span {
             margin-right: 10px;
         }
+
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .info-box i {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1><i class="fas fa-lock"></i> TiqtaQo Admin</h1>
+            <h1><i class="fas fa-lock"></i> Tiqtaqo Admin</h1>
             <p>لوحة تحكم المسؤول</p>
         </div>
 
@@ -228,94 +213,69 @@
                 >
             </div>
 
-            <div class="error-message" id="errorMessage"></div>
-            <div class="success-message" id="successMessage"></div>
-
             <button type="submit" class="login-btn" id="loginBtn">
-                <span>دخول</span>
+                <span>تسجيل الدخول</span>
                 <div class="loading-spinner"></div>
             </button>
+
+            <div class="error-message" id="errorMessage"></div>
         </form>
     </div>
 
     <script>
         const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
 
-        const loginForm = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
-
-        // Check if already logged in
-        window.addEventListener('load', () => {
-            const token = localStorage.getItem('admin_token');
-            if (token) {
-                window.location.href = 'dashboard.html';
-            }
-        });
-
-        loginForm.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
 
-            if (!email || !password) {
-                showError('يرجى ملء جميع الحقول');
-                return;
-            }
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
 
+            // Clear previous error
+            errorMessage.classList.remove('show');
+            errorMessage.textContent = '';
+
+            // Show loading state
             loginBtn.disabled = true;
             loginBtn.classList.add('loading');
-            errorMessage.classList.remove('show');
-            successMessage.classList.remove('show');
 
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
+                // Simple authentication check
+                // For now, we'll use a simple password check
+                const ADMIN_EMAIL = 'tiqtaqo00@gmail.com';
+                const ADMIN_PASSWORD = 'Med123med lgtm';
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    showError(data.error || 'فشل تسجيل الدخول');
-                    return;
+                if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+                    throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
                 }
 
-                // Save token and email
-                localStorage.setItem('admin_token', data.token);
-                localStorage.setItem('admin_email', data.admin.email);
+                // Save admin session
+                localStorage.setItem('admin_token', 'authenticated');
+                localStorage.setItem('admin_email', email);
 
-                showSuccess('تم تسجيل الدخول بنجاح!');
-                
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
 
             } catch (error) {
                 console.error('Login error:', error);
-                showError('حدث خطأ في الاتصال. يرجى المحاولة لاحقاً');
+                errorMessage.textContent = error.message || 'حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.';
+                errorMessage.classList.add('show');
             } finally {
+                // Hide loading state
                 loginBtn.disabled = false;
                 loginBtn.classList.remove('loading');
             }
         });
 
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.add('show');
-        }
-
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.classList.add('show');
-        }
+        // Check if already logged in
+        window.addEventListener('load', function() {
+            const token = localStorage.getItem('admin_token');
+            if (token) {
+                window.location.href = 'dashboard.html';
+            }
+        });
     </script>
 </body>
 </html>
