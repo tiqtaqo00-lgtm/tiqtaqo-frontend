@@ -742,6 +742,13 @@
             state.formData.category = category;
             state.formData.branch = '';
             render();
+            // Re-attach event listener after render
+            setTimeout(() => {
+                const categorySelect = document.getElementById('category');
+                if (categorySelect) {
+                    categorySelect.addEventListener('change', handleCategoryChange);
+                }
+            }, 0);
         }
 
         // Handle login
