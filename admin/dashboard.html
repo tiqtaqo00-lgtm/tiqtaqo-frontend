@@ -353,6 +353,13 @@
             margin-bottom: 8px;
         }
 
+        .product-info .branch {
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
         .product-info .description {
             color: #888;
             font-size: 13px;
@@ -483,6 +490,7 @@
                 name: '',
                 price: '',
                 category: '',
+                branch: '',
                 description: '',
                 image: '',
                 stock: '',
@@ -493,10 +501,18 @@
         // Initialize GitHub API
         let github = null;
 
+        // Categories with branches
+        const CATEGORIES_WITH_BRANCHES = {
+            'Packs': ['Homme', 'Femme'],
+            'Accessoires': ['Homme', 'Femme'],
+            'Wallets': ['Homme', 'Femme'],
+            'Belts': ['Homme', 'Femme']
+        };
+
         // Render function
         function render() {
             const app = document.getElementById('app');
-            
+
             if (!state.isAuthenticated) {
                 app.innerHTML = renderLoginForm();
             } else {
@@ -566,12 +582,24 @@
             ];
         }
 
+        // Get branches for a category
+        function getBranchesForCategory(category) {
+            return CATEGORIES_WITH_BRANCHES[category] || [];
+        }
+
         // Render product form
         function renderProductForm() {
             const categories = getCategoriesList();
-            const categoryOptions = categories.map(cat => 
+            const categoryOptions = categories.map(cat =>
                 `<option value="${cat.value}" ${state.formData.category === cat.value ? 'selected' : ''}>${cat.label}</option>`
             ).join('');
+
+            const branches = getBranchesForCategory(state.formData.category);
+            const branchOptions = branches.map(branch =>
+                `<option value="${branch}" ${state.formData.branch === branch ? 'selected' : ''}>${branch}</option>`
+            ).join('');
+
+            const showBranchField = branches.length > 0;
 
             return `
                 <div class="product-form">
@@ -591,16 +619,35 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>الفئة</label>
-                                <select id="category" required>
+                                <select id="category" onchange="handleCategoryChange()" required>
                                     <option value="">-- اختر القسم --</option>
                                     ${categoryOptions}
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>المخزون</label>
-                                <input type="number" id="stock" value="${state.formData.stock}" placeholder="المخزون">
-                            </div>
+                            ${showBranchField ? `
+                                <div class="form-group">
+                                    <label>الفرع</label>
+                                    <select id="branch" required>
+                                        <option value="">-- اختر الفرع --</option>
+                                        ${branchOptions}
+                                    </select>
+                                </div>
+                            ` : `
+                                <div class="form-group">
+                                    <label>المخزون</label>
+                                    <input type="number" id="stock" value="${state.formData.stock}" placeholder="المخزون">
+                                </div>
+                            `}
                         </div>
+
+                        ${showBranchField ? `
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>المخزون</label>
+                                    <input type="number" id="stock" value="${state.formData.stock}" placeholder="المخزون">
+                                </div>
+                            </div>
+                        ` : ''}
 
                         <div class="form-group">
                             <label>الوصف</label>
@@ -650,7 +697,7 @@
             return `
                 <div class="products-list">
                     <h2>المنتجات (${state.products.length})</h2>
-                    
+
                     ${state.loading ? `
                         <div class="loading">جاري التحميل...</div>
                     ` : state.products.length === 0 ? `
@@ -666,6 +713,7 @@
                                     <div class="product-info">
                                         <h3>${product.name}</h3>
                                         <p class="category">${product.category}</p>
+                                        ${product.branch ? `<p class="branch">الفرع: ${product.branch}</p>` : ''}
                                         <p class="description">${product.description}</p>
                                         <div class="product-meta">
                                             <span class="price">$${product.price}</span>
@@ -688,10 +736,18 @@
             `;
         }
 
+        // Handle category change
+        function handleCategoryChange() {
+            const category = document.getElementById('category').value;
+            state.formData.category = category;
+            state.formData.branch = '';
+            render();
+        }
+
         // Handle login
         async function handleLogin(event) {
             event.preventDefault();
-            
+
             const token = document.getElementById('token-input').value;
             const password = document.getElementById('password-input').value;
 
@@ -707,7 +763,7 @@
 
             state.isAuthenticated = true;
             state.error = null;
-            
+
             await loadProducts();
             render();
         }
@@ -746,7 +802,7 @@
                     lastUpdated: new Date().toISOString()
                 };
 
-                const message = state.editingId 
+                const message = state.editingId
                     ? `تحديث المنتج: ${state.formData.name}`
                     : `إضافة منتج جديد: ${state.formData.name}`;
 
@@ -772,18 +828,23 @@
 
             const name = document.getElementById('name').value;
             const price = document.getElementById('price').value;
+            const category = document.getElementById('category').value;
 
-            if (!name || !price) {
+            if (!name || !price || !category) {
                 state.error = 'الرجاء ملء جميع الحقول المطلوبة';
                 render();
                 return;
             }
 
+            const branchField = document.getElementById('branch');
+            const branch = branchField ? branchField.value : '';
+
             const newProduct = {
                 id: state.editingId || Math.max(...state.products.map(p => p.id), 0) + 1,
                 name: name,
                 price: parseFloat(price),
-                category: document.getElementById('category').value,
+                category: category,
+                branch: branch,
                 description: document.getElementById('description').value,
                 image: document.getElementById('image').value,
                 stock: parseInt(document.getElementById('stock').value) || 0,
@@ -832,6 +893,7 @@
                 name: '',
                 price: '',
                 category: '',
+                branch: '',
                 description: '',
                 image: '',
                 stock: '',
@@ -848,6 +910,7 @@
                 name: '',
                 price: '',
                 category: '',
+                branch: '',
                 description: '',
                 image: '',
                 stock: '',
