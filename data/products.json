@@ -2,34 +2,37 @@
   "products": [
     {
       "id": 1,
-      "name": "Luxury Gold Watch",
+      "name": "ساعة ذهبية فاخرة",
       "price": 299.99,
-      "category": "Watches",
-      "description": "Premium luxury gold watch with Swiss movement",
+      "category": "Packs",
+      "branch": "Homme",
+      "description": "ساعة ذهبية فاخرة مع حركة سويسرية أصلية",
       "image": "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=500",
       "stock": 10,
       "featured": true
     },
     {
       "id": 2,
-      "name": "Silver Bracelet",
+      "name": "سوار فضي أنيق",
       "price": 149.99,
-      "category": "Accessories",
-      "description": "Elegant silver bracelet with premium finish",
+      "category": "Accessoires",
+      "branch": "Femme",
+      "description": "سوار فضي أنيق مع تشطيب فاخر",
       "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500",
       "stock": 15,
       "featured": true
     },
     {
       "id": 3,
-      "name": "Diamond Ring",
+      "name": "خاتم ماس",
       "price": 499.99,
-      "category": "Jewelry",
-      "description": "Stunning diamond ring with 18K gold band",
+      "category": "Wallets",
+      "branch": "Femme",
+      "description": "خاتم ماس مذهل مع حلقة ذهب عيار 18",
       "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500",
       "stock": 5,
       "featured": false
     }
   ],
-  "lastUpdated": "2025-12-09T12:45:00Z"
+  "lastUpdated": "2025-12-22T12:45:00Z"
 }
