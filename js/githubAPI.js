@@ -22,13 +22,16 @@ class GitHubAPI {
         {
           headers: {
             'Authorization': `token ${this.token}`,
-            'Accept': 'application/vnd.github.v3.raw'
+            'Accept': 'application/vnd.github.v3.raw',
+            'User-Agent': 'TiqtaQo-Admin'
           }
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch file: ${response.statusText}`);
+        const errorData = await response.text();
+        console.error('GitHub API Error:', response.status, errorData);
+        throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
       }
 
       return await response.text();
@@ -48,13 +51,16 @@ class GitHubAPI {
         {
           headers: {
             'Authorization': `token ${this.token}`,
-            'Accept': 'application/vnd.github.v3+json'
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'TiqtaQo-Admin'
           }
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch file info: ${response.statusText}`);
+        const errorData = await response.json();
+        console.error('GitHub API Error:', response.status, errorData);
+        throw new Error(`Failed to fetch file info: ${response.status} ${response.statusText}`);
       }
 
       return await response.json();
@@ -69,12 +75,24 @@ class GitHubAPI {
    */
   async updateFile(path, content, message) {
     try {
+      console.log('Starting file update:', path);
+      
       // الحصول على معلومات الملف الحالي (للحصول على SHA)
       const fileInfo = await this.getFileInfo(path);
+      console.log('File info retrieved, SHA:', fileInfo.sha);
       
       // تحويل المحتوى إلى Base64
       const encodedContent = btoa(unescape(encodeURIComponent(content)));
+      console.log('Content encoded, length:', encodedContent.length);
 
+      const requestBody = {
+        message: message,
+        content: encodedContent,
+        sha: fileInfo.sha,
+        branch: this.branch
+      };
+
+      console.log('Sending update request...');
       const response = await fetch(
         `${this.baseURL}/repos/${this.owner}/${this.repo}/contents/${path}`,
         {
@@ -82,22 +100,24 @@ class GitHubAPI {
           headers: {
             'Authorization': `token ${this.token}`,
             'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'User-Agent': 'TiqtaQo-Admin'
           },
-          body: JSON.stringify({
-            message: message,
-            content: encodedContent,
-            sha: fileInfo.sha,
-            branch: this.branch
-          })
+          body: JSON.stringify(requestBody)
         }
       );
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`Failed to update file: ${response.statusText}`);
+        const errorData = await response.json();
+        console.error('GitHub API Error Response:', errorData);
+        throw new Error(`Failed to update file: ${response.status} - ${errorData.message || response.statusText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('File updated successfully:', result.commit.sha);
+      return result;
     } catch (error) {
       console.error('Error updating file:', error);
       throw error;
@@ -109,6 +129,8 @@ class GitHubAPI {
    */
   async createFile(path, content, message) {
     try {
+      console.log('Starting file creation:', path);
+      
       const encodedContent = btoa(unescape(encodeURIComponent(content)));
 
       const response = await fetch(
@@ -118,7 +140,8 @@ class GitHubAPI {
           headers: {
             'Authorization': `token ${this.token}`,
             'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'User-Agent': 'TiqtaQo-Admin'
           },
           body: JSON.stringify({
             message: message,
@@ -129,10 +152,14 @@ class GitHubAPI {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to create file: ${response.statusText}`);
+        const errorData = await response.json();
+        console.error('GitHub API Error Response:', errorData);
+        throw new Error(`Failed to create file: ${response.status} - ${errorData.message || response.statusText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('File created successfully:', result.commit.sha);
+      return result;
     } catch (error) {
       console.error('Error creating file:', error);
       throw error;
@@ -144,6 +171,8 @@ class GitHubAPI {
    */
   async deleteFile(path, message) {
     try {
+      console.log('Starting file deletion:', path);
+      
       const fileInfo = await this.getFileInfo(path);
 
       const response = await fetch(
@@ -153,7 +182,8 @@ class GitHubAPI {
           headers: {
             'Authorization': `token ${this.token}`,
             'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'User-Agent': 'TiqtaQo-Admin'
           },
           body: JSON.stringify({
             message: message,
@@ -164,10 +194,14 @@ class GitHubAPI {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to delete file: ${response.statusText}`);
+        const errorData = await response.json();
+        console.error('GitHub API Error Response:', errorData);
+        throw new Error(`Failed to delete file: ${response.status} - ${errorData.message || response.statusText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('File deleted successfully:', result.commit.sha);
+      return result;
     } catch (error) {
       console.error('Error deleting file:', error);
       throw error;

@@ -804,6 +804,9 @@
         // Save products
         async function saveProducts(updatedProducts) {
             try {
+                state.loading = true;
+                render();
+                
                 const data = {
                     products: updatedProducts,
                     lastUpdated: new Date().toISOString()
@@ -813,6 +816,8 @@
                     ? `تحديث المنتج: ${state.formData.name}`
                     : `إضافة منتج جديد: ${state.formData.name}`;
 
+                console.log('Saving products to GitHub...', message);
+                
                 await github.updateFile(
                     CONFIG.PRODUCTS_FILE,
                     JSON.stringify(data, null, 2),
@@ -821,11 +826,23 @@
 
                 state.products = updatedProducts;
                 state.error = null;
+                state.successMessage = state.editingId ? 'تم تحديث المنتج بنجاح!' : 'تم إضافة المنتج بنجاح!';
+                
+                // إزالة رسالة النجاح بعد 3 ثوان
+                setTimeout(() => {
+                    state.successMessage = null;
+                    render();
+                }, 3000);
+                
+                console.log('Products saved successfully');
                 return true;
             } catch (err) {
                 state.error = 'فشل حفظ المنتجات: ' + err.message;
-                console.error(err);
+                console.error('Error saving products:', err);
                 return false;
+            } finally {
+                state.loading = false;
+                render();
             }
         }
 
