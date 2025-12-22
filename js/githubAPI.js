@@ -90,7 +90,7 @@ class GitHubAPI {
       }
 
       const fileInfo = await response.json();
-      console.log(`✅ File info retrieved, SHA: ${fileInfo.sha.substring(0, 7)}...`);
+      console.log(`✅ File info retrieved, SHA: ${fileInfo.sha ? fileInfo.sha.substring(0, 7) : 'N/A'}...`);
       
       return {
         exists: true,
