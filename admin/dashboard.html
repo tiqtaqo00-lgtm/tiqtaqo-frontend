@@ -608,7 +608,20 @@
                         </div>
 
                         <div class="form-group">
-                            <label>رابط الصورة</label>
+                            <label>الصورة</label>
+                            <div class="file-input-wrapper">
+                                <label for="imageUpload" class="file-input-label">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>اضغط هنا أو اسحب الصورة</span>
+                                </label>
+                                <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
+                            </div>
+                            <div id="imagePreview" class="image-preview"></div>
+                            <div id="fileName" class="file-name"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>أو رابط الصورة (URL)</label>
                             <input type="url" id="image" value="${state.formData.image}" placeholder="https://example.com/image.jpg">
                         </div>
 
@@ -841,6 +854,29 @@
                 featured: false
             };
             render();
+        }
+
+        // Handle image upload
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Show file name
+            const fileNameEl = document.getElementById('fileName');
+            fileNameEl.textContent = `الملف المختار: ${file.name}`;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                preview.classList.add('show');
+
+                // Convert to base64 and set as image URL
+                const imageInput = document.getElementById('image');
+                imageInput.value = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         // Initialize
