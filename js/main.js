@@ -101,7 +101,7 @@ function loadCollections() {
         };
         
         return `
-            <div class="collection-card" onclick="location.href='${category.id}.html'">
+            <div class="collection-card" onclick="location.href='${category.id}-select.html'">
                 <div class="card-image" style="background: ${iconData.gradient};">
                     <i class="fas ${iconData.icon}"></i>
                 </div>
