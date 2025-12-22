@@ -130,8 +130,11 @@ class GitHubAPI {
       if (fileInfo.exists && fileInfo.sha) {
         requestBody.sha = fileInfo.sha;
         console.log(`🔄 Updating existing file with SHA: ${fileInfo.sha.substring(0, 7)}...`);
-      } else {
+      } else if (!fileInfo.exists) {
         console.log(`✨ Creating new file (no SHA needed)`);
+      } else {
+        console.error(`❌ File exists but SHA is missing!`, fileInfo);
+        throw new Error(`File exists but SHA is missing. Cannot update file without SHA.`);
       }
 
       console.log(`📤 Sending update request...`);
