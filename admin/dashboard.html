@@ -579,18 +579,27 @@
         // ==================== PRODUCT FORM ====================
         function renderProductForm() {
             const categories = [
-                { value: 'Packs', label: 'الحزم (Packs)' },
-                { value: 'Accessoires', label: 'الاكسسوارات (Accessoires)' },
-                { value: 'Wallets', label: 'محافظ (Wallets)' },
-                { value: 'Belts', label: 'أحزمة (Belts)' },
-                { value: 'Glasses', label: 'نظارات (Glasses)' }
+                { id: '1', value: '1', label: 'الحزم (Packs)' },
+                { id: '2', value: '2', label: 'الاكسسوارات (Accessoires)' },
+                { id: '3', value: '3', label: 'محافظ (Wallets)' },
+                { id: '4', value: '4', label: 'أحزمة (Belts)' },
+                { id: '5', value: '5', label: 'نظارات (Glasses)' }
             ];
 
             const categoryOptions = categories.map(cat =>
                 `<option value="${cat.value}" ${state.formData.category === cat.value ? 'selected' : ''}>${cat.label}</option>`
             ).join('');
 
-            const branches = CATEGORIES_WITH_BRANCHES[state.formData.category] || [];
+            // Map category IDs to branches
+            const categoryIdToBranches = {
+                '1': ['Homme', 'Femme'],
+                '2': ['Homme', 'Femme'],
+                '3': ['Homme', 'Femme'],
+                '4': ['Homme', 'Femme'],
+                '5': ['Homme', 'Femme']
+            };
+
+            const branches = categoryIdToBranches[state.formData.category] || [];
             const branchOptions = branches.map(branch =>
                 `<option value="${branch}" ${state.formData.branch === branch ? 'selected' : ''}>${branch}</option>`
             ).join('');
