@@ -788,13 +788,20 @@
         async function loadProducts() {
             try {
                 state.loading = true;
-                const content = await github.getFile(CONFIG.PRODUCTS_FILE);
-                const data = JSON.parse(content);
-                state.products = data.products || [];
+                const response = await fetch('https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api/products');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load products: ${response.status}`);
+                }
+                
+                const products = await response.json();
+                state.products = Array.isArray(products) ? products : [];
                 state.error = null;
+                console.log(`✅ Loaded ${state.products.length} products from Backend API`);
             } catch (err) {
                 state.error = 'فشل تحميل المنتجات: ' + err.message;
-                console.error(err);
+                console.error('Error loading products:', err);
+                state.products = [];
             } finally {
                 state.loading = false;
                 render();
@@ -807,38 +814,62 @@
                 state.loading = true;
                 render();
                 
-                const data = {
-                    products: updatedProducts,
-                    lastUpdated: new Date().toISOString()
-                };
-
-                const message = state.editingId
-                    ? `تحديث المنتج: ${state.formData.name}`
-                    : `إضافة منتج جديد: ${state.formData.name}`;
-
-                console.log('Saving products to GitHub...', message);
+                // Get auth token from localStorage
+                const token = localStorage.getItem('auth_token');
                 
-                await github.updateFile(
-                    CONFIG.PRODUCTS_FILE,
-                    JSON.stringify(data, null, 2),
-                    message
-                );
+                if (!token) {
+                    state.error = 'لم يتم العثور على رمز المصادقة. يرجى تسجيل الدخول مرة أخرى.';
+                    render();
+                    return false;
+                }
 
-                state.products = updatedProducts;
+                // Determine if we're adding or updating
+                const isAdding = !state.editingId;
+                const productToSave = updatedProducts[updatedProducts.length - 1];
+
+                let endpoint = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api/products';
+                let method = 'POST';
+
+                if (!isAdding) {
+                    endpoint += `/${state.editingId}`;
+                    method = 'PUT';
+                }
+
+                console.log(`${method === 'POST' ? '➕' : '✏️'} Saving product to Backend API...`, productToSave);
+
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(productToSave)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Failed to save product: ${response.status}`);
+                }
+
+                const savedProduct = await response.json();
+                console.log(`✅ Product saved successfully:`, savedProduct);
+
+                // Reload products from Backend
+                await loadProducts();
+
                 state.error = null;
-                state.successMessage = state.editingId ? 'تم تحديث المنتج بنجاح!' : 'تم إضافة المنتج بنجاح!';
+                state.successMessage = isAdding ? 'تم إضافة المنتج بنجاح!' : 'تم تحديث المنتج بنجاح!';
                 
-                // إزالة رسالة النجاح بعد 3 ثوان
+                // Remove success message after 3 seconds
                 setTimeout(() => {
                     state.successMessage = null;
                     render();
                 }, 3000);
                 
-                console.log('Products saved successfully');
                 return true;
             } catch (err) {
-                state.error = 'فشل حفظ المنتجات: ' + err.message;
-                console.error('Error saving products:', err);
+                state.error = 'فشل حفظ المنتج: ' + err.message;
+                console.error('Error saving product:', err);
                 return false;
             } finally {
                 state.loading = false;
