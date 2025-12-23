@@ -273,8 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const productData = {
                 name: document.getElementById('productName').value,
                 price: parseFloat(document.getElementById('productPrice').value),
-                category: document.getElementById('productCategory').value,
-                subcategory: document.getElementById('productSubcategory').value,
+                categoryId: document.getElementById('productCategory').value,
+                categoryName: document.querySelector('#productCategory option:checked').text,
+                subcategoryId: document.getElementById('productSubcategory').value,
+                subcategoryName: document.getElementById('productSubcategory').value,
                 gender: document.getElementById('productGender').value,
                 stock: parseInt(document.getElementById('productStock').value),
                 description: document.getElementById('productDescription').value,
