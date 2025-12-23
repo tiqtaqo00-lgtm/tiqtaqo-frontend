@@ -109,7 +109,7 @@
         }
 
         .dashboard-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -164,6 +164,127 @@
             font-size: 12px;
         }
 
+        /* Categories & Branches Display */
+        .categories-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .categories-section h2 {
+            color: #000;
+            margin-bottom: 25px;
+            font-size: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .category-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+            transition: all 0.3s;
+        }
+
+        .category-card:hover {
+            border-color: #000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: #fff;
+        }
+
+        .category-card h3 {
+            color: #000;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-icon {
+            font-size: 24px;
+        }
+
+        .category-link {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #000;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            word-break: break-all;
+        }
+
+        .category-link:hover {
+            background: #333;
+        }
+
+        .branches-list {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .branches-list h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .branch-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .branch-name {
+            color: #333;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .branch-link {
+            display: inline-block;
+            padding: 6px 10px;
+            background: #f0f0f0;
+            color: #000;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 11px;
+            transition: all 0.3s;
+            border: 1px solid #ddd;
+        }
+
+        .branch-link:hover {
+            background: #000;
+            color: white;
+            border-color: #000;
+        }
+
+        .no-branches {
+            color: #999;
+            font-size: 12px;
+            font-style: italic;
+        }
+
         /* Forms */
         .product-form {
             background: white;
@@ -177,6 +298,24 @@
             color: #000;
             margin-bottom: 20px;
             font-size: 20px;
+        }
+
+        .selected-category-info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #000;
+        }
+
+        .selected-category-info p {
+            color: #333;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .selected-category-info strong {
+            color: #000;
         }
 
         .form-row {
@@ -449,6 +588,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
             .dashboard-header {
                 flex-direction: column;
                 gap: 15px;
@@ -464,6 +607,10 @@
             }
 
             .products-list {
+                padding: 20px;
+            }
+
+            .categories-section {
                 padding: 20px;
             }
         }
@@ -483,6 +630,59 @@
             ADMIN_EMAIL: 'tiqtaqo00@gmail.com',
             ADMIN_PASSWORD: 'Med123med lgtm'
         };
+
+        // ==================== CATEGORIES WITH BRANCHES ====================
+        const CATEGORIES_DATA = [
+            {
+                id: '1',
+                name: 'Packs',
+                icon: '📦',
+                branches: ['Homme', 'Femme'],
+                url: 'packs-select.html'
+            },
+            {
+                id: '2',
+                name: 'Accessoires',
+                icon: '🎁',
+                branches: ['Homme', 'Femme'],
+                url: 'accessoires-select.html'
+            },
+            {
+                id: '3',
+                name: 'Wallets',
+                icon: '💼',
+                branches: ['Homme', 'Femme'],
+                url: 'wallets-select.html'
+            },
+            {
+                id: '4',
+                name: 'Belts',
+                icon: '👔',
+                branches: ['Homme', 'Femme'],
+                url: 'belts-select.html'
+            },
+            {
+                id: '5',
+                name: 'Glasses',
+                icon: '👓',
+                branches: [],
+                url: 'glasses.html'
+            },
+            {
+                id: '6',
+                name: 'Homme',
+                icon: '👨',
+                branches: [],
+                url: 'homme.html'
+            },
+            {
+                id: '7',
+                name: 'Femme',
+                icon: '👩',
+                branches: [],
+                url: 'femme.html'
+            }
+        ];
 
         // ==================== STATE ====================
         let state = {
@@ -504,14 +704,6 @@
                 stock: '',
                 featured: false
             }
-        };
-
-        // ==================== CATEGORIES ====================
-        const CATEGORIES_WITH_BRANCHES = {
-            'Packs': ['Homme', 'Femme'],
-            'Accessoires': ['Homme', 'Femme'],
-            'Wallets': ['Homme', 'Femme'],
-            'Belts': ['Homme', 'Femme']
         };
 
         // ==================== RENDER FUNCTION ====================
@@ -562,6 +754,8 @@
                     ${state.successMessage ? `<div class="success-message">${state.successMessage}</div>` : ''}
 
                     <div class="dashboard-content">
+                        ${renderCategoriesSection()}
+
                         ${!state.showForm ? `
                             <button onclick="handleShowForm()" class="btn btn-primary btn-large">
                                 + إضافة منتج جديد
@@ -576,39 +770,71 @@
             `;
         }
 
+        // ==================== CATEGORIES SECTION ====================
+        function renderCategoriesSection() {
+            return `
+                <div class="categories-section">
+                    <h2>📋 الأقسام والفروع</h2>
+                    <div class="categories-grid">
+                        ${CATEGORIES_DATA.map(category => `
+                            <div class="category-card">
+                                <h3>
+                                    <span class="category-icon">${category.icon}</span>
+                                    ${category.name}
+                                </h3>
+                                <a href="${category.url}" target="_blank" class="category-link">
+                                    🔗 زيارة الصفحة
+                                </a>
+                                ${category.branches.length > 0 ? `
+                                    <div class="branches-list">
+                                        <h4>الفروع:</h4>
+                                        ${category.branches.map(branch => `
+                                            <div class="branch-item">
+                                                <span class="branch-name">✓ ${branch}</span>
+                                                <a href="#" onclick="selectCategoryBranch('${category.id}', '${branch}'); return false;" class="branch-link">
+                                                    اختر
+                                                </a>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : `
+                                    <div class="branches-list">
+                                        <p class="no-branches">بدون فروع</p>
+                                    </div>
+                                `}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
         // ==================== PRODUCT FORM ====================
         function renderProductForm() {
-            const categories = [
-                { id: '1', value: '1', label: 'الحزم (Packs)' },
-                { id: '2', value: '2', label: 'الاكسسوارات (Accessoires)' },
-                { id: '3', value: '3', label: 'محافظ (Wallets)' },
-                { id: '4', value: '4', label: 'أحزمة (Belts)' },
-                { id: '5', value: '5', label: 'نظارات (Glasses)' }
-            ];
+            const selectedCategory = CATEGORIES_DATA.find(c => c.id === state.formData.category);
+            const branches = selectedCategory ? selectedCategory.branches : [];
+            const showBranchField = branches.length > 0;
 
-            const categoryOptions = categories.map(cat =>
-                `<option value="${cat.value}" ${state.formData.category === cat.value ? 'selected' : ''}>${cat.label}</option>`
+            const categoryOptions = CATEGORIES_DATA.map(cat =>
+                `<option value="${cat.id}" ${state.formData.category === cat.id ? 'selected' : ''}>${cat.icon} ${cat.name}</option>`
             ).join('');
 
-            // Map category IDs to branches
-            const categoryIdToBranches = {
-                '1': ['Homme', 'Femme'],
-                '2': ['Homme', 'Femme'],
-                '3': ['Homme', 'Femme'],
-                '4': ['Homme', 'Femme'],
-                '5': ['Homme', 'Femme']
-            };
-
-            const branches = categoryIdToBranches[state.formData.category] || [];
             const branchOptions = branches.map(branch =>
                 `<option value="${branch}" ${state.formData.branch === branch ? 'selected' : ''}>${branch}</option>`
             ).join('');
 
-            const showBranchField = branches.length > 0;
-
             return `
                 <div class="product-form">
                     <h2>${state.editingId ? 'تعديل المنتج' : 'إضافة منتج جديد'}</h2>
+                    
+                    ${selectedCategory ? `
+                        <div class="selected-category-info">
+                            <p><strong>القسم المختار:</strong> ${selectedCategory.icon} ${selectedCategory.name}</p>
+                            ${state.formData.branch ? `<p><strong>الفرع المختار:</strong> ${state.formData.branch}</p>` : ''}
+                            <p><strong>الرابط:</strong> <a href="${selectedCategory.url}" target="_blank" style="color: #000; text-decoration: underline;">${selectedCategory.url}</a></p>
+                        </div>
+                    ` : ''}
+
                     <form onsubmit="handleAddProduct(event)">
                         <div class="form-row">
                             <div class="form-group">
@@ -623,7 +849,7 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>الفئة</label>
+                                <label>الفئة *</label>
                                 <select id="category" onchange="handleCategoryChange()" required>
                                     <option value="">-- اختر القسم --</option>
                                     ${categoryOptions}
@@ -631,7 +857,7 @@
                             </div>
                             ${showBranchField ? `
                                 <div class="form-group">
-                                    <label>الفرع</label>
+                                    <label>الفرع *</label>
                                     <select id="branch" required>
                                         <option value="">-- اختر الفرع --</option>
                                         ${branchOptions}
@@ -742,7 +968,31 @@
 
         // ==================== HANDLERS ====================
 
-        // ✅ LOGIN HANDLER - FIXED
+        // SELECT CATEGORY & BRANCH
+        function selectCategoryBranch(categoryId, branch) {
+            const category = CATEGORIES_DATA.find(c => c.id === categoryId);
+            if (category) {
+                state.showForm = true;
+                state.editingId = null;
+                state.formData = {
+                    name: '',
+                    price: '',
+                    category: categoryId,
+                    branch: branch || '',
+                    description: '',
+                    image: '',
+                    stock: '',
+                    featured: false
+                };
+                render();
+                // Scroll to form
+                setTimeout(() => {
+                    document.querySelector('.product-form').scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+        }
+
+        // LOGIN HANDLER
         async function handleLogin(event) {
             event.preventDefault();
 
@@ -755,7 +1005,7 @@
 
             try {
                 console.log('🔐 Attempting login...');
-                
+
                 const response = await fetch(`${CONFIG.API_URL}/auth/login`, {
                     method: 'POST',
                     headers: {
@@ -771,18 +1021,15 @@
                 }
 
                 console.log('✅ Login successful!');
-                
-                // ✅ SAVE TOKEN TO LOCALSTORAGE
+
                 localStorage.setItem('auth_token', data.token);
                 state.token = data.token;
                 state.isAuthenticated = true;
                 state.error = null;
                 state.successMessage = 'تم تسجيل الدخول بنجاح!';
 
-                // Load products after login
                 await loadProducts();
-                
-                // Clear success message after 2 seconds
+
                 setTimeout(() => {
                     state.successMessage = null;
                     render();
@@ -810,24 +1057,24 @@
             render();
         }
 
-        // ✅ LOAD PRODUCTS - FIXED
+        // LOAD PRODUCTS
         async function loadProducts() {
             try {
                 state.loading = true;
                 render();
 
                 console.log('📦 Loading products...');
-                
+
                 const response = await fetch(`${CONFIG.API_URL}/products`);
-                
+
                 if (!response.ok) {
                     throw new Error(`Failed to load products: ${response.status}`);
                 }
-                
+
                 const products = await response.json();
                 state.products = Array.isArray(products) ? products : [];
                 state.error = null;
-                
+
                 console.log(`✅ Loaded ${state.products.length} products`);
             } catch (err) {
                 console.error('❌ Error loading products:', err);
@@ -839,7 +1086,7 @@
             }
         }
 
-        // ✅ SAVE PRODUCT - FIXED
+        // SAVE PRODUCT
         async function saveProduct(product) {
             try {
                 if (!state.token) {
@@ -850,10 +1097,10 @@
                 render();
 
                 const isAdding = !state.editingId;
-                const endpoint = isAdding 
+                const endpoint = isAdding
                     ? `${CONFIG.API_URL}/products`
                     : `${CONFIG.API_URL}/products/${state.editingId}`;
-                
+
                 const method = isAdding ? 'POST' : 'PUT';
 
                 console.log(`${isAdding ? '➕' : '✏️'} Saving product...`);
@@ -875,13 +1122,11 @@
 
                 console.log('✅ Product saved successfully!');
 
-                // Reload products
                 await loadProducts();
 
                 state.error = null;
                 state.successMessage = isAdding ? 'تم إضافة المنتج بنجاح!' : 'تم تحديث المنتج بنجاح!';
-                
-                // Clear success message after 3 seconds
+
                 setTimeout(() => {
                     state.successMessage = null;
                     render();
@@ -960,7 +1205,7 @@
 
                 await loadProducts();
                 state.successMessage = 'تم حذف المنتج بنجاح!';
-                
+
                 setTimeout(() => {
                     state.successMessage = null;
                     render();
@@ -983,6 +1228,9 @@
                 state.editingId = id;
                 state.showForm = true;
                 render();
+                setTimeout(() => {
+                    document.querySelector('.product-form').scrollIntoView({ behavior: 'smooth' });
+                }, 100);
             }
         }
 
@@ -1001,6 +1249,9 @@
                 featured: false
             };
             render();
+            setTimeout(() => {
+                document.querySelector('.product-form').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
         }
 
         // HANDLE CANCEL FORM
@@ -1050,7 +1301,6 @@
 
         // ==================== INITIALIZATION ====================
         window.addEventListener('DOMContentLoaded', () => {
-            // Check if already logged in
             const token = localStorage.getItem('auth_token');
             if (token) {
                 state.token = token;
@@ -1061,7 +1311,6 @@
             }
         });
 
-        // Initial render
         render();
     </script>
 </body>
