@@ -101,14 +101,18 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .login-btn:hover {
+        .login-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
         }
 
-        .login-btn:active {
+        .login-btn:active:not(:disabled) {
             transform: translateY(0);
         }
 
@@ -126,21 +130,49 @@
             background-color: #ffebee;
             border-radius: 5px;
             display: none;
+            border-left: 4px solid #f44336;
         }
 
         .error-message.show {
             display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .success-message {
+            color: #4caf50;
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 5px;
+            display: none;
+            border-left: 4px solid #4caf50;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .loading-spinner {
             display: none;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-top: 3px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
         }
 
         @keyframes spin {
@@ -149,18 +181,12 @@
             }
         }
 
-        .login-btn.loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         .login-btn.loading .loading-spinner {
             display: block;
         }
 
         .login-btn.loading span {
-            margin-right: 10px;
+            opacity: 0.7;
         }
 
         .info-box {
@@ -193,23 +219,25 @@
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">البريد الإلكتروني</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
                     placeholder="أدخل بريدك الإلكتروني"
                     required
+                    autocomplete="email"
                 >
             </div>
 
             <div class="form-group">
                 <label for="password">كلمة المرور</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
                     placeholder="أدخل كلمة المرور"
                     required
+                    autocomplete="current-password"
                 >
             </div>
 
@@ -219,63 +247,200 @@
             </button>
 
             <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
         </form>
     </div>
 
     <script>
-        const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
+        // ============================================
+        // تكوين التطبيق
+        // ============================================
+        const CONFIG = {
+            ADMIN_EMAIL: 'tiqtaqo00@gmail.com',
+            ADMIN_PASSWORD: 'Med123med lgtm',
+            REDIRECT_DELAY: 1500,
+            TOKEN_NAME: 'auth_token', // ✅ نفس اسم المتغير في dashboard.html
+            EMAIL_NAME: 'admin_email'
+        };
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // ============================================
+        // دوال مساعدة
+        // ============================================
+        
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+            console.error('❌ خطأ:', message);
+        }
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        function hideError() {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.classList.remove('show');
+            errorElement.textContent = '';
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.classList.add('show');
+            console.log('✅ نجاح:', message);
+        }
+
+        function hideSuccess() {
+            const successElement = document.getElementById('successMessage');
+            successElement.classList.remove('show');
+            successElement.textContent = '';
+        }
+
+        function setLoadingState(isLoading) {
             const loginBtn = document.getElementById('loginBtn');
-            const errorMessage = document.getElementById('errorMessage');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
 
-            // Clear previous error
-            errorMessage.classList.remove('show');
-            errorMessage.textContent = '';
-
-            // Show loading state
-            loginBtn.disabled = true;
-            loginBtn.classList.add('loading');
-
-            try {
-                // Simple authentication check
-                // For now, we'll use a simple password check
-                const ADMIN_EMAIL = 'tiqtaqo00@gmail.com';
-                const ADMIN_PASSWORD = 'Med123med lgtm';
-
-                if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-                    throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-                }
-
-                // Save admin session
-                localStorage.setItem('admin_token', 'authenticated');
-                localStorage.setItem('admin_email', email);
-
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-
-            } catch (error) {
-                console.error('Login error:', error);
-                errorMessage.textContent = error.message || 'حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.';
-                errorMessage.classList.add('show');
-            } finally {
-                // Hide loading state
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginBtn.classList.add('loading');
+                emailInput.disabled = true;
+                passwordInput.disabled = true;
+            } else {
                 loginBtn.disabled = false;
                 loginBtn.classList.remove('loading');
+                emailInput.disabled = false;
+                passwordInput.disabled = false;
             }
-        });
+        }
 
-        // Check if already logged in
-        window.addEventListener('load', function() {
-            const token = localStorage.getItem('admin_token');
-            if (token) {
-                window.location.href = 'dashboard.html';
+        function saveSession(email) {
+            try {
+                if (!window.localStorage) {
+                    throw new Error('localStorage غير متاح في المتصفح');
+                }
+
+                // ✅ استخدام نفس أسماء المتغيرات في dashboard.html
+                localStorage.setItem(CONFIG.TOKEN_NAME, 'authenticated');
+                localStorage.setItem(CONFIG.EMAIL_NAME, email);
+                localStorage.setItem('admin_login_time', new Date().toISOString());
+
+                console.log('✅ تم حفظ بيانات الجلسة بنجاح');
+                console.log('Token name:', CONFIG.TOKEN_NAME);
+                console.log('Token value:', localStorage.getItem(CONFIG.TOKEN_NAME));
+                return true;
+            } catch (error) {
+                console.error('❌ خطأ في حفظ البيانات:', error);
+                showError('خطأ في حفظ بيانات الجلسة. يرجى التحقق من إعدادات المتصفح.');
+                return false;
             }
-        });
+        }
+
+        function validateCredentials(email, password) {
+            if (!email || !password) {
+                showError('يرجى ملء جميع الحقول المطلوبة');
+                return false;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('صيغة البريد الإلكتروني غير صحيحة');
+                return false;
+            }
+
+            if (email !== CONFIG.ADMIN_EMAIL || password !== CONFIG.ADMIN_PASSWORD) {
+                showError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                return false;
+            }
+
+            return true;
+        }
+
+        function redirectToDashboard() {
+            console.log('🔄 جاري إعادة التوجيه إلى لوحة التحكم...');
+            
+            setTimeout(() => {
+                try {
+                    window.location.href = 'dashboard.html';
+                    console.log('✅ تم إعادة التوجيه بنجاح');
+                } catch (error) {
+                    console.error('❌ خطأ في إعادة التوجيه:', error);
+                    showError('خطأ في إعادة التوجيه. يرجى المحاولة مرة أخرى.');
+                    setLoadingState(false);
+                }
+            }, CONFIG.REDIRECT_DELAY);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            hideError();
+            hideSuccess();
+
+            if (!validateCredentials(email, password)) {
+                setLoadingState(false);
+                return;
+            }
+
+            setLoadingState(true);
+
+            try {
+                console.log('🔐 جاري التحقق من بيانات المستخدم...');
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                if (!saveSession(email)) {
+                    throw new Error('فشل حفظ بيانات الجلسة');
+                }
+
+                showSuccess('✅ تم التحقق بنجاح! جاري إعادة التوجيه...');
+
+                redirectToDashboard();
+
+            } catch (error) {
+                console.error('❌ خطأ في تسجيل الدخول:', error);
+                showError(error.message || 'حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+                setLoadingState(false);
+            }
+        }
+
+        function checkAuthStatus() {
+            try {
+                // ✅ البحث عن نفس اسم المتغير
+                const token = localStorage.getItem(CONFIG.TOKEN_NAME);
+                const email = localStorage.getItem(CONFIG.EMAIL_NAME);
+
+                if (token && email) {
+                    console.log('✅ المستخدم مسجل دخول بالفعل. جاري إعادة التوجيه...');
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('❌ خطأ في التحقق من حالة تسجيل الدخول:', error);
+            }
+        }
+
+        function initializeApp() {
+            console.log('🚀 جاري تهيئة تطبيق تسجيل الدخول...');
+            console.log('Token name:', CONFIG.TOKEN_NAME);
+
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+                console.log('✅ تم تسجيل مستمع حدث النموذج');
+            } else {
+                console.error('❌ لم يتم العثور على نموذج تسجيل الدخول');
+            }
+
+            checkAuthStatus();
+
+            console.log('✅ تم تهيئة التطبيق بنجاح');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
     </script>
 </body>
 </html>
