@@ -790,9 +790,9 @@
                                         <h4>الفروع:</h4>
                                         ${category.branches.map(branch => `
                                             <div class="branch-item">
-                                                <span class="branch-name">✓ ${branch}</span>
-                                                <a href="#" onclick="selectCategoryBranch('${category.id}', '${branch}'); return false;" class="branch-link">
-                                                    اختر
+                                                <span class="branch-name">✓ ${branch.name}</span>
+                                                <a href="${branch.url}" target="_blank" class="branch-link">
+                                                    زيارة
                                                 </a>
                                             </div>
                                         `).join('')}
