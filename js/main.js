@@ -47,16 +47,166 @@ const collectionIcons = {
 // API Configuration
 const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
 
+// Fallback products data for each category
+const fallbackProducts = {
+    'homme': [
+        {
+            _id: '1',
+            name: 'Montre Homme Classique',
+            description: 'Montre élégante pour homme',
+            price: 1200,
+            image: 'https://via.placeholder.com/300?text=Montre+Homme+1',
+            category: 'homme',
+            promotion: 0
+        },
+        {
+            _id: '2',
+            name: 'Montre Homme Sport',
+            description: 'Montre sportive robuste',
+            price: 1500,
+            image: 'https://via.placeholder.com/300?text=Montre+Homme+2',
+            category: 'homme',
+            promotion: 10
+        },
+        {
+            _id: '3',
+            name: 'Montre Homme Luxe',
+            description: 'Montre de luxe premium',
+            price: 3000,
+            image: 'https://via.placeholder.com/300?text=Montre+Homme+3',
+            category: 'homme',
+            promotion: 0
+        }
+    ],
+    'femme': [
+        {
+            _id: '4',
+            name: 'Montre Femme Élégante',
+            description: 'Montre féminine élégante',
+            price: 1100,
+            image: 'https://via.placeholder.com/300?text=Montre+Femme+1',
+            category: 'femme',
+            promotion: 0
+        },
+        {
+            _id: '5',
+            name: 'Montre Femme Moderne',
+            description: 'Montre moderne et tendance',
+            price: 1400,
+            image: 'https://via.placeholder.com/300?text=Montre+Femme+2',
+            category: 'femme',
+            promotion: 15
+        },
+        {
+            _id: '6',
+            name: 'Montre Femme Diamant',
+            description: 'Montre avec cristaux',
+            price: 2500,
+            image: 'https://via.placeholder.com/300?text=Montre+Femme+3',
+            category: 'femme',
+            promotion: 0
+        }
+    ],
+    'glasses': [
+        {
+            _id: '7',
+            name: 'Lunettes de Soleil Classique',
+            description: 'Lunettes de soleil classiques',
+            price: 800,
+            image: 'https://via.placeholder.com/300?text=Glasses+1',
+            category: 'glasses',
+            promotion: 0
+        },
+        {
+            _id: '8',
+            name: 'Lunettes de Soleil Aviateur',
+            description: 'Style aviateur tendance',
+            price: 950,
+            image: 'https://via.placeholder.com/300?text=Glasses+2',
+            category: 'glasses',
+            promotion: 20
+        },
+        {
+            _id: '9',
+            name: 'Lunettes Optiques Premium',
+            description: 'Lunettes optiques de qualité',
+            price: 1200,
+            image: 'https://via.placeholder.com/300?text=Glasses+3',
+            category: 'glasses',
+            promotion: 0
+        }
+    ],
+    'packs': [
+        {
+            _id: '10',
+            name: 'Pack Complet Homme',
+            description: 'Montre + Accessoires',
+            price: 2000,
+            image: 'https://via.placeholder.com/300?text=Pack+Homme',
+            category: 'packs',
+            promotion: 25
+        },
+        {
+            _id: '11',
+            name: 'Pack Complet Femme',
+            description: 'Montre + Bijoux',
+            price: 1800,
+            image: 'https://via.placeholder.com/300?text=Pack+Femme',
+            category: 'packs',
+            promotion: 20
+        }
+    ],
+    'accessoires': [
+        {
+            _id: '12',
+            name: 'Bracelet Cuir',
+            description: 'Bracelet en cuir véritable',
+            price: 400,
+            image: 'https://via.placeholder.com/300?text=Accessoire+1',
+            category: 'accessoires',
+            promotion: 0
+        }
+    ],
+    'wallets': [
+        {
+            _id: '13',
+            name: 'Portefeuille Cuir',
+            description: 'Portefeuille en cuir premium',
+            price: 600,
+            image: 'https://via.placeholder.com/300?text=Wallet+1',
+            category: 'wallets',
+            promotion: 0
+        }
+    ],
+    'belts': [
+        {
+            _id: '14',
+            name: 'Ceinture Cuir',
+            description: 'Ceinture en cuir de qualité',
+            price: 500,
+            image: 'https://via.placeholder.com/300?text=Belt+1',
+            category: 'belts',
+            promotion: 0
+        }
+    ]
+};
+
 // Get categories from API or Fallback
 async function getCategories() {
     try {
-        const response = await fetch(`${API_BASE_URL}/categories`);
+        const response = await fetch(`${API_BASE_URL}/categories`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            timeout: 5000
+        });
         if (response.ok) {
             const categories = await response.json();
             if (categories && categories.length > 0) return categories;
         }
     } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.warn('Error fetching categories from API:', error);
     }
 
     // Fallback categories
@@ -75,13 +225,13 @@ async function getCategories() {
 async function loadCollections() {
     const categories = await getCategories();
     const collectionsGrid = document.getElementById('collectionsGrid');
-    
+
     if (!collectionsGrid) return;
-    
+
     const visibleCategories = categories
         .filter(cat => cat.visible !== false)
         .sort((a, b) => (a.order || a.displayOrder || 0) - (b.order || b.displayOrder || 0));
-    
+
     collectionsGrid.innerHTML = visibleCategories.map(category => {
         const catId = category.id || category._id;
         const iconData = collectionIcons[catId] || {
@@ -89,13 +239,13 @@ async function loadCollections() {
             gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             description: 'Découvrez notre collection'
         };
-        
+
         // Determine the correct link based on category
         let link = `${catId}-select.html`;
         if (['homme', 'femme', 'glasses'].includes(catId)) {
             link = `${catId}.html`;
         }
-        
+
         return `
             <div class="collection-card" onclick="location.href='${link}'">
                 <div class="card-image" style="background: ${iconData.gradient};">
@@ -109,65 +259,101 @@ async function loadCollections() {
     }).join('');
 }
 
-// Load products for specific category from API
+// Load products for specific category from API with fallback
 async function loadCategoryProducts(category) {
     const productsGrid = document.getElementById('productsGrid');
     if (!productsGrid) return;
 
     // Show loading state
     productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
-    
+
+    let products = [];
+    let usesFallback = false;
+
     try {
-        const response = await fetch(`${API_BASE_URL}/products?category=${category}`);
-        if (!response.ok) throw new Error('Failed to fetch products');
-        
-        const products = await response.json();
-        
-        if (!products || products.length === 0) {
-            productsGrid.innerHTML = `
-                <div class="no-products">
-                    <i class="fas fa-box-open"></i>
-                    <p>Aucun produit disponible pour le moment</p>
-                </div>
-            `;
-            return;
+        // Try to fetch from API with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(`${API_BASE_URL}/products?category=${category}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.length > 0) {
+                products = data;
+            } else {
+                // API returned empty, use fallback
+                products = fallbackProducts[category] || [];
+                usesFallback = true;
+            }
+        } else {
+            // API error, use fallback
+            products = fallbackProducts[category] || [];
+            usesFallback = true;
+            console.warn(`API returned status ${response.status}, using fallback data`);
         }
-        
-        productsGrid.innerHTML = products.map(product => {
-            const hasPromotion = product.promotion && product.promotion > 0;
-            const finalPrice = hasPromotion 
-                ? product.price - (product.price * product.promotion / 100)
-                : product.price;
-            
-            return `
-                <div class="product-card">
-                    ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
-                    <div class="product-image">
-                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300'">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">${product.name}</h3>
-                        <p>${product.description || ''}</p>
-                        <div class="product-price">
-                            ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                            <span class="price">${Math.round(finalPrice)} DH</span>
-                        </div>
-                        <button class="btn-primary" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
-                            <i class="fab fa-whatsapp"></i> Commander
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
     } catch (error) {
-        console.error('Error loading products:', error);
-        productsGrid.innerHTML = '<div class="error">Erreur lors du chargement des produits.</div>';
+        // Network error or timeout, use fallback
+        console.warn('Error loading products from API:', error);
+        products = fallbackProducts[category] || [];
+        usesFallback = true;
+    }
+
+    // Render products
+    if (!products || products.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <p>Aucun produit disponible pour le moment</p>
+            </div>
+        `;
+        return;
+    }
+
+    productsGrid.innerHTML = products.map(product => {
+        const hasPromotion = product.promotion && product.promotion > 0;
+        const finalPrice = hasPromotion
+            ? product.price - (product.price * product.promotion / 100)
+            : product.price;
+
+        return `
+            <div class="product-card">
+                ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
+                <div class="product-image">
+                    <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300'">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">${product.name}</h3>
+                    <p>${product.description || ''}</p>
+                    <div class="product-price">
+                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                        <span class="price">${Math.round(finalPrice)} DH</span>
+                    </div>
+                    <button class="btn-primary" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
+                        <i class="fab fa-whatsapp"></i> Commander
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Show fallback notice if using fallback data
+    if (usesFallback) {
+        console.info('Using fallback product data');
     }
 }
 
 // WhatsApp contact function
 function contactWhatsApp(productName, price) {
-    const phoneNumber = '212621535234'; // Updated with a more likely Moroccan format or user can change
+    const phoneNumber = '212621535234';
     const message = `Bonjour, je suis intéressé(e) par: ${productName} - ${price} DH`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -179,39 +365,39 @@ document.addEventListener('DOMContentLoaded', async function() {
     const sidebar = document.getElementById('sidebar');
     const closeSidebar = document.getElementById('closeSidebar');
     const overlay = document.getElementById('overlay');
-    
+
     if (menuToggle) {
         menuToggle.addEventListener('click', function() {
             sidebar.classList.add('active');
             overlay.classList.add('active');
         });
     }
-    
+
     if (closeSidebar) {
         closeSidebar.addEventListener('click', function() {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         });
     }
-    
+
     if (overlay) {
         overlay.addEventListener('click', function() {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         });
     }
-    
+
     // Load collections on homepage
     if (document.getElementById('collectionsGrid')) {
         await loadCollections();
     }
-    
+
     // Load products on category pages
     const path = window.location.pathname;
     const page = path.split('/').pop().replace('.html', '');
-    
+
     const categories = ['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'];
-    
+
     // Check if current page is a category page
     if (categories.includes(page)) {
         await loadCategoryProducts(page);
