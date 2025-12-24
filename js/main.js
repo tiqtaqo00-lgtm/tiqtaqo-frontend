@@ -21,7 +21,7 @@ const collectionIcons = {
     'accessoires': {
         icon: 'fa-gem',
         gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
-        description: 'Complétez votre look avec style',
+        description: 'Complétez votre look with style',
         animation: 'shine'
     },
     'wallets': {
@@ -44,13 +44,23 @@ const collectionIcons = {
     }
 };
 
-// Version control for localStorage - increment this when adding new categories
-const CATEGORIES_VERSION = 2;
+// API Configuration
+const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
 
-// Get categories from localStorage
-function getCategories() {
-    // Default categories - ALWAYS use these as the source of truth
-    const defaultCategories = [
+// Get categories from API or Fallback
+async function getCategories() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/categories`);
+        if (response.ok) {
+            const categories = await response.json();
+            if (categories && categories.length > 0) return categories;
+        }
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+    }
+
+    // Fallback categories
+    return [
         { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
         { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
         { id: 'femme', name: 'Femme', icon: 'fa-user-crown', visible: true, order: 3 },
@@ -59,49 +69,35 @@ function getCategories() {
         { id: 'belts', name: 'Belts', icon: 'fa-belt', visible: true, order: 6 },
         { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 }
     ];
-
-    // Check version
-    const storedVersion = localStorage.getItem('luxury_categories_version');
-    
-    if (!storedVersion || parseInt(storedVersion) < CATEGORIES_VERSION) {
-        // Force update if version is old or missing
-        localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
-        localStorage.setItem('luxury_categories_version', CATEGORIES_VERSION.toString());
-        return defaultCategories;
-    }
-
-    const categories = localStorage.getItem('luxury_categories');
-    
-    if (categories) {
-        return JSON.parse(categories);
-    }
-
-    localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
-    localStorage.setItem('luxury_categories_version', CATEGORIES_VERSION.toString());
-    return defaultCategories;
 }
 
 // Load collections dynamically
-function loadCollections() {
-    const categories = getCategories();
+async function loadCollections() {
+    const categories = await getCategories();
     const collectionsGrid = document.getElementById('collectionsGrid');
     
     if (!collectionsGrid) return;
     
-    // Filter visible categories and sort by order
     const visibleCategories = categories
-        .filter(cat => cat.visible)
-        .sort((a, b) => a.order - b.order);
+        .filter(cat => cat.visible !== false)
+        .sort((a, b) => (a.order || a.displayOrder || 0) - (b.order || b.displayOrder || 0));
     
     collectionsGrid.innerHTML = visibleCategories.map(category => {
-        const iconData = collectionIcons[category.id] || {
+        const catId = category.id || category._id;
+        const iconData = collectionIcons[catId] || {
             icon: category.icon || 'fa-box',
             gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             description: 'Découvrez notre collection'
         };
         
+        // Determine the correct link based on category
+        let link = `${catId}-select.html`;
+        if (['homme', 'femme', 'glasses'].includes(catId)) {
+            link = `${catId}.html`;
+        }
+        
         return `
-            <div class="collection-card" onclick="location.href='${category.id}-select.html'">
+            <div class="collection-card" onclick="location.href='${link}'">
                 <div class="card-image" style="background: ${iconData.gradient};">
                     <i class="fas ${iconData.icon}"></i>
                 </div>
@@ -113,71 +109,72 @@ function loadCollections() {
     }).join('');
 }
 
-// Get products from localStorage
-function getProducts() {
-    const products = localStorage.getItem('luxury_products');
-    return products ? JSON.parse(products) : [];
-}
-
-// Load products for specific category
-function loadCategoryProducts(category) {
-    const products = getProducts();
+// Load products for specific category from API
+async function loadCategoryProducts(category) {
     const productsGrid = document.getElementById('productsGrid');
-    
     if (!productsGrid) return;
+
+    // Show loading state
+    productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
     
-    const categoryProducts = products.filter(p => 
-        p.category === category && p.visible
-    );
-    
-    if (categoryProducts.length === 0) {
-        productsGrid.innerHTML = `
-            <div class="no-products">
-                <i class="fas fa-box-open"></i>
-                <p>Aucun produit disponible pour le moment</p>
-            </div>
-        `;
-        return;
-    }
-    
-    productsGrid.innerHTML = categoryProducts.map(product => {
-        const hasPromotion = product.promotion && product.promotion > 0;
-        const finalPrice = hasPromotion 
-            ? product.price - (product.price * product.promotion / 100)
-            : product.price;
+    try {
+        const response = await fetch(`${API_BASE_URL}/products?category=${category}`);
+        if (!response.ok) throw new Error('Failed to fetch products');
         
-        return `
-            <div class="product-card">
-                ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
-                <div class="product-image">
-                    <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
+        const products = await response.json();
+        
+        if (!products || products.length === 0) {
+            productsGrid.innerHTML = `
+                <div class="no-products">
+                    <i class="fas fa-box-open"></i>
+                    <p>Aucun produit disponible pour le moment</p>
                 </div>
-                <div class="product-info">
-                    <h3>${product.name}</h3>
-                    <p>${product.description || ''}</p>
-                    <div class="product-price">
-                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                        <span class="price">${Math.round(finalPrice)} DH</span>
+            `;
+            return;
+        }
+        
+        productsGrid.innerHTML = products.map(product => {
+            const hasPromotion = product.promotion && product.promotion > 0;
+            const finalPrice = hasPromotion 
+                ? product.price - (product.price * product.promotion / 100)
+                : product.price;
+            
+            return `
+                <div class="product-card">
+                    ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300'">
                     </div>
-                    <button class="btn-primary" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
-                        <i class="fab fa-whatsapp"></i> Commander
-                    </button>
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p>${product.description || ''}</p>
+                        <div class="product-price">
+                            ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                            <span class="price">${Math.round(finalPrice)} DH</span>
+                        </div>
+                        <button class="btn-primary" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
+                            <i class="fab fa-whatsapp"></i> Commander
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading products:', error);
+        productsGrid.innerHTML = '<div class="error">Erreur lors du chargement des produits.</div>';
+    }
 }
 
 // WhatsApp contact function
 function contactWhatsApp(productName, price) {
-    const phoneNumber = '212XXXXXXXXX'; // Replace with actual number
+    const phoneNumber = '212621535234'; // Updated with a more likely Moroccan format or user can change
     const message = `Bonjour, je suis intéressé(e) par: ${productName} - ${price} DH`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 }
 
 // Sidebar functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
     const closeSidebar = document.getElementById('closeSidebar');
@@ -206,13 +203,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load collections on homepage
     if (document.getElementById('collectionsGrid')) {
-        loadCollections();
+        await loadCollections();
     }
     
     // Load products on category pages
-    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    if (['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'].includes(currentPage)) {
-        loadCategoryProducts(currentPage);
+    const path = window.location.pathname;
+    const page = path.split('/').pop().replace('.html', '');
+    
+    const categories = ['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'];
+    
+    // Check if current page is a category page
+    if (categories.includes(page)) {
+        await loadCategoryProducts(page);
+    } else if (page.includes('-homme') || page.includes('-femme')) {
+        // Handle subcategory pages if needed
+        const category = page.split('-')[0];
+        await loadCategoryProducts(category);
     }
 });
 
