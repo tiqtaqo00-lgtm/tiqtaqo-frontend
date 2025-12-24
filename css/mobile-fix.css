@@ -1,0 +1,142 @@
+/* ===== Mobile Optimization Fixes ===== */
+
+@media (max-width: 768px) {
+    /* 1. Navbar & Logo */
+    .logo {
+        font-size: 20px;
+    }
+    .logo i {
+        font-size: 22px;
+    }
+    .menu-toggle {
+        font-size: 20px;
+    }
+
+    /* 2. Hero Section */
+    .hero {
+        height: 450px;
+        margin-top: 95px;
+    }
+    .hero-title {
+        font-size: 28px !important;
+        line-height: 1.2;
+    }
+    .hero-subtitle {
+        font-size: 14px !important;
+        padding: 0 10px;
+    }
+    .btn-primary {
+        padding: 12px 25px;
+        font-size: 14px;
+    }
+
+    /* 3. Section Titles */
+    .section-title {
+        font-size: 26px !important;
+        margin-bottom: 30px;
+    }
+
+    /* 4. Collection Cards */
+    .collections-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 10px;
+    }
+    .collection-card {
+        padding: 25px 15px;
+    }
+    .card-image {
+        width: 100px;
+        height: 100px;
+    }
+    .card-image i {
+        font-size: 40px;
+    }
+    .collection-card h3 {
+        font-size: 20px;
+    }
+
+    /* 5. Product Grid */
+    .products-grid {
+        grid-template-columns: 1fr; /* Single column for better focus on mobile */
+        gap: 20px;
+        padding: 0 10px;
+    }
+    .product-image {
+        height: 250px;
+    }
+    .product-image i {
+        font-size: 60px;
+    }
+    .product-name {
+        font-size: 18px;
+    }
+    .product-price .price {
+        font-size: 22px;
+    }
+
+    /* 6. Features Section */
+    .feature-card {
+        padding: 20px 15px;
+    }
+    .feature-card i {
+        font-size: 35px;
+    }
+    .feature-card h3 {
+        font-size: 18px;
+    }
+
+    /* 7. Footer */
+    .footer-section {
+        margin-bottom: 20px;
+    }
+    .footer-section h3, .footer-section h4 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    /* 8. WhatsApp Button */
+    .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        bottom: 15px;
+        right: 15px;
+    }
+
+    /* 9. Modal Fixes */
+    .modal-content {
+        margin: 20px 10px;
+        width: auto;
+    }
+    .modal-product-image {
+        height: 250px;
+    }
+    .modal-product-image i {
+        font-size: 80px;
+    }
+    .modal-product-details h3 {
+        font-size: 22px;
+    }
+    .modal-product-price {
+        font-size: 24px;
+    }
+    .modal-actions {
+        flex-direction: column;
+    }
+    .modal-actions .btn-primary, 
+    .modal-actions .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 24px !important;
+    }
+    .logo {
+        font-size: 18px;
+    }
+}
