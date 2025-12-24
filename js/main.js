@@ -224,29 +224,36 @@ async function getCategories() {
 // Load collections dynamically
 async function loadCollections() {
     try {
+        console.log('📦 Loading collections...');
         const categories = await getCategories();
         const collectionsGrid = document.getElementById('collectionsGrid');
 
         if (!collectionsGrid) {
-            console.warn('collectionsGrid element not found');
+            console.warn('⚠️ collectionsGrid element not found');
             return;
         }
 
+        // ✅ Filter visible categories and sort by order
         const visibleCategories = categories
             .filter(cat => cat.visible !== false)
             .sort((a, b) => (a.order || a.displayOrder || 0) - (b.order || b.displayOrder || 0));
 
         if (!visibleCategories || visibleCategories.length === 0) {
-            console.warn('No visible categories found');
+            console.warn('⚠️ No visible categories found, using fallback');
+            // ✅ Use fallback categories
+            renderFallbackCollections(collectionsGrid);
             return;
         }
 
+        console.log(`✅ Found ${visibleCategories.length} categories`);
+
+        // ✅ Render categories
         collectionsGrid.innerHTML = visibleCategories.map(category => {
             const catId = category.id || category._id;
             const iconData = collectionIcons[catId] || {
                 icon: category.icon || 'fa-box',
                 gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                description: 'Découvrez notre collection'
+                description: category.description || 'Découvrez notre collection'
             };
 
             // Determine the correct link based on category
@@ -266,47 +273,57 @@ async function loadCollections() {
                 </div>
             `;
         }).join('');
+
+        console.log('✅ Collections loaded successfully');
     } catch (error) {
-        console.error('Error in loadCollections:', error);
-        // Fallback: render default categories
+        console.error('❌ Error in loadCollections:', error);
+        // ✅ Fallback: render default categories
         const collectionsGrid = document.getElementById('collectionsGrid');
         if (collectionsGrid) {
-            const defaultCategories = [
-                { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
-                { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
-                { id: 'femme', name: 'Femme', icon: 'fa-user-crown', visible: true, order: 3 },
-                { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4 },
-                { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
-                { id: 'belts', name: 'Belts', icon: 'fa-belt', visible: true, order: 6 },
-                { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 }
-            ];
-            
-            collectionsGrid.innerHTML = defaultCategories.map(category => {
-                const catId = category.id;
-                const iconData = collectionIcons[catId] || {
-                    icon: category.icon || 'fa-box',
-                    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    description: 'Découvrez notre collection'
-                };
-
-                let link = `${catId}-select.html`;
-                if (['homme', 'femme', 'glasses'].includes(catId)) {
-                    link = `${catId}.html`;
-                }
-
-                return `
-                    <div class="collection-card" onclick="location.href='${link}'">
-                        <div class="card-image" style="background: ${iconData.gradient};">
-                            <i class="fas ${iconData.icon}"></i>
-                        </div>
-                        <h3>${category.name}</h3>
-                        <p>${iconData.description}</p>
-                        <button class="btn-secondary">Explorer</button>
-                    </div>
-                `;
-            }).join('');
+            renderFallbackCollections(collectionsGrid);
         }
     }
+}
+
+// ✅ NEW: Fallback function to render default categories
+function renderFallbackCollections(collectionsGrid) {
+    console.log('📦 Using fallback collections...');
+    const defaultCategories = [
+        { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1, description: 'Ensembles complets pour un style parfait' },
+        { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2, description: 'Montres masculines raffinées' },
+        { id: 'femme', name: 'Femme', icon: 'fa-crown', visible: true, order: 3, description: 'Élégance féminine intemporelle' },
+        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4, description: 'Complétez votre look with style' },
+        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5, description: 'Portefeuilles élégants et pratiques' },
+        { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 6, description: 'Ceintures de qualité supérieure' },
+        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7, description: 'Lunettes tendance et sophistiquées' }
+    ];
+    
+    collectionsGrid.innerHTML = defaultCategories.map(category => {
+        const catId = category.id;
+        const iconData = collectionIcons[catId] || {
+            icon: category.icon || 'fa-box',
+            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            description: category.description || 'Découvrez notre collection'
+        };
+
+        let link = `${catId}-select.html`;
+        if (['homme', 'femme', 'glasses'].includes(catId)) {
+            link = `${catId}.html`;
+        }
+
+        return `
+            <div class="collection-card" onclick="location.href='${link}'">
+                <div class="card-image" style="background: ${iconData.gradient};">
+                    <i class="fas ${iconData.icon}"></i>
+                </div>
+                <h3>${category.name}</h3>
+                <p>${iconData.description}</p>
+                <button class="btn-secondary">Explorer</button>
+            </div>
+        `;
+    }).join('');
+    
+    console.log('✅ Fallback collections rendered');
 }
 
 // Load products for specific category from API with fallback
