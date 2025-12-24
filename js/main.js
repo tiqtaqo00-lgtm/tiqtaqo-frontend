@@ -223,40 +223,90 @@ async function getCategories() {
 
 // Load collections dynamically
 async function loadCollections() {
-    const categories = await getCategories();
-    const collectionsGrid = document.getElementById('collectionsGrid');
+    try {
+        const categories = await getCategories();
+        const collectionsGrid = document.getElementById('collectionsGrid');
 
-    if (!collectionsGrid) return;
-
-    const visibleCategories = categories
-        .filter(cat => cat.visible !== false)
-        .sort((a, b) => (a.order || a.displayOrder || 0) - (b.order || b.displayOrder || 0));
-
-    collectionsGrid.innerHTML = visibleCategories.map(category => {
-        const catId = category.id || category._id;
-        const iconData = collectionIcons[catId] || {
-            icon: category.icon || 'fa-box',
-            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            description: 'Découvrez notre collection'
-        };
-
-        // Determine the correct link based on category
-        let link = `${catId}-select.html`;
-        if (['homme', 'femme', 'glasses'].includes(catId)) {
-            link = `${catId}.html`;
+        if (!collectionsGrid) {
+            console.warn('collectionsGrid element not found');
+            return;
         }
 
-        return `
-            <div class="collection-card" onclick="location.href='${link}'">
-                <div class="card-image" style="background: ${iconData.gradient};">
-                    <i class="fas ${iconData.icon}"></i>
+        const visibleCategories = categories
+            .filter(cat => cat.visible !== false)
+            .sort((a, b) => (a.order || a.displayOrder || 0) - (b.order || b.displayOrder || 0));
+
+        if (!visibleCategories || visibleCategories.length === 0) {
+            console.warn('No visible categories found');
+            return;
+        }
+
+        collectionsGrid.innerHTML = visibleCategories.map(category => {
+            const catId = category.id || category._id;
+            const iconData = collectionIcons[catId] || {
+                icon: category.icon || 'fa-box',
+                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                description: 'Découvrez notre collection'
+            };
+
+            // Determine the correct link based on category
+            let link = `${catId}-select.html`;
+            if (['homme', 'femme', 'glasses'].includes(catId)) {
+                link = `${catId}.html`;
+            }
+
+            return `
+                <div class="collection-card" onclick="location.href='${link}'">
+                    <div class="card-image" style="background: ${iconData.gradient};">
+                        <i class="fas ${iconData.icon}"></i>
+                    </div>
+                    <h3>${category.name}</h3>
+                    <p>${iconData.description}</p>
+                    <button class="btn-secondary">Explorer</button>
                 </div>
-                <h3>${category.name}</h3>
-                <p>${iconData.description}</p>
-                <button class="btn-secondary">Explorer</button>
-            </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error in loadCollections:', error);
+        // Fallback: render default categories
+        const collectionsGrid = document.getElementById('collectionsGrid');
+        if (collectionsGrid) {
+            const defaultCategories = [
+                { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
+                { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
+                { id: 'femme', name: 'Femme', icon: 'fa-user-crown', visible: true, order: 3 },
+                { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4 },
+                { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
+                { id: 'belts', name: 'Belts', icon: 'fa-belt', visible: true, order: 6 },
+                { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 }
+            ];
+            
+            collectionsGrid.innerHTML = defaultCategories.map(category => {
+                const catId = category.id;
+                const iconData = collectionIcons[catId] || {
+                    icon: category.icon || 'fa-box',
+                    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    description: 'Découvrez notre collection'
+                };
+
+                let link = `${catId}-select.html`;
+                if (['homme', 'femme', 'glasses'].includes(catId)) {
+                    link = `${catId}.html`;
+                }
+
+                return `
+                    <div class="collection-card" onclick="location.href='${link}'">
+                        <div class="card-image" style="background: ${iconData.gradient};">
+                            <i class="fas ${iconData.icon}"></i>
+                        </div>
+                        <h3>${category.name}</h3>
+                        <p>${iconData.description}</p>
+                        <button class="btn-secondary">Explorer</button>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
 }
 
 // Load products for specific category from API with fallback
