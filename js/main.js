@@ -49,17 +49,20 @@ const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel
 
 // Get categories from API or Fallback
 async function getCategories() {
+    console.log('🔍 Fetching categories...');
     try {
         const response = await fetch(`${API_BASE_URL}/categories`);
         if (response.ok) {
             const categories = await response.json();
+            console.log('✅ Categories fetched:', categories);
             if (categories && categories.length > 0) return categories;
         }
     } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('❌ Error fetching categories:', error);
     }
 
     // Fallback categories
+    console.log('⚠️ Using fallback categories');
     return [
         { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
         { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
@@ -73,14 +76,20 @@ async function getCategories() {
 
 // Load collections dynamically
 async function loadCollections() {
+    console.log('📦 Loading collections...');
     const categories = await getCategories();
     const collectionsGrid = document.getElementById('collectionsGrid');
     
-    if (!collectionsGrid) return;
+    if (!collectionsGrid) {
+        console.error('❌ collectionsGrid element not found!');
+        return;
+    }
     
     const visibleCategories = categories
         .filter(cat => cat.visible !== false)
         .sort((a, b) => (a.order || a.displayOrder || 0) - (b.order || b.displayOrder || 0));
+    
+    console.log('✨ Rendering categories:', visibleCategories.length);
     
     collectionsGrid.innerHTML = visibleCategories.map(category => {
         const catId = category.id || category._id;
@@ -114,7 +123,7 @@ async function loadCategoryProducts(category) {
     const productsGrid = document.getElementById('productsGrid');
     if (!productsGrid) return;
 
-    // Show loading state
+    console.log(`📦 Loading products for category: ${category}`);
     productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
     
     try {
@@ -122,6 +131,7 @@ async function loadCategoryProducts(category) {
         if (!response.ok) throw new Error('Failed to fetch products');
         
         const products = await response.json();
+        console.log(`✅ Products loaded for ${category}:`, products.length);
         
         if (!products || products.length === 0) {
             productsGrid.innerHTML = `
@@ -160,14 +170,14 @@ async function loadCategoryProducts(category) {
             `;
         }).join('');
     } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('❌ Error loading products:', error);
         productsGrid.innerHTML = '<div class="error">Erreur lors du chargement des produits.</div>';
     }
 }
 
 // WhatsApp contact function
 function contactWhatsApp(productName, price) {
-    const phoneNumber = '212621535234'; // Updated with a more likely Moroccan format or user can change
+    const phoneNumber = '212621535234';
     const message = `Bonjour, je suis intéressé(e) par: ${productName} - ${price} DH`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -175,6 +185,7 @@ function contactWhatsApp(productName, price) {
 
 // Sidebar functionality
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Page initialized');
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
     const closeSidebar = document.getElementById('closeSidebar');
@@ -212,11 +223,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     const categories = ['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'];
     
-    // Check if current page is a category page
     if (categories.includes(page)) {
         await loadCategoryProducts(page);
     } else if (page.includes('-homme') || page.includes('-femme')) {
-        // Handle subcategory pages if needed
         const category = page.split('-')[0];
         await loadCategoryProducts(category);
     }
