@@ -3,94 +3,86 @@ const collectionIcons = {
     'packs': {
         icon: 'fa-gift',
         gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        description: 'Ensembles complets pour un style parfait',
-        animation: 'bounce'
+        description: 'Ensembles complets pour un style parfait'
     },
     'homme': {
         icon: 'fa-user-tie',
         gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-        description: 'Montres masculines raffinées',
-        animation: 'pulse'
+        description: 'Montres masculines raffinées'
     },
     'femme': {
         icon: 'fa-crown',
         gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        description: 'Élégance féminine intemporelle',
-        animation: 'sparkle'
+        description: 'Élégance féminine intemporelle'
     },
     'accessoires': {
         icon: 'fa-gem',
         gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
-        description: 'Complétez votre look with style',
-        animation: 'shine'
+        description: 'Complétez votre look with style'
     },
     'wallets': {
         icon: 'fa-wallet',
         gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-        description: 'Portefeuilles élégants et pratiques',
-        animation: 'slide'
+        description: 'Portefeuilles élégants et pratiques'
     },
     'belts': {
         icon: 'fa-ribbon',
         gradient: 'linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)',
-        description: 'Ceintures de qualité supérieure',
-        animation: 'rotate'
+        description: 'Ceintures de qualité supérieure'
     },
     'glasses': {
         icon: 'fa-glasses',
         gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        description: 'Lunettes tendance et sophistiquées',
-        animation: 'swing'
+        description: 'Lunettes tendance et sophistiquées'
     }
 };
 
 // API Configuration
 const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
 
-// Get categories from API or Fallback
-async function getCategories() {
-    console.log('🔍 Fetching categories...');
+// Fallback categories
+const FALLBACK_CATEGORIES = [
+    { id: 'packs', name: 'Packs', icon: 'fa-gift', visible: true, order: 1},
+    { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
+    { id: 'femme', name: 'Femme', icon: 'fa-crown', visible: true, order: 3 },
+    { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4 },
+    { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
+    { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 6 },
+    { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 }
+];
+
+// Load collections dynamically
+async function loadCollections() {
+    const collectionsGrid = document.getElementById('collectionsGrid');
+    if (!collectionsGrid) return;
+
+    console.log('📦 Loading collections...');
+    
+    // Initial render with fallback to ensure something is visible immediately
+    renderCategories(FALLBACK_CATEGORIES);
+
     try {
         const response = await fetch(`${API_BASE_URL}/categories`);
         if (response.ok) {
             const categories = await response.json();
-            console.log('✅ Categories fetched:', categories);
-            if (categories && categories.length > 0) return categories;
+            if (categories && categories.length > 0) {
+                console.log('✅ Categories fetched from API');
+                renderCategories(categories);
+            }
         }
     } catch (error) {
-        console.error('❌ Error fetching categories:', error);
+        console.error('❌ Error fetching categories, using fallback:', error);
     }
-
-    // Fallback categories
-    console.log('⚠️ Using fallback categories');
-    return [
-        { id: 'packs', name: 'Packs', icon: 'fa-box-open', visible: true, order: 1},
-        { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
-        { id: 'femme', name: 'Femme', icon: 'fa-user-crown', visible: true, order: 3 },
-        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4 },
-        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
-        { id: 'belts', name: 'Belts', icon: 'fa-belt', visible: true, order: 6 },
-        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 }
-    ];
 }
 
-// Load collections dynamically
-async function loadCollections() {
-    console.log('📦 Loading collections...');
-    const categories = await getCategories();
+function renderCategories(categories) {
     const collectionsGrid = document.getElementById('collectionsGrid');
-    
-    if (!collectionsGrid) {
-        console.error('❌ collectionsGrid element not found!');
-        return;
-    }
-    
+    if (!collectionsGrid) return;
+
     const visibleCategories = categories
         .filter(cat => cat.visible !== false)
         .sort((a, b) => (a.order || a.displayOrder || 0) - (b.order || b.displayOrder || 0));
-    
-    console.log('✨ Rendering categories:', visibleCategories.length);
-    
+
     collectionsGrid.innerHTML = visibleCategories.map(category => {
         const catId = category.id || category._id;
         const iconData = collectionIcons[catId] || {
@@ -99,7 +91,6 @@ async function loadCollections() {
             description: 'Découvrez notre collection'
         };
         
-        // Determine the correct link based on category
         let link = `${catId}-select.html`;
         if (['homme', 'femme', 'glasses'].includes(catId)) {
             link = `${catId}.html`;
@@ -123,7 +114,6 @@ async function loadCategoryProducts(category) {
     const productsGrid = document.getElementById('productsGrid');
     if (!productsGrid) return;
 
-    console.log(`📦 Loading products for category: ${category}`);
     productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
     
     try {
@@ -131,7 +121,6 @@ async function loadCategoryProducts(category) {
         if (!response.ok) throw new Error('Failed to fetch products');
         
         const products = await response.json();
-        console.log(`✅ Products loaded for ${category}:`, products.length);
         
         if (!products || products.length === 0) {
             productsGrid.innerHTML = `
@@ -185,7 +174,6 @@ function contactWhatsApp(productName, price) {
 
 // Sidebar functionality
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 Page initialized');
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
     const closeSidebar = document.getElementById('closeSidebar');
@@ -225,22 +213,5 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     if (categories.includes(page)) {
         await loadCategoryProducts(page);
-    } else if (page.includes('-homme') || page.includes('-femme')) {
-        const category = page.split('-')[0];
-        await loadCategoryProducts(category);
     }
-});
-
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
 });
