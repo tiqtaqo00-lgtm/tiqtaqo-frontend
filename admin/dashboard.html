@@ -13,12 +13,13 @@
             --white: #fff;
             --danger: #dc3545;
             --success: #28a745;
+            --accent: #d4af37;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); direction: rtl; }
 
-        .dashboard { min-height: 100vh; padding: 20px; }
+        .dashboard { min-height: 100vh; padding: 20px; max-width: 1200px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--white); padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         
         .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; transition: 0.3s; text-decoration: none; display: inline-block; }
@@ -26,29 +27,39 @@
         .btn-danger { background: var(--danger); color: var(--white); }
         
         .section { background: var(--white); padding: 30px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .section-title { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); }
+        .section-title { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 10px; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
-        .form-group label { margin-bottom: 8px; font-weight: 500; }
-        .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group label { margin-bottom: 8px; font-weight: 600; color: #333; }
+        .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        
+        .image-upload-area { border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .image-upload-area:hover { border-color: var(--primary); background: #f9f9f9; }
+        .preview-img { max-width: 150px; margin-top: 10px; border-radius: 4px; display: none; }
 
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .product-card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: var(--white); }
-        .product-img { width: 100%; height: 200px; object-fit: cover; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .product-card { border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: var(--white); transition: 0.3s; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .product-img { width: 100%; height: 220px; object-fit: cover; }
         .product-info { padding: 15px; }
-        .product-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .product-info h3 { font-size: 18px; margin-bottom: 5px; }
+        .product-meta { font-size: 13px; color: var(--secondary); margin-bottom: 10px; }
+        .product-price { font-weight: 700; color: var(--primary); font-size: 1.2rem; }
+        .product-actions { display: flex; gap: 10px; margin-top: 15px; }
 
-        .loading { text-align: center; padding: 40px; font-size: 18px; }
-        .message { padding: 15px; border-radius: 4px; margin-bottom: 20px; display: none; }
-        .message.success { background: #d4edda; color: #155724; display: block; }
-        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        .loading { text-align: center; padding: 40px; font-size: 18px; color: var(--secondary); }
+        .message { padding: 15px; border-radius: 4px; margin-bottom: 20px; display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; min-width: 300px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .message.success { background: var(--success); color: white; display: block; }
+        .message.error { background: var(--danger); color: white; display: block; }
+
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <div class="header">
-            <h1>لوحة تحكم TiqtaQo</h1>
+            <h1><i class="fas fa-crown" style="color: var(--accent);"></i> لوحة تحكم TiqtaQo</h1>
             <div>
                 <a href="../index.html" class="btn" style="background: #eee; color: #333; margin-left: 10px;">زيارة الموقع</a>
                 <button onclick="handleLogout()" class="btn btn-danger">تسجيل الخروج</button>
@@ -59,47 +70,64 @@
 
         <!-- Add Product Form -->
         <div class="section">
-            <h2 class="section-title">إضافة منتج جديد</h2>
+            <h2 class="section-title"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
             <form id="productForm">
                 <div class="form-grid">
                     <div class="form-group">
                         <label>اسم المنتج</label>
-                        <input type="text" id="pName" required>
+                        <input type="text" id="pName" placeholder="مثال: ساعة رولكس فاخرة" required>
                     </div>
                     <div class="form-group">
                         <label>السعر (DH)</label>
-                        <input type="number" id="pPrice" required>
+                        <input type="number" id="pPrice" placeholder="0.00" required>
                     </div>
                     <div class="form-group">
-                        <label>القسم</label>
-                        <select id="pCategory" required>
-                            <option value="packs">Packs</option>
-                            <option value="homme">Homme</option>
-                            <option value="femme">Femme</option>
-                            <option value="accessoires">Accessoires</option>
-                            <option value="wallets">Wallets</option>
-                            <option value="belts">Belts</option>
-                            <option value="glasses">Glasses</option>
+                        <label>القسم الأساسي</label>
+                        <select id="pCategory" onchange="updateSubcategories()" required>
+                            <option value="">اختر القسم...</option>
+                            <option value="packs">Packs (حقائب/مجموعات)</option>
+                            <option value="homme">Homme (ساعات رجالية)</option>
+                            <option value="femme">Femme (ساعات نسائية)</option>
+                            <option value="accessoires">Accessoires (إكسسوارات)</option>
+                            <option value="wallets">Wallets (محافظ)</option>
+                            <option value="belts">Belts (أحزمة)</option>
+                            <option value="glasses">Glasses (نظارات)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>رابط الصورة</label>
-                        <input type="text" id="pImage" placeholder="https://..." required>
+                        <label>الفرع (النوع)</label>
+                        <select id="pSubcategory">
+                            <option value="">بدون فرع</option>
+                        </select>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label>صورة المنتج</label>
+                    <div class="image-upload-area" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #ccc;"></i>
+                        <p>اضغط هنا لرفع صورة من جهازك</p>
+                        <input type="file" id="fileInput" hidden accept="image/*" onchange="handleImageUpload(event)">
+                        <img id="imagePreview" class="preview-img">
+                        <input type="hidden" id="pImageBase64">
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>الوصف</label>
-                    <textarea id="pDesc" rows="3"></textarea>
+                    <textarea id="pDesc" rows="3" placeholder="اكتب وصفاً قصيراً للمنتج..."></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">حفظ المنتج</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+                    <i class="fas fa-save"></i> حفظ ونشر المنتج
+                </button>
             </form>
         </div>
 
         <!-- Products List -->
         <div class="section">
-            <h2 class="section-title">المنتجات الحالية</h2>
+            <h2 class="section-title"><i class="fas fa-boxes"></i> المنتجات المنشورة</h2>
             <div id="productsList" class="products-grid">
-                <div class="loading">جاري التحميل...</div>
+                <div class="loading">جاري جلب المنتجات من السيرفر...</div>
             </div>
         </div>
     </div>
@@ -107,9 +135,38 @@
     <script>
         const API_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
         
-        // Check Auth
-        if (!localStorage.getItem('auth_token')) {
-            window.location.href = 'login.html';
+        // Subcategories Mapping
+        const subMap = {
+            'packs': ['homme', 'femme'],
+            'accessoires': ['homme', 'femme'],
+            'wallets': ['homme', 'femme'],
+            'belts': ['homme', 'femme'],
+            'homme': [],
+            'femme': [],
+            'glasses': []
+        };
+
+        function updateSubcategories() {
+            const cat = document.getElementById('pCategory').value;
+            const subSelect = document.getElementById('pSubcategory');
+            const subs = subMap[cat] || [];
+            
+            subSelect.innerHTML = subs.length > 0 
+                ? subs.map(s => `<option value="${s}">${s === 'homme' ? 'رجالي (Homme)' : 'نسائي (Femme)'}</option>`).join('')
+                : '<option value="">بدون فرع</option>';
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('imagePreview').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'inline-block';
+                document.getElementById('pImageBase64').value = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         function handleLogout() {
@@ -121,18 +178,17 @@
             const box = document.getElementById('messageBox');
             box.textContent = text;
             box.className = `message ${type}`;
-            setTimeout(() => box.style.display = 'none', 3000);
+            setTimeout(() => box.style.display = 'none', 4000);
         }
 
-        // Load Products
         async function loadProducts() {
             const list = document.getElementById('productsList');
             try {
                 const res = await fetch(`${API_URL}/products`);
                 const products = await res.json();
                 
-                if (products.length === 0) {
-                    list.innerHTML = '<div class="loading">لا توجد منتجات حالياً</div>';
+                if (!products || products.length === 0) {
+                    list.innerHTML = '<div class="loading">لا توجد منتجات حالياً. ابدأ بإضافة أول منتج!</div>';
                     return;
                 }
 
@@ -140,31 +196,41 @@
                     <div class="product-card">
                         <img src="${p.image}" class="product-img" onerror="this.src='https://via.placeholder.com/300'">
                         <div class="product-info">
+                            <div class="product-meta">${p.category} ${p.branch ? ' > ' + p.branch : ''}</div>
                             <h3>${p.name}</h3>
-                            <p>${p.price} DH | ${p.category}</p>
+                            <div class="product-price">${p.price} DH</div>
                             <div class="product-actions">
-                                <button onclick="deleteProduct('${p._id}')" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">حذف</button>
+                                <button onclick="deleteProduct('${p._id}')" class="btn btn-danger" style="flex: 1;">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
                             </div>
                         </div>
                     </div>
                 `).join('');
             } catch (err) {
-                list.innerHTML = '<div class="loading">خطأ في تحميل المنتجات</div>';
+                list.innerHTML = '<div class="loading">⚠️ خطأ في الاتصال بالسيرفر</div>';
             }
         }
 
-        // Add Product
         document.getElementById('productForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
+            const imgBase64 = document.getElementById('pImageBase64').value;
+
+            if (!imgBase64) {
+                showMsg('يرجى اختيار صورة للمنتج', 'error');
+                return;
+            }
+
             btn.disabled = true;
-            btn.textContent = 'جاري الحفظ...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
             const product = {
                 name: document.getElementById('pName').value,
                 price: parseFloat(document.getElementById('pPrice').value),
                 category: document.getElementById('pCategory').value,
-                image: document.getElementById('pImage').value,
+                branch: document.getElementById('pSubcategory').value, // This is the 'branch' field
+                image: imgBase64,
                 description: document.getElementById('pDesc').value,
                 stock: 100
             };
@@ -180,32 +246,29 @@
                 });
 
                 if (res.ok) {
-                    showMsg('تم إضافة المنتج بنجاح!', 'success');
+                    showMsg('✅ تم حفظ المنتج ونشره بنجاح!', 'success');
                     e.target.reset();
+                    document.getElementById('imagePreview').style.display = 'none';
                     loadProducts();
                 } else {
-                    showMsg('فشل في إضافة المنتج', 'error');
+                    const data = await res.json();
+                    showMsg('❌ فشل الحفظ: ' + (data.error || 'خطأ غير معروف'), 'error');
                 }
             } catch (err) {
-                showMsg('خطأ في الاتصال بالسيرفر', 'error');
+                showMsg('❌ خطأ في الاتصال بالسيرفر', 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'حفظ المنتج';
+                btn.innerHTML = '<i class="fas fa-save"></i> حفظ ونشر المنتج';
             }
         };
 
-        // Delete Product
         async function deleteProduct(id) {
             if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
-            
             try {
                 const res = await fetch(`${API_URL}/products/${id}`, {
                     method: 'DELETE',
-                    headers: { 
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    }
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
                 });
-
                 if (res.ok) {
                     showMsg('تم حذف المنتج بنجاح', 'success');
                     loadProducts();
@@ -215,7 +278,6 @@
             }
         }
 
-        // Init
         loadProducts();
     </script>
 </body>
