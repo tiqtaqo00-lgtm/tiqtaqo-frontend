@@ -1,4 +1,6 @@
-// Enhanced Icon Mapping for Collections
+// Configuration
+const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
+
 const collectionIcons = {
     'packs': { icon: 'fa-gift', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', description: 'Ensembles complets pour un style parfait' },
     'homme': { icon: 'fa-user-tie', gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)', description: 'Montres masculines raffinées' },
@@ -9,17 +11,14 @@ const collectionIcons = {
     'glasses': { icon: 'fa-glasses', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', description: 'Lunettes tendance et sophistiquées' }
 };
 
-const API_BASE_URL = 'https://tiqtaqo-backend-hx6ych8ay-tiqtaqos-projects.vercel.app/api';
-
-// Fallback categories
 const FALLBACK_CATEGORIES = [
-    { id: 'packs', name: 'Packs', icon: 'fa-gift', visible: true, order: 1},
-    { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2},
-    { id: 'femme', name: 'Femme', icon: 'fa-crown', visible: true, order: 3 },
-    { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 4 },
-    { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
-    { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 6 },
-    { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 }
+    { id: 'packs', name: 'Packs', order: 1 },
+    { id: 'homme', name: 'Homme', order: 2 },
+    { id: 'femme', name: 'Femme', order: 3 },
+    { id: 'accessoires', name: 'Accessoires', order: 4 },
+    { id: 'wallets', name: 'Wallets', order: 5 },
+    { id: 'belts', name: 'Belts', order: 6 },
+    { id: 'glasses', name: 'Glasses', order: 7 }
 ];
 
 // Load collections on homepage
@@ -27,7 +26,8 @@ async function loadCollections() {
     const grid = document.getElementById('collectionsGrid');
     if (!grid) return;
 
-    renderCategories(FALLBACK_CATEGORIES); // Immediate render
+    // Initial render
+    renderCategories(FALLBACK_CATEGORIES);
 
     try {
         const res = await fetch(`${API_BASE_URL}/categories`);
@@ -35,7 +35,7 @@ async function loadCollections() {
             const data = await res.json();
             if (data && data.length > 0) renderCategories(data);
         }
-    } catch (e) { console.error('API Error:', e); }
+    } catch (e) { console.error('Categories Load Error:', e); }
 }
 
 function renderCategories(categories) {
@@ -43,7 +43,6 @@ function renderCategories(categories) {
     if (!grid) return;
 
     grid.innerHTML = categories
-        .filter(c => c.visible !== false)
         .sort((a, b) => (a.order || 0) - (b.order || 0))
         .map(c => {
             const id = c.id || c._id;
@@ -64,50 +63,51 @@ function renderCategories(categories) {
         }).join('');
 }
 
-// Load products for specific category and branch
+// Load products with Client-side filtering to ensure it works even if API filtering fails
 async function loadCategoryProducts() {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
 
-    // Determine category and branch from URL
     const path = window.location.pathname.split('/').pop().replace('.html', '');
-    let category = path;
-    let branch = '';
+    let targetCategory = path;
+    let targetBranch = '';
 
     if (path.includes('-')) {
         const parts = path.split('-');
-        category = parts[0];
-        branch = parts[1];
+        targetCategory = parts[0];
+        targetBranch = parts[1];
     }
 
-    grid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Chargement des produits...</div>';
+    grid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
     
     try {
-        let url = `${API_BASE_URL}/products?category=${category}`;
-        if (branch) url += `&branch=${branch}`;
+        // Fetch ALL products and filter them here to be safe
+        const res = await fetch(`${API_BASE_URL}/products`);
+        if (!res.ok) throw new Error('API Error');
         
-        console.log('Fetching products from:', url);
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Server Error');
+        const allProducts = await res.json();
         
-        const products = await res.json();
+        // Filter logic
+        const filteredProducts = allProducts.filter(p => {
+            const catMatch = p.category && p.category.toLowerCase() === targetCategory.toLowerCase();
+            if (!targetBranch) return catMatch;
+            const branchMatch = p.branch && p.branch.toLowerCase() === targetBranch.toLowerCase();
+            return catMatch && branchMatch;
+        });
         
-        if (!products || products.length === 0) {
-            grid.innerHTML = '<div class="no-products"><i class="fas fa-box-open"></i><p>Aucun produit disponible pour le moment</p></div>';
+        if (filteredProducts.length === 0) {
+            grid.innerHTML = '<div class="no-products"><i class="fas fa-box-open"></i><p>Aucun produit trouvé dans cette catégorie</p></div>';
             return;
         }
         
-        grid.innerHTML = products.map(p => `
+        grid.innerHTML = filteredProducts.map(p => `
             <div class="product-card">
                 <div class="product-image">
                     <img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300'">
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">${p.name}</h3>
-                    <p>${p.description || ''}</p>
-                    <div class="product-price">
-                        <span class="price">${Math.round(p.price)} DH</span>
-                    </div>
+                    <div class="product-price"><span class="price">${Math.round(p.price)} DH</span></div>
                     <button class="btn-primary" onclick="contactWhatsApp('${p.name}', ${Math.round(p.price)})">
                         <i class="fab fa-whatsapp"></i> Commander
                     </button>
@@ -115,8 +115,8 @@ async function loadCategoryProducts() {
             </div>
         `).join('');
     } catch (e) {
-        console.error('Load Error:', e);
-        grid.innerHTML = '<div class="error">⚠️ Erreur lors du chargement. Veuillez rafraîchir la page.</div>';
+        console.error('Products Load Error:', e);
+        grid.innerHTML = '<div class="error">⚠️ Erreur de connexion. Veuillez rafraîchir.</div>';
     }
 }
 
@@ -125,7 +125,6 @@ function contactWhatsApp(name, price) {
     window.open(`https://wa.me/212621535234?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
-// Sidebar & Init
 document.addEventListener('DOMContentLoaded', () => {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
