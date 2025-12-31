@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belts - TiqtaQo Luxury Watches & Accessories</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Desktop Search Bar (hidden on mobile) -->
+            <div class="search-container desktop-search">
+                <input type="text" class="search-input" id="desktopSearchInput" placeholder="Rechercher un produit...">
+                <button class="search-icon-btn" id="desktopSearchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Search Button -->
+            <button class="search-icon-btn mobile-search-btn" id="mobileSearchBtn">
+                <i class="fas fa-search"></i>
+            </button>
+            
+            <a href="index.html" class="logo-link">
+                <i class="fas fa-crown"></i>
+                <span>TiqtaQo</span>
+            </a>
+            
+            <!-- Cart Button -->
+            <button class="cart-toggle" id="cartToggle">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <div class="nav-spacer"></div>
+        </div>
+    </nav>
+
+    <!-- Search Modal (Mobile) -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <input type="text" class="search-modal-input" id="searchModalInput" placeholder="Rechercher un produit...">
+                <button class="close-search-modal" id="closeSearchModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="search-modal-results" id="searchModalResults">
+                <div class="search-modal-placeholder">
+                    <i class="fas fa-search"></i>
+                    <p>Tapez pour rechercher</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
+            <li><a href="packs-select.html"><i class="fas fa-gift"></i> Packs</a></li>
+            <li><a href="homme.html"><i class="fas fa-user-tie"></i> Homme</a></li>
+            <li><a href="femme.html"><i class="fas fa-crown"></i> Femme</a></li>
+            <li><a href="wallets-select.html"><i class="fas fa-wallet"></i> Wallets</a></li>
+            <li><a href="belts.html"><i class="fas fa-ribbon"></i> Belts</a></li>
+            <li><a href="glasses-select.html"><i class="fas fa-glasses"></i> Glasses</a></li>
+            <li><a href="accessoires-select.html"><i class="fas fa-gem"></i> Accessoires</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> À propos</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+            <li class="admin-link"><a href="admin/login.html"><i class="fas fa-lock"></i> Admin</a></li>
+        </ul>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Cart Panel -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-bag"></i> سلة المشتريات (<span id="cartCount">0</span>)</h3>
+            <button class="close-cart" id="closeCart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be loaded dynamically -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>المجموع:</span>
+                <span id="cartTotal">0.00 MAD</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn">
+                <i class="fab fa-whatsapp"></i>
+                طلب عبر واتساب
+            </button>
+        </div>
+    </div>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <i class="fas fa-truck"></i>
+        LIVRAISON Gratuite PARTOUT AU MAROC
+    </div>
+
+    <!-- Page Header -->
+    <section class="hero" style="height: 400px;">
+        <div class="hero-content">
+            <h1 class="hero-title">Ceintures Élégantes</h1>
+            <p class="hero-subtitle">Des ceintures en cuir premium pour un style raffiné</p>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <h2 class="section-title">Nos Ceintures</h2>
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-shipping-fast"></i>
+                    <h3>Livraison Rapide</h3>
+                    <p>Livraison gratuite partout au Maroc</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Garantie Qualité</h3>
+                    <p>Cuir premium de première qualité</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-headset"></i>
+                    <h3>Support 24/7</h3>
+                    <p>Service client disponible</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-undo"></i>
+                    <h3>Retour Facile</h3>
+                    <p>Retour sous 14 jours</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TiqtaQo</h3>
+                    <p>Votre destination pour les montres et accessoires de luxe au Maroc.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Liens Rapides</h3>
+                    <ul>
+                        <li><a href="about.html">À propos</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p><i class="fas fa-phone"></i> +212 6 74 74 31 06</p>
+                    <p><i class="fas fa-envelope"></i> tiqtaqo00@gmail.com</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Suivez-nous</h3>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/tiqta_qo/" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TiqtaQo. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
