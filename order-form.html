@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<!-- Order Form Modal -->
+<div class="order-modal" id="orderModal">
+    <div class="order-modal-content">
+        <div class="order-modal-header">
+            <h3><i class="fas fa-clipboard-list"></i> اطلب الآن</h3>
+            <button class="close-order-modal" id="closeOrderModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Product Summary -->
+        <div class="order-product-summary" id="orderProductSummary">
+            <!-- Will be populated by JavaScript -->
+        </div>
+        
+        <!-- Order Form -->
+        <form id="orderForm" class="order-form">
+            <input type="hidden" id="orderProductId" name="productId">
+            <input type="hidden" id="orderProductName" name="productName">
+            <input type="hidden" id="orderProductPrice" name="productPrice">
+            
+            <div class="form-group">
+                <label for="customerName"><i class="fas fa-user"></i> الاسم الكامل *</label>
+                <input type="text" id="customerName" name="customerName" required 
+                       placeholder="أدخل اسمك الكامل">
+            </div>
+            
+            <div class="form-group">
+                <label for="customerPhone"><i class="fas fa-phone"></i> رقم الهاتف *</label>
+                <input type="tel" id="customerPhone" name="customerPhone" required 
+                       placeholder="مثال: 06 12 34 56 78" dir="ltr">
+            </div>
+            
+            <div class="form-group">
+                <label for="customerCity"><i class="fas fa-city"></i> المدينة *</label>
+                <select id="customerCity" name="customerCity" required>
+                    <option value="">اختر المدينة</option>
+                    <option value="casablanca">الدار البيضاء</option>
+                    <option value="rabat">الرباط</option>
+                    <option value="marrakech">مراكش</option>
+                    <option value="fes">فاس</option>
+                    <option value="tanger">طنجة</option>
+                    <option value="agadir">أغادير</option>
+                    <option value="meknes">مكناس</option>
+                    <option value="oujda">وجدة</option>
+                    <option value="kenitra">القنيطرة</option>
+                    <option value="tetouan">تطوان</option>
+                    <option value="safii">سطات</option>
+                    <option value="benslimane">بنسليمان</option>
+                    <option value="berrechid">برشيد</option>
+                    <option value="eljadida">الجديدة</option>
+                    <option value="settat">سطات</option>
+                    <option value="khouribga">خريبكة</option>
+                    <option value="benimellal">بني ملال</option>
+                    <option value="mohammedia">المحمدية</option>
+                    <option value="的其他">مدنية أخرى</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerAddress"><i class="fas fa-map-marker-alt"></i> العنوان التفصيلي (اختياري)</label>
+                <textarea id="customerAddress" name="customerAddress" rows="3" 
+                          placeholder="العنوان الكامل للتسليم..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="orderNotes"><i class="fas fa-comment-alt"></i> ملاحظات إضافية (اختياري)</label>
+                <textarea id="orderNotes" name="orderNotes" rows="2" 
+                          placeholder="أي ملاحظات حول الطلب..."></textarea>
+            </div>
+            
+            <button type="submit" class="submit-order-btn" id="submitOrderBtn">
+                <i class="fas fa-paper-plane"></i>
+                إرسال الطلب
+            </button>
+        </form>
+        
+        <!-- Success Message -->
+        <div class="order-success" id="orderSuccess" style="display: none;">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>تم إرسال طلبك بنجاح!</h3>
+            <p>سيقوم فريقنا بالتواصل معك قريباً</p>
+            <button class="btn-primary" id="closeSuccessBtn">حسناً</button>
+        </div>
+    </div>
+</div>
+
+<!-- Order Notification Toast -->
+<div class="order-notification" id="orderNotification">
+    <i class="fas fa-bell"></i>
+    <span id="notificationText">طلب جديد!</span>
+</div>
+
+<style>
+/* Order Modal Styles */
+.order-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.order-modal.active {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.order-modal-content {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    margin: 20px 0;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.order-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    background: linear-gradient(135deg, var(--black) 0%, var(--dark-gray) 100%);
+    border-radius: 20px 20px 0 0;
+}
+
+.order-modal-header h3 {
+    color: var(--white);
+    font-size: 22px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-modal-header h3 i {
+    color: var(--gold);
+}
+
+.close-order-modal {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-order-modal:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(90deg);
+}
+
+.order-product-summary {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
+    padding: 20px 30px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.order-product-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.order-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-product-info {
+    flex: 1;
+}
+
+.order-product-info h4 {
+    color: var(--black);
+    font-size: 18px;
+    margin: 0 0 5px 0;
+}
+
+.order-product-info .price {
+    color: var(--gold);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.order-form {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--black);
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group label i {
+    color: var(--gold);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    background: var(--white);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #999;
+}
+
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 15px center;
+    padding-left: 40px;
+}
+
+.submit-order-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+    color: var(--black);
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.submit-order-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+}
+
+.submit-order-btn:active {
+    transform: translateY(0);
+}
+
+.submit-order-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Success Message */
+.order-success {
+    text-align: center;
+    padding: 50px 30px;
+}
+
+.success-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    animation: popIn 0.5s ease;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-icon i {
+    font-size: 50px;
+    color: var(--white);
+}
+
+.order-success h3 {
+    color: #28a745;
+    font-size: 24px;
+    margin: 0 0 10px 0;
+}
+
+.order-success p {
+    color: #666;
+    font-size: 16px;
+    margin: 0 0 30px 0;
+}
+
+.order-success .btn-primary {
+    padding: 14px 40px;
+}
+
+/* Order Notification Toast */
+.order-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: var(--white);
+    padding: 15px 25px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+    z-index: 20000;
+    transform: translateX(150%);
+    transition: transform 0.4s ease;
+}
+
+.order-notification.show {
+    transform: translateX(0);
+}
+
+.order-notification i {
+    font-size: 24px;
+    color: var(--white);
+}
+
+.order-notification span {
+    font-weight: 500;
+    font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .order-modal {
+        padding: 10px;
+    }
+    
+    .order-modal-content {
+        border-radius: 15px;
+    }
+    
+    .order-modal-header {
+        padding: 20px;
+    }
+    
+    .order-modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .order-product-summary {
+        padding: 15px 20px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .order-product-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .order-form {
+        padding: 20px;
+    }
+    
+    .order-notification {
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        justify-content: center;
+    }
+}
+</style>
