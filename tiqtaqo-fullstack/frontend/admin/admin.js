@@ -26,17 +26,15 @@ function loadAdminInfo() {
 // Get products from Firebase
 async function getProducts() {
     try {
-        // Wait for Firebase to be ready
-        if (typeof window.isFirebaseReady !== 'function' || !window.isFirebaseReady()) {
-            console.log('Firebase not ready yet, using localStorage');
-            const products = localStorage.getItem('luxury_products');
-            return products ? JSON.parse(products) : [];
-        }
+        // Ensure Firebase is initialized
+        const db = await getDb();
         
-        const db = window.getDb();
         if (db) {
-            const productsRef = window.collection(db, 'products');
-            const snapshot = await window.getDocs(productsRef);
+            // Import Firebase functions dynamically
+            const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            
+            const productsRef = collection(db, 'products');
+            const snapshot = await getDocs(productsRef);
             return snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -53,23 +51,25 @@ async function getProducts() {
 
 // Save products to Firebase
 async function saveProducts(products) {
-    // Save to Firebase if available
     try {
-        if (typeof window.isFirebaseReady === 'function' && window.isFirebaseReady()) {
-            const db = window.getDb();
-            if (db) {
-                const batch = window.writeBatch(db);
-                
-                for (const product of products) {
-                    const productRef = window.doc(db, 'products', product.id.toString());
-                    if (product.id && typeof product.id === 'string') {
-                        batch.set(productRef, product);
-                    }
+        // Ensure Firebase is initialized
+        const db = await getDb();
+        
+        if (db) {
+            // Import Firebase functions dynamically
+            const { doc, writeBatch } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            
+            const batch = writeBatch(db);
+            
+            for (const product of products) {
+                const productRef = doc(db, 'products', product.id.toString());
+                if (product.id && typeof product.id === 'string') {
+                    batch.set(productRef, product);
                 }
-                
-                await batch.commit();
-                console.log('Products saved to Firebase');
             }
+            
+            await batch.commit();
+            console.log('Products saved to Firebase');
         }
     } catch (e) {
         console.log('Firebase save failed, using localStorage:', e.message);
@@ -265,11 +265,10 @@ async function deleteProduct(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
         // Delete from Firebase
         try {
-            if (typeof window.isFirebaseReady === 'function' && window.isFirebaseReady()) {
-                const db = window.getDb();
-                if (db) {
-                    await window.deleteDoc(window.doc(db, 'products', id));
-                }
+            const db = await getDb();
+            if (db) {
+                const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                await deleteDoc(doc(db, 'products', id));
             }
         } catch (e) {
             console.log('Firebase delete failed:', e.message);
@@ -280,8 +279,8 @@ async function deleteProduct(id) {
         products = products.filter(p => p.id !== id);
         await saveProducts(products);
         
-        loadProductsTable();
-        updateStats();
+        await loadProductsTable();
+        await updateStats();
     }
 }
 
@@ -639,40 +638,48 @@ async function saveProduct(event) {
     // Get colors
     productData.colors = getProductColors();
     
-    // Save to Firebase
+    // Save product with Firebase
     try {
-        if (typeof window.isFirebaseReady === 'function' && window.isFirebaseReady()) {
-            const db = window.getDb();
-            if (db) {
-                if (id) {
-                    // Update existing product
-                    await window.updateDoc(window.doc(db, 'products', id), productData);
-                } else {
-                    // Add new product with auto-generated ID
-                    const docRef = await window.addDoc(window.collection(db, 'products'), productData);
-                    productData.id = docRef.id;
-                    products.push(productData);
-                }
-                
-                // Also save to localStorage as backup
-                localStorage.setItem('luxury_products', JSON.stringify(products));
-                
-                closeProductModal();
-                loadProductsTable();
-                updateStats();
-                
-                alert('Produit enregistré avec succès!');
+        // Ensure Firebase is initialized
+        const db = await getDb();
+        
+        if (db) {
+            // Import Firebase functions dynamically
+            const { collection, doc, addDoc, updateDoc, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            
+            if (id) {
+                // Update existing product
+                await updateDoc(doc(db, 'products', id), productData);
             } else {
-                // Fallback if Firebase not available
-                finalizeSaveProduct(id, productData, products);
+                // Add new product with auto-generated ID
+                const docRef = await addDoc(collection(db, 'products'), productData);
+                productData.id = docRef.id;
+                products.push(productData);
             }
+            
+            // Also save to localStorage as backup
+            localStorage.setItem('luxury_products', JSON.stringify(products));
+            
+            closeProductModal();
+            await loadProductsTable();
+            await updateStats();
+            
+            alert('Produit enregistré avec succès dans Firebase!');
         } else {
-            // Fallback if Firebase not ready
-            finalizeSaveProduct(id, productData, products);
+            // Fallback if Firebase not available
+            await finalizeSaveProduct(id, productData, products);
         }
     } catch (error) {
         console.error('Error saving product:', error);
-        alert('Erreur lors de l\'enregistrement: ' + error.message);
+        
+        // Try fallback to localStorage
+        console.log('Trying localStorage fallback...');
+        try {
+            await finalizeSaveProduct(id, productData, products);
+        } catch (fallbackError) {
+            console.error('Fallback also failed:', fallbackError);
+            alert('Erreur lors de l\'enregistrement: ' + error.message);
+        }
     }
 }
 
@@ -692,10 +699,10 @@ async function finalizeSaveProduct(id, productData, products) {
     
     await saveProducts(products);
     closeProductModal();
-    loadProductsTable();
-    updateStats();
+    await loadProductsTable();
+    await updateStats();
     
-    alert('Produit enregistré avec succès!');
+    alert('Produit enregistré dans localStorage (Firebase non disponible)!');
 }
 
 // Save category
@@ -781,7 +788,7 @@ window.saveCategory = saveCategory;
 window.closeProductModal = closeProductModal;
 window.closeCategoryModal = closeCategoryModal;
 
-// Firebase Configuration - Inline to ensure it's always available
+// Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
     authDomain: "tiqtaqo-store.firebaseapp.com",
@@ -791,69 +798,68 @@ const firebaseConfig = {
     appId: "1:747111253966:web:84c265ac397b644fe28d9f"
 };
 
-// Initialize Firebase if not already initialized
-async function initializeFirebaseIfNeeded() {
-    // Check if Firebase is already initialized
-    if (window.firebaseInitialized) {
-        return;
+// Firebase state
+let firebaseApp = null;
+let firebaseDb = null;
+let firebaseInitialized = false;
+
+// Initialize Firebase - Single source of truth
+async function ensureFirebaseInitialized() {
+    if (firebaseInitialized && firebaseDb) {
+        window.firebaseInitialized = true;
+        window.isFirebaseReady = () => true;
+        return firebaseDb;
     }
     
     try {
-        // Dynamically import Firebase
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-        const { getFirestore, enableIndexedDbPersistence, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        // Only initialize if not already done
+        if (!firebaseApp) {
+            console.log('Initializing Firebase...');
+            
+            // Dynamic imports
+            const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+            const { getFirestore, enableIndexedDbPersistence } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            
+            firebaseApp = initializeApp(firebaseConfig);
+            firebaseDb = getFirestore(firebaseApp);
+            
+            // Enable offline persistence
+            enableIndexedDbPersistence(firebaseDb).catch((err) => {
+                if (err.code === 'failed-precondition') {
+                    console.log('Multiple tabs open, persistence enabled in one tab only');
+                } else if (err.code === 'unimplemented') {
+                    console.log('Browser does not support persistence');
+                }
+            });
+            
+            console.log('Firebase initialized successfully');
+        }
         
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        // Enable offline persistence
-        enableIndexedDbPersistence(db).catch((err) => {
-            if (err.code === 'failed-precondition') {
-                console.log('Multiples tabs open, persistence enabled in one tab only');
-            } else if (err.code === 'unimplemented') {
-                console.log('Browser does not support persistence');
-            }
-        });
-        
-        // Export Firebase functions to window
-        window.getDb = () => db;
-        window.collection = collection;
-        window.doc = doc;
-        window.getDoc = getDoc;
-        window.getDocs = getDocs;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.writeBatch = writeBatch;
-        window.serverTimestamp = serverTimestamp;
+        firebaseInitialized = true;
         window.firebaseInitialized = true;
         window.isFirebaseReady = () => true;
-        
-        console.log('Firebase initialized successfully in admin.js');
+        return firebaseDb;
     } catch (error) {
         console.error('Firebase initialization error:', error);
-        // Fallback: set up empty functions
+        firebaseInitialized = false;
+        window.firebaseInitialized = false;
         window.isFirebaseReady = () => false;
+        return null;
     }
+}
+
+// Helper function to get Firestore instance
+async function getDb() {
+    return await ensureFirebaseInitialized();
 }
 
 // Initialize dashboard
 async function initializeDashboard() {
-    // Initialize Firebase first if not already done
-    await initializeFirebaseIfNeeded();
+    // Initialize Firebase first
+    await getDb();
     
-    // Wait for Firebase to be ready (up to 5 seconds)
-    let attempts = 0;
-    const maxAttempts = 50; // 50 * 100ms = 5 seconds
-    
-    while (typeof window.isFirebaseReady !== 'function' || !window.isFirebaseReady()) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-        if (attempts >= maxAttempts) {
-            console.log('Firebase initialization timeout, proceeding anyway');
-            break;
-        }
-    }
+    // Short delay to ensure Firebase is ready
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     if (checkAuth()) {
         loadAdminInfo();

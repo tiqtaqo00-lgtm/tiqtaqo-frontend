@@ -876,102 +876,11 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, enableIndexedDbPersistence, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, startAfter, serverTimestamp, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Firebase configuration - Tiqtaqo Store Project
-        const firebaseConfig = {
-            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
-            authDomain: "tiqtaqo-store.firebaseapp.com",
-            projectId: "tiqtaqo-store",
-            storageBucket: "tiqtaqo-store.firebasestorage.app",
-            messagingSenderId: "747111253966",
-            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
-        };
-
-        // Initialize Firebase
-        let app;
-        let db;
-        let firebaseInitialized = false;
-
-        function initFirebase() {
-            if (firebaseInitialized) return db;
-            
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                
-                enableIndexedDbPersistence(db).catch((err) => {
-                    if (err.code === 'failed-precondition') {
-                        console.log('Multiples tabs open');
-                    } else if (err.code === 'unimplemented') {
-                        console.log('Browser does not support persistence');
-                    }
-                });
-                
-                firebaseInitialized = true;
-                console.log('Firebase initialized successfully');
-                return db;
-            } catch (error) {
-                console.error('Firebase initialization error:', error);
-                return null;
-            }
-        }
-
-        // Export to window
-        window.initFirebase = initFirebase;
-        window.isFirebaseReady = () => firebaseInitialized;
-        window.getDb = () => db;
-        window.collection = collection;
-        window.doc = doc;
-        window.getDoc = getDoc;
-        window.getDocs = getDocs;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.writeBatch = writeBatch;
-
-        // Initialize Firebase
-        initFirebase();
-
-        // Load orders count for dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            loadOrdersCount();
-        });
-
-        function loadOrdersCount() {
-            try {
-                const orders = JSON.parse(localStorage.getItem('tiqtaqo_orders') || '[]');
-                document.getElementById('totalOrders').textContent = orders.length;
-            } catch (e) {
-                document.getElementById('totalOrders').textContent = '0';
-            }
-        }
-
-        function switchTab(tab) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected tab
-            if (tab === 'products') {
-                document.getElementById('productsTab').classList.add('active');
-                document.querySelector('.tab-btn:first-child').classList.add('active');
-            } else if (tab === 'categories') {
-                document.getElementById('categoriesTab').classList.add('active');
-                document.querySelector('.tab-btn:last-child').classList.add('active');
-            }
-        }
-        
-        // Load admin.js as module (after Firebase is ready)
+        // Load admin.js - it handles Firebase initialization internally
         setTimeout(async () => {
             const adminModule = await import('./admin.js');
             console.log('Admin module loaded:', adminModule);
-        }, 500);
+        }, 100);
     </script>
 </body>
 </html>
