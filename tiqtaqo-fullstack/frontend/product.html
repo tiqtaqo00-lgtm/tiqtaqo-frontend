@@ -141,10 +141,10 @@
 
         // Console log for debugging
         console.log('Product ID from URL:', productId);
-        console.log('Is Firebase ready?', typeof window.ProductAPI !== 'undefined');
     </script>
     <script type="module">
-        // This module handles the product display logic
+        // Proper Firebase v9 imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const productId = window.currentProductId;
@@ -175,8 +175,7 @@
             }
 
             try {
-                // Use the window globals from firebase-config.js
-                const { initializeApp } = window;
+                // Firebase configuration
                 const firebaseConfig = {
                     apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
                     authDomain: "tiqtaqo-store.firebaseapp.com",
@@ -221,9 +220,12 @@
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
                         <i class="fas fa-times-circle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
-                        <h2 style="color: var(--black); margin-bottom: 15px;">Erreur</h2>
+                        <h2 style="color: var(--black); margin-bottom: 15px;">Erreur de connexion</h2>
                         <p style="color: #666;">${error.message}</p>
                         <p style="color: #999; font-size: 12px; margin-top: 20px;">Code: ${error.code || 'unknown'}</p>
+                        ${error.message.includes('permission') ? `
+                            <p style="color: #ffc107; margin-top: 15px;">⚠️ Vérifiez les règles Firebase!</p>
+                        ` : ''}
                     </div>
                 `;
             }
