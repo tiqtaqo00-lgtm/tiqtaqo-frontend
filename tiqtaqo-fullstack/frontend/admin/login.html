@@ -144,6 +144,11 @@
             color: var(--gold);
         }
 
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
         .back-home {
             text-align: center;
             margin-top: 25px;
@@ -207,19 +212,19 @@
             </div>
 
             <div class="error-message" id="errorMessage">
-                <i class="fas fa-exclamation-circle"></i> Email ou mot de passe incorrect
+                <i class="fas fa-exclamation-circle"></i> <span id="errorText">Email ou mot de passe incorrect</span>
             </div>
 
-            <button type="submit" class="login-btn">
+            <button type="submit" class="login-btn" id="loginBtn">
                 <i class="fas fa-sign-in-alt"></i>
                 Se Connecter
             </button>
         </form>
 
         <div class="info-box">
-            <p><strong>Identifiants par défaut:</strong></p>
+            <p><strong>Identifiants:</strong></p>
             <p>Email: tiqtaqo00@gmail.com</p>
-            <p>Mot de passe: Med123med</p>
+            <p>Mot de passe: Med123medlgtm</p>
         </div>
 
         <div class="back-home">
@@ -229,11 +234,10 @@
         </div>
     </div>
 
-    <!-- Load Firebase config as module -->
+    <!-- Load Firebase and Login -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, enableIndexedDbPersistence, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, startAfter, serverTimestamp, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // Firebase configuration - Tiqtaqo Store Project
         const firebaseConfig = {
@@ -245,70 +249,39 @@
             appId: "1:747111253966:web:84c265ac397b644fe28d9f"
         };
 
-        // Initialize Firebase
-        let app;
-        let db;
+        // Initialize Firebase and Auth
         let auth;
-        let firebaseInitialized = false;
-
-        function initFirebase() {
-            if (firebaseInitialized) return { db, auth };
-            
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                enableIndexedDbPersistence(db).catch((err) => {
-                    if (err.code === 'failed-precondition') {
-                        console.log('Multiples tabs open');
-                    } else if (err.code === 'unimplemented') {
-                        console.log('Browser does not support persistence');
-                    }
-                });
-                
-                firebaseInitialized = true;
-                console.log('Firebase initialized successfully');
-                return { db, auth };
-            } catch (error) {
-                console.error('Firebase initialization error:', error);
-                return null;
-            }
+        
+        try {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            console.log('Firebase Auth initialized:', auth);
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
         }
-
-        // Export to window
-        window.initFirebase = initFirebase;
-        window.isFirebaseReady = () => firebaseInitialized;
-        window.getDb = () => db;
-        window.getAuth = () => auth;
-        window.auth = auth;
-
-        // Initialize Firebase
-        const firebaseResult = initFirebase();
-        // Re-export after initialization
-        window.getAuth = () => getAuth(app);
-        window.auth = getAuth(app);
 
         // Login handler
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
-            const loginBtn = document.querySelector('.login-btn');
+            const errorText = document.getElementById('errorText');
+            const loginBtn = document.getElementById('loginBtn');
             
             // Disable button during login
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
             
             try {
-                const auth = window.getAuth();
                 if (!auth) {
-                    throw new Error('Firebase Auth not initialized');
+                    throw new Error('Firebase Auth n\'est pas initialisé');
                 }
 
+                console.log('Tentative de connexion avec:', email);
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log('Connexion réussie:', userCredential.user);
                 
                 // Store admin session
                 localStorage.setItem('admin_logged_in', 'true');
@@ -318,6 +291,20 @@
                 window.location.href = 'dashboard.html';
             } catch (error) {
                 console.error('Login error:', error);
+                
+                let errorMessageText = 'Email ou mot de passe incorrect';
+                
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMessageText = 'Email ou mot de passe incorrect';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessageText = 'Format d\'email invalide';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessageText = 'Trop de tentatives. Veuillez réessayer plus tard';
+                } else if (error.message) {
+                    errorMessageText = error.message;
+                }
+                
+                errorText.textContent = errorMessageText;
                 errorMessage.classList.add('show');
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se Connecter';
