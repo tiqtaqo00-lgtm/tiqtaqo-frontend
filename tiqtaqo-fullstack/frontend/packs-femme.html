@@ -171,63 +171,84 @@
     <script src="js/main.js"></script>
     <script>
         // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCategoryProducts('packs', 'femme');
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadCategoryProducts('packs', 'femme');
         });
         
-        function loadCategoryProducts(category, gender) {
-            const products = getProducts();
+        async function loadCategoryProducts(category, gender) {
             const productsGrid = document.getElementById('productsGrid');
             
             if (!productsGrid) return;
             
-            const categoryProducts = products.filter(p => 
-                p.category === category && 
-                p.gender === gender && 
-                p.visible
-            );
+            // Show loading state
+            productsGrid.innerHTML = `
+                <div class="loading-products" style="text-align: center; padding: 60px 20px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #d4af37; margin-bottom: 20px;"></i>
+                    <p style="color: #666; font-size: 16px;">Chargement des produits...</p>
+                </div>
+            `;
             
-            if (categoryProducts.length === 0) {
-                productsGrid.innerHTML = `
-                    <div class="no-products">
-                        <i class="fas fa-box-open"></i>
-                        <p>Aucun produit disponible pour le moment</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            productsGrid.innerHTML = categoryProducts.map(product => {
-                const hasPromotion = product.promotion && product.promotion > 0;
-                const finalPrice = hasPromotion 
-                    ? product.price - (product.price * product.promotion / 100)
-                    : product.price;
+            try {
+                // Get products from Firebase with filters
+                const result = await getProducts({ category, gender, pageSize: 50 });
+            const products = result.products || [];
                 
-                return `
-                    <div class="product-card">
-                        ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
-                        <div class="product-image">
-                            <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
+                // Filter by visible status
+                const categoryProducts = products.filter(p => p.visible !== false);
+                
+                if (categoryProducts.length === 0) {
+                    productsGrid.innerHTML = `
+                        <div class="no-products" style="text-align: center; padding: 60px 20px;">
+                            <i class="fas fa-box-open" style="font-size: 64px; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3 style="color: #666; margin-bottom: 10px;">Aucun produit disponible</h3>
+                            <p style="color: #999;">Revenez plus tard</p>
                         </div>
-                        <div class="product-info">
-                            <h3>${product.name}</h3>
-                            <p>${product.description || ''}</p>
-                            <div class="product-price">
-                                ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                                <span class="price">${Math.round(finalPrice)} DH</span>
+                    `;
+                    return;
+                }
+                
+                productsGrid.innerHTML = categoryProducts.map(product => {
+                    const hasPromotion = product.promotion && product.promotion > 0;
+                    const finalPrice = hasPromotion 
+                        ? product.price - (product.price * product.promotion / 100)
+                        : product.price;
+                    
+                    return `
+                        <div class="product-card">
+                            ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
+                            ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
+                            <div class="product-image">
+                                <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                             </div>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn-primary" style="flex: 1;" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
-                                    <i class="fab fa-whatsapp"></i> Commander
-                                </button>
-                                <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </button>
+                            <div class="product-info">
+                                <h3>${product.name}</h3>
+                                <p>${product.description || ''}</p>
+                                <div class="product-price">
+                                    ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                                    <span class="price">${Math.round(finalPrice)} DH</span>
+                                </div>
+                                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                    <button class="btn-primary" style="flex: 1;" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
+                                        <i class="fab fa-whatsapp"></i> Commander
+                                    </button>
+                                    <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading products:', error);
+                productsGrid.innerHTML = `
+                    <div class="no-products" style="text-align: center; padding: 60px 20px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 64px; color: #e74c3c; margin-bottom: 20px;"></i>
+                        <h3 style="color: #e74c3c; margin-bottom: 10px;">Erreur de chargement</h3>
+                        <p style="color: #666;">${error.message}</p>
                     </div>
                 `;
-            }).join('');
+            }
         }
     </script>
 </body>
