@@ -87,14 +87,14 @@ window.getAuth = () => auth;
 
 // Product API functions
 window.ProductAPI = {
-    // Get products with pagination
+    // Get products with pagination - simplified version
     async getProducts({ 
         category = null, 
         gender = null,
         minPrice = 0, 
         maxPrice = 100000,
         searchTerm = '',
-        pageSize = 24,
+        pageSize = 50,
         lastDoc = null,
         sortBy = 'created_at'
     }) {
@@ -102,61 +102,69 @@ window.ProductAPI = {
         
         try {
             const productsRef = collection(db, 'products');
-            let constraints = [
-                // Remove visible filter to show all products
-                // where('visible', '==', true),
-                where('price', '>=', minPrice),
-                where('price', '<=', maxPrice),
-                orderBy(sortBy, 'desc')
-            ];
+            let allProducts = [];
             
-            if (category) {
-                constraints.push(where('category', '==', category));
+            // Try simple query first (without orderBy to avoid index issues)
+            try {
+                const snapshot = await getDocs(productsRef);
+                allProducts = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (queryError) {
+                console.log('Simple query failed, trying with limit:', queryError);
+                // Fallback: just get first 50 products
+                const simpleQuery = query(productsRef, limit(50));
+                const snapshot = await getDocs(simpleQuery);
+                allProducts = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
             }
             
-            if (gender && category) {
-                // Only apply gender filter for specific categories
-                const genderCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
-                if (genderCategories.includes(category)) {
-                    constraints.push(where('gender', '==', gender));
+            // Filter products
+            let filteredProducts = allProducts.filter(product => {
+                // Price filter
+                const price = product.price || 0;
+                if (price < minPrice || price > maxPrice) return false;
+                
+                // Category filter
+                if (category && product.category !== category) return false;
+                
+                // Gender filter
+                if (gender) {
+                    const genderCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
+                    if (genderCategories.includes(category)) {
+                        if (product.gender !== gender) return false;
+                    }
                 }
-            }
+                
+                return true;
+            });
             
-            if (searchTerm) {
-                // For search, we'll filter client-side for now
-                // In production, use Algolia or similar
-                constraints.push(limit(100));
-            } else {
-                constraints.push(limit(pageSize));
-            }
-            
-            if (lastDoc) {
-                constraints.push(startAfter(lastDoc));
-            }
-            
-            const q = query(productsRef, ...constraints);
-            const snapshot = await getDocs(q);
-            
-            let products = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            
-            // Client-side search filter if needed
+            // Search filter
             if (searchTerm) {
                 const searchLower = searchTerm.toLowerCase();
-                products = products.filter(p => 
+                filteredProducts = filteredProducts.filter(p => 
                     p.name?.toLowerCase().includes(searchLower) ||
                     p.description?.toLowerCase().includes(searchLower) ||
                     p.category?.toLowerCase().includes(searchLower)
-                ).slice(0, pageSize);
+                );
             }
             
+            // Sort by created_at (newest first)
+            filteredProducts.sort((a, b) => {
+                const dateA = a.created_at || a.createdAt || '';
+                const dateB = b.created_at || b.createdAt || '';
+                return dateB.localeCompare(dateA);
+            });
+            
             return {
-                products,
-                lastDoc: snapshot.docs[snapshot.docs.length - 1] || null,
-                hasMore: snapshot.size === pageSize
+                products: filteredProducts.slice(0, pageSize),
+                lastDoc: null,
+                hasMore: filteredProducts.length > pageSize
             };
+            
         } catch (error) {
             console.error('Error fetching products:', error);
             return { products: [], hasMore: false };
