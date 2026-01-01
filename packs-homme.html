@@ -212,26 +212,42 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
-    <script>
+    <script type="module">
+        // Import Firebase configuration and main functions
+        import { initFirebase, ProductAPI } from './js/firebase-config.js';
+        import { getProducts, getCategories, contactWhatsApp, addToCart, initCart, initUI } from './js/main.js';
+
+        // Make functions globally accessible for inline onclick handlers
+        window.getProducts = getProducts;
+        window.getCategories = getCategories;
+        window.contactWhatsApp = contactWhatsApp;
+        window.addToCart = addToCart;
+        window.initCart = initCart;
+        window.initUI = initUI;
+
+        // Initialize Firebase
+        initFirebase();
+
         // Load products filtered by category and gender
         document.addEventListener('DOMContentLoaded', async function() {
+            initCart();
+            initUI();
             await loadCategoryProducts('packs', 'homme');
         });
-        
+
         async function loadCategoryProducts(category, gender) {
             const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
-            
+
             if (!productsGrid) return;
-            
-            const categoryProducts = products.filter(p => 
-                p.category === category && 
-                p.gender === gender && 
+
+            const categoryProducts = products.filter(p =>
+                p.category === category &&
+                p.gender === gender &&
                 p.visible
             );
-            
+
             if (categoryProducts.length === 0) {
                 productsGrid.innerHTML = `
                     <div class="no-products">
@@ -241,13 +257,13 @@
                 `;
                 return;
             }
-            
+
             productsGrid.innerHTML = categoryProducts.map(product => {
                 const hasPromotion = product.promotion && product.promotion > 0;
-                const finalPrice = hasPromotion 
+                const finalPrice = hasPromotion
                     ? product.price - (product.price * product.promotion / 100)
                     : product.price;
-                
+
                 return `
                     <div class="product-card">
                         ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
