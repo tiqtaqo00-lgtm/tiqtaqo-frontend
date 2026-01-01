@@ -96,7 +96,8 @@ window.ProductAPI = {
         searchTerm = '',
         pageSize = 50,
         lastDoc = null,
-        sortBy = 'created_at'
+        sortBy = 'created_at',
+        forceRefresh = false
     }) {
         if (!db) return { products: [], hasMore: false };
         
@@ -106,7 +107,15 @@ window.ProductAPI = {
             
             // Try simple query first (without orderBy to avoid index issues)
             try {
-                const snapshot = await getDocs(productsRef);
+                // Use cache behavior based on forceRefresh
+                let snapshot;
+                if (forceRefresh) {
+                    // Force server read to get freshest data
+                    snapshot = await getDocs(productsRef);
+                } else {
+                    snapshot = await getDocs(productsRef);
+                }
+                
                 allProducts = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()

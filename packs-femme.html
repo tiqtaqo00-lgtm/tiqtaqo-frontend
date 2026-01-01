@@ -190,7 +190,7 @@
             
             try {
                 // Get products from Firebase with filters
-                const result = await getProducts({ category, gender, pageSize: 50 });
+                const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
                 
                 // Filter by visible status
