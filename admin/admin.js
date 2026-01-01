@@ -781,8 +781,67 @@ window.saveCategory = saveCategory;
 window.closeProductModal = closeProductModal;
 window.closeCategoryModal = closeCategoryModal;
 
+// Firebase Configuration - Inline to ensure it's always available
+const firebaseConfig = {
+    apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+    authDomain: "tiqtaqo-store.firebaseapp.com",
+    projectId: "tiqtaqo-store",
+    storageBucket: "tiqtaqo-store.firebasestorage.app",
+    messagingSenderId: "747111253966",
+    appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+};
+
+// Initialize Firebase if not already initialized
+async function initializeFirebaseIfNeeded() {
+    // Check if Firebase is already initialized
+    if (window.firebaseInitialized) {
+        return;
+    }
+    
+    try {
+        // Dynamically import Firebase
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { getFirestore, enableIndexedDbPersistence, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Enable offline persistence
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.log('Multiples tabs open, persistence enabled in one tab only');
+            } else if (err.code === 'unimplemented') {
+                console.log('Browser does not support persistence');
+            }
+        });
+        
+        // Export Firebase functions to window
+        window.getDb = () => db;
+        window.collection = collection;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.writeBatch = writeBatch;
+        window.serverTimestamp = serverTimestamp;
+        window.firebaseInitialized = true;
+        window.isFirebaseReady = () => true;
+        
+        console.log('Firebase initialized successfully in admin.js');
+    } catch (error) {
+        console.error('Firebase initialization error:', error);
+        // Fallback: set up empty functions
+        window.isFirebaseReady = () => false;
+    }
+}
+
 // Initialize dashboard
 async function initializeDashboard() {
+    // Initialize Firebase first if not already done
+    await initializeFirebaseIfNeeded();
+    
     // Wait for Firebase to be ready (up to 5 seconds)
     let attempts = 0;
     const maxAttempts = 50; // 50 * 100ms = 5 seconds
