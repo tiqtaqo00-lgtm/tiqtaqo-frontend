@@ -171,12 +171,13 @@
     <script src="js/main.js"></script>
     <script>
         // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCategoryProducts('glasses', 'femme');
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadCategoryProducts('glasses', 'femme');
         });
         
-        function loadCategoryProducts(category, gender) {
-            const products = getProducts();
+        async function loadCategoryProducts(category, gender) {
+            const result = await getProducts({ category, gender, pageSize: 50 });
+            const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
             
             if (!productsGrid) return;
