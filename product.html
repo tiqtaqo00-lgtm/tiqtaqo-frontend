@@ -131,123 +131,125 @@
 
     <script src="js/firebase-config.js"></script>
     <script src="js/main.js"></script>
-    <script type="module">
-        // Firebase SDK imports for direct access
-        import { 
-            getFirestore, 
-            doc,
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Get product from URL
+    <script>
+        // Get product ID from URL FIRST
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
 
-        // Direct Firebase fetch function
-        async function getProductDirect(productId) {
-            try {
-                // Wait for Firebase to be ready
-                if (typeof initFirebase === 'function') {
-                    initFirebase();
-                }
-                
-                // Small delay to ensure Firebase is initialized
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                const db = getFirestore();
-                if (!db) {
-                    console.log('Firestore not available, using fallback');
-                    return null;
-                }
-                
-                const docRef = doc(db, 'products', productId);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    console.log('Product found in Firebase:', docSnap.id);
-                    return { id: docSnap.id, ...docSnap.data() };
-                } else {
-                    console.log('Product not found in Firebase');
-                    return null;
-                }
-            } catch (error) {
-                console.error('Error fetching product:', error);
-                return null;
-            }
-        }
+        // Store productId globally so it's available to all scripts
+        window.currentProductId = productId;
 
-        // Load product detail
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Wait a bit for Firebase to initialize
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await loadProductDetail();
-        });
+        // Console log for debugging
+        console.log('Product ID from URL:', productId);
+        console.log('Is Firebase ready?', typeof window.ProductAPI !== 'undefined');
+    </script>
+    <script type="module">
+        // This module handles the product display logic
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        async function loadProductDetail() {
+        const productId = window.currentProductId;
+
+        // Simple Firebase test and fetch
+        async function loadProductSimple() {
             const container = document.getElementById('productDetail');
-
             if (!container) return;
 
-            // Show loading state
+            // Show loading
             container.innerHTML = `
                 <div class="container" style="padding: 150px 20px; text-align: center;">
                     <i class="fas fa-spinner fa-spin" style="font-size: 60px; color: #d4af37; margin-bottom: 20px;"></i>
                     <h2 style="color: var(--black); margin-bottom: 15px;">Chargement...</h2>
-                    <p style="color: #666;">Veuillez patienter pendant le chargement du produit</p>
+                    <p style="color: #666;">Veuillez patienter</p>
                 </div>
             `;
 
-            // Fetch product directly from Firebase first, then fallback to getProduct
-            let product = await getProductDirect(productId);
-            
-            // If not found directly, try the API method
-            if (!product) {
-                product = await getProduct(productId);
-            }
-
-            if (!product) {
+            if (!productId) {
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
-                        <h2 style="color: var(--black); margin-bottom: 15px;">Produit non trouvé</h2>
-                        <p style="color: #666; margin-bottom: 30px;">Le produit que vous recherchez n'existe pas ou a été supprimé.</p>
-                        <a href="index.html" class="btn-primary">Retour à l'accueil</a>
-                        <p style="margin-top: 20px; color: #999; font-size: 12px;">ID: ${productId}</p>
+                        <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c;"></i>
+                        <h2 style="color: var(--black); margin: 20px 0 15px;">Produit non trouvé</h2>
+                        <p style="color: #666;">Aucun ID produit dans l'URL</p>
                     </div>
                 `;
                 return;
             }
 
+            try {
+                // Use the window globals from firebase-config.js
+                const { initializeApp } = window;
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+                    authDomain: "tiqtaqo-store.firebaseapp.com",
+                    projectId: "tiqtaqo-store",
+                    storageBucket: "tiqtaqo-store.firebasestorage.app",
+                    messagingSenderId: "747111253966",
+                    appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+                };
+
+                // Initialize and get Firestore
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+
+                console.log('Fetching product:', productId);
+
+                const docRef = doc(db, 'products', productId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const product = { id: docSnap.id, ...docSnap.data() };
+                    console.log('Product found:', product.name);
+
+                    // Store for use by other functions
+                    window.currentProduct = product;
+
+                    // Display the product
+                    displayProduct(product, container);
+                } else {
+                    console.log('Product not found');
+                    container.innerHTML = `
+                        <div class="container" style="padding: 150px 20px; text-align: center;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
+                            <h2 style="color: var(--black); margin-bottom: 15px;">Produit non trouvé</h2>
+                            <p style="color: #666;">Le produit n'existe pas ou a été supprimé.</p>
+                            <p style="color: #999; font-size: 12px; margin-top: 20px;">ID: ${productId}</p>
+                            <a href="index.html" class="btn-primary" style="display: inline-block; margin-top: 20px; padding: 12px 30px; background: linear-gradient(135deg, #d4af37, #c9a227); color: #000; text-decoration: none; border-radius: 8px; font-weight: 600;">Retour à l'accueil</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error fetching product:', error);
+                container.innerHTML = `
+                    <div class="container" style="padding: 150px 20px; text-align: center;">
+                        <i class="fas fa-times-circle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
+                        <h2 style="color: var(--black); margin-bottom: 15px;">Erreur</h2>
+                        <p style="color: #666;">${error.message}</p>
+                        <p style="color: #999; font-size: 12px; margin-top: 20px;">Code: ${error.code || 'unknown'}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayProduct(product, container) {
             const hasPromotion = product.promotion && product.promotion > 0;
             const finalPrice = hasPromotion
                 ? product.price - (product.price * product.promotion / 100)
                 : product.price;
 
-            // Get category display name
-            const categoryName = await getCategoryName(product.category);
+            const categoryName = product.category || 'Produit';
             const genderText = product.gender ? (product.gender === 'femme' ? 'Femme' : 'Homme') : '';
 
             container.innerHTML = `
                 <div class="container" style="padding: 120px 20px 60px;">
-                    <!-- Back Button -->
                     <a href="javascript:history.back()" class="back-link" style="display: inline-flex; align-items: center; gap: 10px; margin-bottom: 30px; color: var(--black); text-decoration: none; font-weight: 600;">
                         <i class="fas fa-arrow-left"></i> Retour
                     </a>
 
                     <div class="product-detail-card">
-                        <!-- Product Image Gallery -->
                         <div class="product-gallery">
                             <div class="main-image-container" id="mainImageContainer">
-                                <img src="${product.image}" alt="${product.name}" id="mainImage" class="main-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22400%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
+                                <img src="${product.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22400%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'}" alt="${product.name}" id="mainImage" class="main-image">
                                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
-                                <div class="zoom-hint">
-                                    <i class="fas fa-search-plus"></i>
-                                    <span>Survolez pour zoomer</span>
-                                </div>
-                            </div>
-                            <div class="thumbnail-container" id="thumbnailContainer">
-                                <!-- Thumbnails will be added dynamically -->
                             </div>
                         </div>
 
@@ -255,49 +257,16 @@
                             <div class="product-detail-category">${categoryName} ${genderText ? '• ' + genderText : ''}</div>
                             <h1 class="product-detail-title">${product.name}</h1>
 
-                            <!-- Rating Display -->
-                            <div class="product-rating-display" id="ratingDisplay">
-                                <!-- Rating will be added dynamically -->
-                            </div>
-
                             <div class="product-detail-price">
                                 ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
                                 <span class="new-price">${Math.round(finalPrice)} DH</span>
                             </div>
 
-                            <p class="product-detail-description">${product.description || 'Aucune description disponible pour ce produit.'}</p>
-
-                            <!-- Color Selection -->
-                            ${product.colors && product.colors.length > 0 ? `
-                                <div class="product-colors-section" id="productColorsSection">
-                                    <h4 style="margin-bottom: 15px; color: var(--black);">
-                                        <i class="fas fa-palette" style="color: var(--gold); margin-right: 8px;"></i>
-                                        Couleurs disponibles:
-                                    </h4>
-                                    <div class="color-options" id="colorOptions">
-                                        ${product.colors.map((color, index) => `
-                                            <button type="button"
-                                                    class="color-option ${index === 0 ? 'selected' : ''}"
-                                                    data-color-name="${color.name}"
-                                                    data-color-hex="${color.hex}"
-                                                    data-color-image="${color.image || ''}"
-                                                    style="background-color: ${color.hex};"
-                                                    onclick="selectProductColor(this, '${color.name.replace(/'/g, "\\'")}', '${color.hex}', '${(color.image || '').replace(/'/g, "\\'")}')"
-                                                    title="${color.name}">
-                                                ${color.image ? `<img src="${color.image}" alt="${color.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : ''}
-                                            </button>
-                                        `).join('')}
-                                    </div>
-                                    <p id="selectedColorText" style="margin-top: 10px; color: #666; font-size: 14px;">${product.colors[0]?.name || ''}</p>
-                                </div>
-                            ` : ''}
+                            <p class="product-detail-description">${product.description || 'Aucune description disponible.'}</p>
 
                             <div class="product-detail-actions">
-                                <button class="btn-primary btn-large" onclick="openOrderModal('${product.id}')">
+                                <button class="btn-primary btn-large" onclick="alert('Commande: ${product.name}')">
                                     <i class="fas fa-shopping-cart"></i> Commander maintenant
-                                </button>
-                                <button class="btn-secondary btn-large" style="margin-top: 10px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})'>
-                                    <i class="fas fa-shopping-bag"></i> Ajouter au panier
                                 </button>
                             </div>
 
@@ -317,185 +286,20 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Reviews Section -->
-                    <div class="reviews-section" id="reviewsSection">
-                        <!-- Reviews will be added dynamically -->
-                    </div>
                 </div>
             `;
-
-            // Initialize image gallery
-            initImageGallery(product);
-
-            // Initialize rating display
-            await initRatingDisplay(product.id);
-
-            // Initialize reviews section
-            await initReviewsSection(product.id);
         }
 
-        async function getCategoryName(categoryId) {
-            const categories = await getCategories();
-            const category = categories.find(c => c.id === categoryId);
-            return category ? category.name : categoryId;
+        // Run when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadProductSimple);
+        } else {
+            loadProductSimple();
         }
+    </script>
 
-        // Initialize Image Gallery
-        function initImageGallery(product) {
-            const thumbnailContainer = document.getElementById('thumbnailContainer');
-            const mainImage = document.getElementById('mainImage');
-            const mainImageContainer = document.getElementById('mainImageContainer');
-
-            // Get all images for this product
-            // Remove duplicates to prevent same image showing twice
-            const allImages = [product.image, ...(product.images || [])].filter(img => img);
-            const images = [...new Set(allImages)];
-
-            // If no images, show placeholder
-            if (images.length === 0) {
-                images.push('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22400%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E');
-            }
-
-            // Create thumbnails
-            thumbnailContainer.innerHTML = images.map((img, index) => `
-                <div class="thumbnail ${index === 0 ? 'active' : ''}" onclick="changeImage('${img.replace(/'/g, "\\'")}', this)">
-                    <img src="${img}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect fill=%22%23ddd%22 width=%2250%22 height=%2250%22/%3E%3C/svg%3E'">
-                </div>
-            `).join('');
-
-            // Initialize zoom functionality
-            if (mainImageContainer) {
-                mainImageContainer.addEventListener('mousemove', handleZoom);
-                mainImageContainer.addEventListener('mouseleave', resetZoom);
-            }
-        }
-
-        // Change main image
-        function changeImage(imageSrc, thumbnail) {
-            const mainImage = document.getElementById('mainImage');
-            if (mainImage) {
-                mainImage.src = imageSrc;
-            }
-
-            // Update active thumbnail
-            document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
-            if (thumbnail) {
-                thumbnail.classList.add('active');
-            }
-        }
-
-        // Product color selection
-        function selectProductColor(btn, colorName, colorHex, colorImage) {
-            // Update color option styles
-            document.querySelectorAll('.color-option').forEach(option => {
-                option.classList.remove('selected');
-                option.style.border = '3px solid #ddd';
-            });
-            btn.classList.add('selected');
-            btn.style.border = `3px solid ${colorHex}`;
-
-            // Update selected color text
-            const colorText = document.getElementById('selectedColorText');
-            if (colorText) {
-                colorText.textContent = colorName;
-            }
-
-            // Change main image if color has specific image
-            if (colorImage) {
-                const mainImage = document.getElementById('mainImage');
-                if (mainImage) {
-                    mainImage.src = colorImage;
-                }
-            }
-
-            // Store selected color globally for order modal
-            window.selectedProductColor = colorName;
-            window.selectedProductColorHex = colorHex;
-        }
-
-        // Handle zoom on hover
-        function handleZoom(e) {
-            const container = document.getElementById('mainImageContainer');
-            const img = document.getElementById('mainImage');
-            if (!container || !img) return;
-
-            const rect = container.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const xPercent = (x / rect.width) * 100;
-            const yPercent = (y / rect.height) * 100;
-
-            img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
-            img.style.transform = 'scale(2)';
-
-            // Show zoom hint
-            const hint = container.querySelector('.zoom-hint');
-            if (hint) hint.style.opacity = '0';
-        }
-
-        // Reset zoom
-        function resetZoom() {
-            const img = document.getElementById('mainImage');
-            const container = document.getElementById('mainImageContainer');
-            if (img) {
-                img.style.transform = 'scale(1)';
-            }
-            // Show zoom hint again
-            const hint = container?.querySelector('.zoom-hint');
-            if (hint) hint.style.opacity = '1';
-        }
-
-        // Initialize Rating Display
-        async function initRatingDisplay(productId) {
-            const ratingDisplay = document.getElementById('ratingDisplay');
-            const rating = await getProductRating(productId);
-
-            if (ratingDisplay) {
-                if (rating) {
-                    const fullStars = Math.floor(rating.average);
-                    const hasHalfStar = rating.average % 1 >= 0.5;
-                    let starsHtml = '';
-
-                    for (let i = 0; i < 5; i++) {
-                        if (i < fullStars) {
-                            starsHtml += '<i class="fas fa-star" style="color: #d4af37;"></i>';
-                        } else if (i === fullStars && hasHalfStar) {
-                            starsHtml += '<i class="fas fa-star-half-alt" style="color: #d4af37;"></i>';
-                        } else {
-                            starsHtml += '<i class="fas fa-star" style="color: #ddd;"></i>';
-                        }
-                    }
-
-                    ratingDisplay.innerHTML = `
-                        <div class="rating-summary">
-                            <div class="rating-stars">${starsHtml}</div>
-                            <div class="rating-info">
-                                <span class="rating-value">${rating.average}</span>
-                                <span class="rating-count">(${rating.count} avis)</span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    ratingDisplay.innerHTML = `
-                        <div class="rating-summary">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" style="color: #ddd;"></i>
-                                <i class="fas fa-star" style="color: #ddd;"></i>
-                                <i class="fas fa-star" style="color: #ddd;"></i>
-                                <i class="fas fa-star" style="color: #ddd;"></i>
-                                <i class="fas fa-star" style="color: #ddd;"></i>
-                            </div>
-                            <div class="rating-info">
-                                <span class="rating-value">0</span>
-                                <span class="rating-count">(0 avis)</span>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-        }
+    <!-- Order Form Modal -->
+    <div class="order-modal" id="orderModal">
 
         // Initialize Reviews Section
         async function initReviewsSection(productId) {
