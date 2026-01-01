@@ -163,8 +163,55 @@
     </footer>
 
     <script type="module">
-        // Initialize Firebase first
-        import('./js/firebase-config.js?v=2');
+        // Initialize Firebase and load products for category page
+        // This pattern ensures Firebase is initialized BEFORE loading products
+        import { initFirebase } from './js/firebase-config.js?v=2';
+        
+        // Set guard to prevent duplicate loading
+        window.isProductsLoading = true;
+        
+        async function initPage() {
+            try {
+                console.log('homme.html: Starting initialization...');
+                
+                // Initialize Firebase first - this MUST complete before loading products
+                await initFirebase();
+                console.log('homme.html: Firebase initialized');
+                
+                // Now initialize UI and load products
+                initFilterSidebar();
+                console.log('homme.html: Filter sidebar initialized');
+                
+                // Setup mobile filter toggle
+                const productsSection = document.querySelector('.products-section, #productsSection');
+                if (productsSection) {
+                    const existingToggle = document.querySelector('.mobile-filter-toggle');
+                    if (!existingToggle) {
+                        const mobileToggle = document.createElement('button');
+                        mobileToggle.className = 'mobile-filter-toggle';
+                        mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
+                        mobileToggle.onclick = toggleMobileFilters;
+                        productsSection.insertBefore(mobileToggle, productsSection.firstChild);
+                    }
+                }
+                
+                // Load products for this category
+                await loadCategoryProducts('homme');
+                console.log('homme.html: Products loaded');
+                
+                // Initialize infinite scroll
+                initInfiniteScroll();
+                console.log('homme.html: Infinite scroll initialized');
+                
+            } catch (error) {
+                console.error('homme.html: Error during initialization:', error);
+            } finally {
+                window.isProductsLoading = false;
+            }
+        }
+        
+        // Start initialization
+        initPage();
     </script>
     <script src="js/main.js"></script>
 </body>

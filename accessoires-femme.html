@@ -170,26 +170,45 @@
 
     <script type="module">
         // Import Firebase configuration and main functions
-        import { initFirebase, ProductAPI } from './js/firebase-config.js?v=2';
-        import { getProducts, getCategories, contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=2';
+        import { initFirebase } from './js/firebase-config.js?v=2';
+        import { getProducts, contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=2';
 
         // Make functions globally accessible for inline onclick handlers
         window.getProducts = getProducts;
-        window.getCategories = getCategories;
         window.contactWhatsApp = contactWhatsApp;
         window.addToCart = addToCart;
         window.initCart = initCart;
         window.initUI = initUI;
 
-        // Initialize Firebase
-        initFirebase();
+        // Set guard to prevent duplicate loading
+        window.isProductsLoading = true;
+        
+        async function initPage() {
+            try {
+                console.log('accessoires-femme.html: Starting initialization...');
+                
+                // Initialize Firebase first - this MUST complete before loading products
+                await initFirebase();
+                console.log('accessoires-femme.html: Firebase initialized');
+                
+                // Initialize UI components
+                initCart();
+                initUI();
+                console.log('accessoires-femme.html: UI initialized');
+                
+                // Load products for this category and gender
+                await loadCategoryProducts('accessoires', 'femme');
+                console.log('accessoires-femme.html: Products loaded');
+                
+            } catch (error) {
+                console.error('accessoires-femme.html: Error during initialization:', error);
+            } finally {
+                window.isProductsLoading = false;
+            }
+        }
 
-        // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', async function() {
-            initCart();
-            initUI();
-            await loadCategoryProducts('accessoires', 'femme');
-        });
+        // Start initialization
+        initPage();
 
         async function loadCategoryProducts(category, gender) {
             const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });

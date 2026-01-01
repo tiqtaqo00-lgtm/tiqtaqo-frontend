@@ -169,15 +169,43 @@
     </footer>
 
     <script type="module">
-        // Initialize Firebase first
-        import('./js/firebase-config.js?v=2');
-    </script>
-    <script src="js/main.js"></script>
-    <script>
-        // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', async function() {
-            await loadCategoryProducts('wallets', 'femme');
-        });
+        // Import Firebase configuration and main functions
+        import { initFirebase } from './js/firebase-config.js?v=2';
+        import { getProducts, contactWhatsApp, addToCart, initCart } from './js/main.js?v=2';
+
+        // Make functions globally accessible for inline onclick handlers
+        window.getProducts = getProducts;
+        window.contactWhatsApp = contactWhatsApp;
+        window.addToCart = addToCart;
+
+        // Set guard to prevent duplicate loading
+        window.isProductsLoading = true;
+        
+        async function initPage() {
+            try {
+                console.log('wallets-femme.html: Starting initialization...');
+                
+                // Initialize Firebase first - this MUST complete before loading products
+                await initFirebase();
+                console.log('wallets-femme.html: Firebase initialized');
+                
+                // Initialize UI components
+                initCart();
+                console.log('wallets-femme.html: UI initialized');
+                
+                // Load products for this category and gender
+                await loadCategoryProducts('wallets', 'femme');
+                console.log('wallets-femme.html: Products loaded');
+                
+            } catch (error) {
+                console.error('wallets-femme.html: Error during initialization:', error);
+            } finally {
+                window.isProductsLoading = false;
+            }
+        }
+
+        // Start initialization
+        initPage();
         
         async function loadCategoryProducts(category, gender) {
             const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });

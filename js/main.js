@@ -996,23 +996,8 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCollections();
     }
     
-    // Load products on category pages
-    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    if (['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'].includes(currentPage)) {
-        initFilterSidebar();
-        
-        const productsSection = document.querySelector('.products-section, #productsSection');
-        if (productsSection) {
-            const mobileToggle = document.createElement('button');
-            mobileToggle.className = 'mobile-filter-toggle';
-            mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
-            mobileToggle.onclick = toggleMobileFilters;
-            productsSection.insertBefore(mobileToggle, productsSection.firstChild);
-        }
-        
-        loadCategoryProducts(currentPage);
-        initInfiniteScroll();
-    }
+    // NOTE: Category product loading is now handled by initPage() in each HTML file
+    // This avoids race conditions between DOMContentLoaded and Firebase initialization
 });
 
 // Smooth scroll
