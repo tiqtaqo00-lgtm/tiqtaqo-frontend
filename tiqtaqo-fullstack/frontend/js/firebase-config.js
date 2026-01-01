@@ -57,6 +57,11 @@ const isValidConfig = () => {
 const initFirebase = () => {
     if (firebaseInitialized) return { db, auth };
     
+    // Update diagnostic panel
+    if (typeof updateDiagnostic === 'function') {
+        updateDiagnostic('firebase-config.js: Starting Firebase initialization...');
+    }
+    
     try {
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
@@ -65,16 +70,29 @@ const initFirebase = () => {
         // Enable offline persistence (Critical for reducing reads)
         enableIndexedDbPersistence(db).catch((err) => {
             if (err.code === 'failed-precondition') {
-                console.log('Multiples tabs open, persistence enabled in one tab only');
+                if (typeof updateDiagnostic === 'function') {
+                    updateDiagnostic('firebase-config: Multiple tabs - persistence in one tab only', 'warning');
+                }
             } else if (err.code === 'unimplemented') {
-                console.log('Browser does not support persistence');
+                if (typeof updateDiagnostic === 'function') {
+                    updateDiagnostic('firebase-config: Browser does not support persistence', 'warning');
+                }
             }
         });
         
         firebaseInitialized = true;
+        
+        if (typeof updateDiagnostic === 'function') {
+            updateDiagnostic('firebase-config.js: Firebase initialized SUCCESSFULLY!', 'success');
+            updateDiagnostic('ProductAPI is now available on window', 'success');
+        }
+        
         console.log('Firebase initialized successfully');
         return { db, auth };
     } catch (error) {
+        if (typeof updateDiagnostic === 'function') {
+            updateDiagnostic('firebase-config.js: Firebase ERROR: ' + error.message, 'error');
+        }
         console.error('Firebase initialization error:', error);
         return null;
     }
@@ -113,7 +131,11 @@ window.ProductAPI = {
                 if (forceRefresh) {
                     // Force server read to get freshest data (bypass cache)
                     snapshot = await getDocsFromServer(productsRef);
-                    console.log('Fetching products from SERVER (forceRefresh=true)');
+                    const msg = 'ProductAPI: Fetching from SERVER (forceRefresh=true)';
+                    console.log(msg);
+                    if (typeof updateDiagnostic === 'function') {
+                        updateDiagnostic(msg, 'success');
+                    }
                 } else {
                     // Use cache
                     snapshot = await getDocs(productsRef);
@@ -124,6 +146,12 @@ window.ProductAPI = {
                     id: doc.id,
                     ...doc.data()
                 }));
+                
+                const msg = 'ProductAPI: Loaded ' + allProducts.length + ' products from database';
+                console.log(msg);
+                if (typeof updateDiagnostic === 'function') {
+                    updateDiagnostic(msg, allProducts.length > 0 ? 'success' : 'warning');
+                }
             } catch (queryError) {
                 console.log('Simple query failed, trying with limit:', queryError);
                 // Fallback: just get first 50 products
@@ -133,6 +161,12 @@ window.ProductAPI = {
                     id: doc.id,
                     ...doc.data()
                 }));
+                
+                const msg = 'ProductAPI: Loaded ' + allProducts.length + ' products from database';
+                console.log(msg);
+                if (typeof updateDiagnostic === 'function') {
+                    updateDiagnostic(msg, allProducts.length > 0 ? 'success' : 'warning');
+                }
             }
             
             // Filter products
