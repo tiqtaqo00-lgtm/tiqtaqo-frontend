@@ -26,19 +26,24 @@ function loadAdminInfo() {
 // Get products from Firebase
 async function getProducts() {
     try {
-        if (window.ProductAPI && window.getDb) {
-            const db = window.getDb();
-            if (db) {
-                const productsRef = window.collection(db, 'products');
-                const snapshot = await window.getDocs(productsRef);
-                return snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            }
+        // Wait for Firebase to be ready
+        if (typeof window.isFirebaseReady !== 'function' || !window.isFirebaseReady()) {
+            console.log('Firebase not ready yet, using localStorage');
+            const products = localStorage.getItem('luxury_products');
+            return products ? JSON.parse(products) : [];
+        }
+        
+        const db = window.getDb();
+        if (db) {
+            const productsRef = window.collection(db, 'products');
+            const snapshot = await window.getDocs(productsRef);
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
         }
     } catch (e) {
-        console.log('Using fallback products');
+        console.log('Firebase error, using fallback:', e.message);
     }
     
     // Fallback to localStorage
@@ -50,7 +55,7 @@ async function getProducts() {
 async function saveProducts(products) {
     // Save to Firebase if available
     try {
-        if (window.ProductAPI && window.getDb) {
+        if (typeof window.isFirebaseReady === 'function' && window.isFirebaseReady()) {
             const db = window.getDb();
             if (db) {
                 const batch = window.writeBatch(db);
@@ -67,7 +72,7 @@ async function saveProducts(products) {
             }
         }
     } catch (e) {
-        console.log('Firebase save failed, using localStorage');
+        console.log('Firebase save failed, using localStorage:', e.message);
     }
     
     // Always save to localStorage as backup
@@ -260,14 +265,14 @@ async function deleteProduct(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
         // Delete from Firebase
         try {
-            if (window.ProductAPI && window.getDb) {
+            if (typeof window.isFirebaseReady === 'function' && window.isFirebaseReady()) {
                 const db = window.getDb();
                 if (db) {
                     await window.deleteDoc(window.doc(db, 'products', id));
                 }
             }
         } catch (e) {
-            console.log('Firebase delete failed');
+            console.log('Firebase delete failed:', e.message);
         }
         
         // Update localStorage
@@ -636,7 +641,7 @@ async function saveProduct(event) {
     
     // Save to Firebase
     try {
-        if (window.ProductAPI && window.getDb) {
+        if (typeof window.isFirebaseReady === 'function' && window.isFirebaseReady()) {
             const db = window.getDb();
             if (db) {
                 if (id) {
@@ -662,7 +667,7 @@ async function saveProduct(event) {
                 finalizeSaveProduct(id, productData, products);
             }
         } else {
-            // Fallback if ProductAPI not available
+            // Fallback if Firebase not ready
             finalizeSaveProduct(id, productData, products);
         }
     } catch (error) {
@@ -736,19 +741,31 @@ function closeCategoryModal() {
 }
 
 // Initialize dashboard
-document.addEventListener('DOMContentLoaded', async function() {
-    // Wait for Firebase to initialize
+async function initializeDashboard() {
+    // Initialize Firebase if needed
     if (typeof initFirebase === 'function') {
         initFirebase();
     }
     
-    // Small delay to ensure Firebase is ready
-    setTimeout(async function() {
-        if (checkAuth()) {
-            loadAdminInfo();
-            await updateStats();
-            await loadProductsTable();
-            loadCategoriesTable();
+    // Wait for Firebase to be ready (up to 5 seconds)
+    let attempts = 0;
+    const maxAttempts = 50; // 50 * 100ms = 5 seconds
+    
+    while (typeof window.isFirebaseReady !== 'function' || !window.isFirebaseReady()) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+        if (attempts >= maxAttempts) {
+            console.log('Firebase initialization timeout, proceeding anyway');
+            break;
         }
-    }, 1000);
-});
+    }
+    
+    if (checkAuth()) {
+        loadAdminInfo();
+        await updateStats();
+        await loadProductsTable();
+        loadCategoriesTable();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initializeDashboard);
