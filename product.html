@@ -131,13 +131,55 @@
 
     <script src="js/firebase-config.js"></script>
     <script src="js/main.js"></script>
-    <script>
+    <script type="module">
+        // Firebase SDK imports for direct access
+        import { 
+            getFirestore, 
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
         // Get product from URL
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
 
+        // Direct Firebase fetch function
+        async function getProductDirect(productId) {
+            try {
+                // Wait for Firebase to be ready
+                if (typeof initFirebase === 'function') {
+                    initFirebase();
+                }
+                
+                // Small delay to ensure Firebase is initialized
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const db = getFirestore();
+                if (!db) {
+                    console.log('Firestore not available, using fallback');
+                    return null;
+                }
+                
+                const docRef = doc(db, 'products', productId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    console.log('Product found in Firebase:', docSnap.id);
+                    return { id: docSnap.id, ...docSnap.data() };
+                } else {
+                    console.log('Product not found in Firebase');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error fetching product:', error);
+                return null;
+            }
+        }
+
         // Load product detail
         document.addEventListener('DOMContentLoaded', async function() {
+            // Wait a bit for Firebase to initialize
+            await new Promise(resolve => setTimeout(resolve, 1000));
             await loadProductDetail();
         });
 
@@ -155,8 +197,13 @@
                 </div>
             `;
 
-            // Fetch product from Firebase or fallback
-            const product = await getProduct(productId);
+            // Fetch product directly from Firebase first, then fallback to getProduct
+            let product = await getProductDirect(productId);
+            
+            // If not found directly, try the API method
+            if (!product) {
+                product = await getProduct(productId);
+            }
 
             if (!product) {
                 container.innerHTML = `
@@ -165,6 +212,7 @@
                         <h2 style="color: var(--black); margin-bottom: 15px;">Produit non trouvé</h2>
                         <p style="color: #666; margin-bottom: 30px;">Le produit que vous recherchez n'existe pas ou a été supprimé.</p>
                         <a href="index.html" class="btn-primary">Retour à l'accueil</a>
+                        <p style="margin-top: 20px; color: #999; font-size: 12px;">ID: ${productId}</p>
                     </div>
                 `;
                 return;
@@ -1177,7 +1225,13 @@
 
         // Open order modal with product info
         async function openOrderModal(productId) {
-            const product = await getProduct(productId);
+            // Try direct Firebase first
+            let product = await getProductDirect(productId);
+            
+            // Fallback to API method
+            if (!product) {
+                product = await getProduct(productId);
+            }
 
             if (!product) {
                 showNotification('Produit non trouvé!', 'warning');
