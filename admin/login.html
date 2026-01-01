@@ -229,16 +229,22 @@
         </div>
     </div>
 
+    <script src="../js/firebase-config.js"></script>
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Initialize Firebase first
+            if (typeof initFirebase === 'function') {
+                initFirebase();
+            }
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
             
             // Simple authentication (in production, use proper backend authentication)
-            if (email === 'tiqtaqo00@gmail.com' && password === 'Med123med') {
+            if (email === 'tiqtaqo00@gmail.com' && password === 'Med123medlgtm') {
                 // Store admin session
                 localStorage.setItem('admin_logged_in', 'true');
                 localStorage.setItem('admin_email', email);
