@@ -12,6 +12,7 @@ import {
     doc, 
     getDoc, 
     getDocs,
+    getDocsFromServer,
     addDoc,
     updateDoc,
     deleteDoc,
@@ -110,10 +111,13 @@ window.ProductAPI = {
                 // Use cache behavior based on forceRefresh
                 let snapshot;
                 if (forceRefresh) {
-                    // Force server read to get freshest data
-                    snapshot = await getDocs(productsRef);
+                    // Force server read to get freshest data (bypass cache)
+                    snapshot = await getDocsFromServer(productsRef);
+                    console.log('Fetching products from SERVER (forceRefresh=true)');
                 } else {
+                    // Use cache
                     snapshot = await getDocs(productsRef);
+                    console.log('Fetching products from CACHE (forceRefresh=false)');
                 }
                 
                 allProducts = snapshot.docs.map(doc => ({
