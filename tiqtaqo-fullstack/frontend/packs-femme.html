@@ -168,13 +168,22 @@
         </div>
     </footer>
 
+    <!-- Load Firebase first as module -->
+    <script type="module">
+        // Initialize Firebase
+        import('./js/firebase-config.js');
+    </script>
     <script src="js/main.js"></script>
-    <script>
-        // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', async function() {
-            await loadCategoryProducts('packs', 'femme');
+    <script type="module">
+        // Make sure Firebase is ready before loading products
+        import('./js/firebase-config.js').then(() => {
+            // Wait a bit for Firebase to initialize
+            setTimeout(async () => {
+                await loadCategoryProducts('packs', 'femme');
+            }, 500);
         });
-        
+
+        // Load products filtered by category and gender
         async function loadCategoryProducts(category, gender) {
             const productsGrid = document.getElementById('productsGrid');
             
