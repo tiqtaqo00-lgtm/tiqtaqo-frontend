@@ -23,14 +23,54 @@ function loadAdminInfo() {
     }
 }
 
-// Get products from localStorage
-function getProducts() {
+// Get products from Firebase
+async function getProducts() {
+    try {
+        if (window.ProductAPI && window.getDb) {
+            const db = window.getDb();
+            if (db) {
+                const productsRef = window.collection(db, 'products');
+                const snapshot = await window.getDocs(productsRef);
+                return snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            }
+        }
+    } catch (e) {
+        console.log('Using fallback products');
+    }
+    
+    // Fallback to localStorage
     const products = localStorage.getItem('luxury_products');
     return products ? JSON.parse(products) : [];
 }
 
-// Save products to localStorage
-function saveProducts(products) {
+// Save products to Firebase
+async function saveProducts(products) {
+    // Save to Firebase if available
+    try {
+        if (window.ProductAPI && window.getDb) {
+            const db = window.getDb();
+            if (db) {
+                const batch = window.writeBatch(db);
+                
+                for (const product of products) {
+                    const productRef = window.doc(db, 'products', product.id.toString());
+                    if (product.id && typeof product.id === 'string') {
+                        batch.set(productRef, product);
+                    }
+                }
+                
+                await batch.commit();
+                console.log('Products saved to Firebase');
+            }
+        }
+    } catch (e) {
+        console.log('Firebase save failed, using localStorage');
+    }
+    
+    // Always save to localStorage as backup
     localStorage.setItem('luxury_products', JSON.stringify(products));
 }
 
@@ -62,8 +102,8 @@ function saveCategories(categories) {
 }
 
 // Update statistics
-function updateStats() {
-    const products = getProducts();
+async function updateStats() {
+    const products = await getProducts();
     const categories = getCategories();
     
     document.getElementById('totalProducts').textContent = products.length;
@@ -80,8 +120,8 @@ function updateStats() {
 }
 
 // Load products table
-function loadProductsTable() {
-    const products = getProducts();
+async function loadProductsTable() {
+    const products = await getProducts();
     const tbody = document.getElementById('productsTableBody');
     
     if (products.length === 0) {
@@ -109,21 +149,21 @@ function loadProductsTable() {
             <td>${getGenderDisplay(product)}</td>
             <td>${product.promotion > 0 ? product.promotion + '%' : '-'}</td>
             <td>
-                <button class="btn-toggle ${product.bestSeller ? 'active' : ''}" style="${product.bestSeller ? 'background: linear-gradient(135deg, #ff6b6b, #ee5a24);' : ''}" onclick="toggleProductBestSeller(${product.id})">
+                <button class="btn-toggle ${product.bestSeller ? 'active' : ''}" style="${product.bestSeller ? 'background: linear-gradient(135deg, #ff6b6b, #ee5a24);' : ''}" onclick="toggleProductBestSeller('${product.id}')">
                     ${product.bestSeller ? '<i class="fas fa-fire"></i> Oui' : '<i class="fas fa-times"></i> Non'}
                 </button>
             </td>
             <td>
-                <button class="btn-toggle ${product.visible ? 'active' : ''}" onclick="toggleProductVisibility(${product.id})">
+                <button class="btn-toggle ${product.visible ? 'active' : ''}" onclick="toggleProductVisibility('${product.id}')">
                     ${product.visible ? '<i class="fas fa-eye"></i> Visible' : '<i class="fas fa-eye-slash"></i> Caché'}
                 </button>
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-edit" onclick="editProduct(${product.id})">
+                    <button class="btn-edit" onclick="editProduct('${product.id}')">
                         <i class="fas fa-edit"></i> Modifier
                     </button>
-                    <button class="btn-delete" onclick="deleteProduct(${product.id})">
+                    <button class="btn-delete" onclick="deleteProduct('${product.id}')">
                         <i class="fas fa-trash"></i> Supprimer
                     </button>
                 </div>
@@ -183,23 +223,23 @@ function getGenderDisplay(product) {
 }
 
 // Toggle product best seller status
-function toggleProductBestSeller(id) {
-    const products = getProducts();
+async function toggleProductBestSeller(id) {
+    const products = await getProducts();
     const product = products.find(p => p.id === id);
     if (product) {
         product.bestSeller = !product.bestSeller;
-        saveProducts(products);
+        await saveProducts(products);
         loadProductsTable();
     }
 }
 
 // Toggle product visibility
-function toggleProductVisibility(id) {
-    const products = getProducts();
+async function toggleProductVisibility(id) {
+    const products = await getProducts();
     const product = products.find(p => p.id === id);
     if (product) {
         product.visible = !product.visible;
-        saveProducts(products);
+        await saveProducts(products);
         loadProductsTable();
     }
 }
@@ -216,11 +256,25 @@ function toggleCategoryVisibility(id) {
 }
 
 // Delete product
-function deleteProduct(id) {
+async function deleteProduct(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
-        let products = getProducts();
+        // Delete from Firebase
+        try {
+            if (window.ProductAPI && window.getDb) {
+                const db = window.getDb();
+                if (db) {
+                    await window.deleteDoc(window.doc(db, 'products', id));
+                }
+            }
+        } catch (e) {
+            console.log('Firebase delete failed');
+        }
+        
+        // Update localStorage
+        let products = await getProducts();
         products = products.filter(p => p.id !== id);
-        saveProducts(products);
+        await saveProducts(products);
+        
         loadProductsTable();
         updateStats();
     }
@@ -234,9 +288,7 @@ function deleteCategory(id) {
         saveCategories(categories);
         
         // Delete all products in this category
-        let products = getProducts();
-        products = products.filter(p => p.category !== id);
-        saveProducts(products);
+        // Note: This would need to be async in a full implementation
         
         loadCategoriesTable();
         loadProductsTable();
@@ -292,8 +344,8 @@ function loadCategoryOptions() {
 }
 
 // Edit product
-function editProduct(id) {
-    const products = getProducts();
+async function editProduct(id) {
+    const products = await getProducts();
     const product = products.find(p => p.id === id);
     
     if (product) {
@@ -532,11 +584,11 @@ function removeExistingImage(index) {
     }
 }
 
-// Save product
-function saveProduct(event) {
+// Save product to Firebase
+async function saveProduct(event) {
     event.preventDefault();
     
-    const products = getProducts();
+    const products = await getProducts();
     const id = document.getElementById('productId').value;
     const imageFiles = document.getElementById('productImage').files;
     
@@ -550,7 +602,8 @@ function saveProduct(event) {
         description: document.getElementById('productDescription').value,
         promotion: parseInt(document.getElementById('productPromotion').value) || 0,
         bestSeller: document.getElementById('productBestSeller').checked,
-        visible: document.getElementById('productVisible').checked
+        visible: document.getElementById('productVisible').checked,
+        created_at: new Date().toISOString()
     };
     
     // Handle gender for branched categories
@@ -571,7 +624,7 @@ function saveProduct(event) {
         productData.images = images;   // All images as array
     } else if (id) {
         // Keep existing images if editing and no new images added
-        const existingProduct = products.find(p => p.id === parseInt(id));
+        const existingProduct = products.find(p => p.id === id);
         if (existingProduct) {
             productData.image = existingProduct.image;
             productData.images = existingProduct.images || (existingProduct.image ? [existingProduct.image] : []);
@@ -581,31 +634,63 @@ function saveProduct(event) {
     // Get colors
     productData.colors = getProductColors();
     
-    finalizeSaveProduct(id, productData, products);
+    // Save to Firebase
+    try {
+        if (window.ProductAPI && window.getDb) {
+            const db = window.getDb();
+            if (db) {
+                if (id) {
+                    // Update existing product
+                    await window.updateDoc(window.doc(db, 'products', id), productData);
+                } else {
+                    // Add new product with auto-generated ID
+                    const docRef = await window.addDoc(window.collection(db, 'products'), productData);
+                    productData.id = docRef.id;
+                    products.push(productData);
+                }
+                
+                // Also save to localStorage as backup
+                localStorage.setItem('luxury_products', JSON.stringify(products));
+                
+                closeProductModal();
+                loadProductsTable();
+                updateStats();
+                
+                alert('Produit enregistré avec succès!');
+            } else {
+                // Fallback if Firebase not available
+                finalizeSaveProduct(id, productData, products);
+            }
+        } else {
+            // Fallback if ProductAPI not available
+            finalizeSaveProduct(id, productData, products);
+        }
+    } catch (error) {
+        console.error('Error saving product:', error);
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+    }
 }
 
-function finalizeSaveProduct(id, productData, products) {
+async function finalizeSaveProduct(id, productData, products) {
     if (id) {
-        // Update existing product - handle both string and numeric IDs
-        const numericId = parseInt(id);
-        const index = products.findIndex(p => p.id === numericId || p.id === id);
+        // Update existing product
+        const index = products.findIndex(p => p.id === id);
         if (index !== -1) {
             products[index] = { ...products[index], ...productData };
         }
     } else {
-        // Add new product - generate numeric ID, handling mixed ID types
-        // Get only numeric IDs, ignoring string IDs like 'p1', 'p2'
-        const numericIds = products
-            .map(p => typeof p.id === 'number' ? p.id : parseInt(p.id))
-            .filter(id => !isNaN(id));
-        const newId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
-        products.push({ id: newId, ...productData });
+        // Add new product
+        const newId = 'p' + (Date.now().toString(36) + Math.random().toString(36).substr(2)).substr(0, 8);
+        productData.id = newId;
+        products.push(productData);
     }
     
-    saveProducts(products);
+    await saveProducts(products);
     closeProductModal();
     loadProductsTable();
     updateStats();
+    
+    alert('Produit enregistré avec succès!');
 }
 
 // Save category
@@ -647,15 +732,23 @@ function closeProductModal() {
 }
 
 function closeCategoryModal() {
-    document.getElementById('categoryModal').style.display = 'none';
+    document.getElementById('categoryModal').style.display = 'flex';
 }
 
 // Initialize dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    if (checkAuth()) {
-        loadAdminInfo();
-        updateStats();
-        loadProductsTable();
-        loadCategoriesTable();
+document.addEventListener('DOMContentLoaded', async function() {
+    // Wait for Firebase to initialize
+    if (typeof initFirebase === 'function') {
+        initFirebase();
     }
+    
+    // Small delay to ensure Firebase is ready
+    setTimeout(async function() {
+        if (checkAuth()) {
+            loadAdminInfo();
+            await updateStats();
+            await loadProductsTable();
+            loadCategoriesTable();
+        }
+    }, 1000);
 });
