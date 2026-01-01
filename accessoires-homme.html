@@ -171,43 +171,43 @@
     <script type="module">
         // Import Firebase configuration and main functions
         import { initFirebase } from './js/firebase-config.js?v=2';
-        import { getProducts, contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=2';
+        import { contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=2';
 
-        // Make functions globally accessible for inline onclick handlers
         window.getProducts = getProducts;
         window.contactWhatsApp = contactWhatsApp;
         window.addToCart = addToCart;
         window.initCart = initCart;
         window.initUI = initUI;
 
-        // Set guard to prevent duplicate loading
         window.isProductsLoading = true;
+        
+        async function waitForMainJS() {
+            for (let i = 0; i < 50; i++) {
+                if (typeof initCart === 'function' && typeof initUI === 'function') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return false;
+        }
         
         async function initPage() {
             try {
-                console.log('accessoires-homme.html: Starting initialization...');
-                
-                // Initialize Firebase first - this MUST complete before loading products
+                await waitForMainJS();
                 await initFirebase();
-                console.log('accessoires-homme.html: Firebase initialized');
                 
-                // Initialize UI components
                 initCart();
                 initUI();
-                console.log('accessoires-homme.html: UI initialized');
                 
-                // Load products for this category and gender
                 await loadCategoryProducts('accessoires', 'homme');
-                console.log('accessoires-homme.html: Products loaded');
                 
             } catch (error) {
-                console.error('accessoires-homme.html: Error during initialization:', error);
+                console.error('accessoires-homme.html: Error:', error);
             } finally {
                 window.isProductsLoading = false;
             }
         }
 
-        // Start initialization
         initPage();
 
         async function loadCategoryProducts(category, gender) {

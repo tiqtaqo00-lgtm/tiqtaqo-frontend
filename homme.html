@@ -164,25 +164,39 @@
 
     <script type="module">
         // Initialize Firebase and load products for category page
-        // This pattern ensures Firebase is initialized BEFORE loading products
         import { initFirebase } from './js/firebase-config.js?v=2';
         
-        // Set guard to prevent duplicate loading
         window.isProductsLoading = true;
+        
+        // Wait for main.js functions to be available
+        async function waitForMainJS() {
+            console.log('homme.html: Waiting for main.js...');
+            for (let i = 0; i < 50; i++) {
+                if (typeof initFilterSidebar === 'function' && typeof loadCategoryProducts === 'function') {
+                    console.log('homme.html: main.js loaded after ' + (i * 50) + 'ms');
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            console.error('homme.html: main.js functions not available');
+            return false;
+        }
         
         async function initPage() {
             try {
                 console.log('homme.html: Starting initialization...');
                 
-                // Initialize Firebase first - this MUST complete before loading products
+                // Wait for main.js to load first
+                await waitForMainJS();
+                
+                // Initialize Firebase
                 await initFirebase();
                 console.log('homme.html: Firebase initialized');
                 
-                // Now initialize UI and load products
+                // Initialize UI and load products
                 initFilterSidebar();
                 console.log('homme.html: Filter sidebar initialized');
                 
-                // Setup mobile filter toggle
                 const productsSection = document.querySelector('.products-section, #productsSection');
                 if (productsSection) {
                     const existingToggle = document.querySelector('.mobile-filter-toggle');
@@ -195,11 +209,9 @@
                     }
                 }
                 
-                // Load products for this category
                 await loadCategoryProducts('homme');
                 console.log('homme.html: Products loaded');
                 
-                // Initialize infinite scroll
                 initInfiniteScroll();
                 console.log('homme.html: Infinite scroll initialized');
                 
@@ -210,7 +222,6 @@
             }
         }
         
-        // Start initialization
         initPage();
     </script>
     <script src="js/main.js"></script>

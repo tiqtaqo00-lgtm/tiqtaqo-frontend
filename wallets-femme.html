@@ -171,40 +171,40 @@
     <script type="module">
         // Import Firebase configuration and main functions
         import { initFirebase } from './js/firebase-config.js?v=2';
-        import { getProducts, contactWhatsApp, addToCart, initCart } from './js/main.js?v=2';
+        import { contactWhatsApp, addToCart, initCart } from './js/main.js?v=2';
 
-        // Make functions globally accessible for inline onclick handlers
         window.getProducts = getProducts;
         window.contactWhatsApp = contactWhatsApp;
         window.addToCart = addToCart;
 
-        // Set guard to prevent duplicate loading
         window.isProductsLoading = true;
+        
+        async function waitForMainJS() {
+            for (let i = 0; i < 50; i++) {
+                if (typeof initCart === 'function') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return false;
+        }
         
         async function initPage() {
             try {
-                console.log('wallets-femme.html: Starting initialization...');
-                
-                // Initialize Firebase first - this MUST complete before loading products
+                await waitForMainJS();
                 await initFirebase();
-                console.log('wallets-femme.html: Firebase initialized');
                 
-                // Initialize UI components
                 initCart();
-                console.log('wallets-femme.html: UI initialized');
                 
-                // Load products for this category and gender
                 await loadCategoryProducts('wallets', 'femme');
-                console.log('wallets-femme.html: Products loaded');
                 
             } catch (error) {
-                console.error('wallets-femme.html: Error during initialization:', error);
+                console.error('wallets-femme.html: Error:', error);
             } finally {
                 window.isProductsLoading = false;
             }
         }
 
-        // Start initialization
         initPage();
         
         async function loadCategoryProducts(category, gender) {
