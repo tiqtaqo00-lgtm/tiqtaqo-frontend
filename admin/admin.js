@@ -610,9 +610,9 @@ async function saveProduct(event) {
         created_at: new Date().toISOString()
     };
     
-    // Handle gender for branched categories
+    // Handle gender for branched categories (use trim() to handle any whitespace issues)
     if (branchedCategories.includes(selectedCategory)) {
-        productData.gender = document.getElementById('productGender').value;
+        productData.gender = document.getElementById('productGender').value.trim();
     } else {
         productData.gender = null;
     }

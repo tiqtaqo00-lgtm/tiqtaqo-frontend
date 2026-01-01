@@ -264,13 +264,13 @@
 
             document.getElementById('all-data').textContent = JSON.stringify(data, null, 2);
 
-            // Also show comparison
+            // Also show comparison (use trim() to handle trailing spaces)
             const comparison = document.getElementById('comparison-results');
             const fbProducts = window.firebaseProducts || [];
             const lsProducts = window.localStorageProducts || [];
 
-            const fbPacksHomme = fbProducts.filter(p => p.category === 'packs' && p.gender === 'homme');
-            const lsPacksHomme = lsProducts.filter(p => p.category === 'packs' && p.gender === 'homme');
+            const fbPacksHomme = fbProducts.filter(p => (p.category || '').trim() === 'packs' && (p.gender || '').trim() === 'homme');
+            const lsPacksHomme = lsProducts.filter(p => (p.category || '').trim() === 'packs' && (p.gender || '').trim() === 'homme');
 
             comparison.innerHTML = `
                 <div class="status info">
