@@ -213,7 +213,7 @@ function getCategoryName(categoryId) {
 
 // Get gender display in French
 function getGenderDisplay(product) {
-    const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
+    const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
     if (branchedCategories.includes(product.category)) {
         return product.gender === 'femme' ? 
             '<span class="badge-femme">Femme</span>' : 
@@ -320,7 +320,7 @@ function showAddCategoryModal() {
 function handleCategoryChange() {
     const categorySelect = document.getElementById('productCategory');
     const genderFormGroup = document.getElementById('genderFormGroup');
-    const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
+    const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
     
     if (branchedCategories.includes(categorySelect.value)) {
         genderFormGroup.style.display = 'block';
@@ -360,7 +360,7 @@ async function editProduct(id) {
         document.getElementById('productVisible').checked = product.visible;
         
         // Handle gender for branched categories
-        const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
+        const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
         if (branchedCategories.includes(product.category)) {
             document.getElementById('genderFormGroup').style.display = 'block';
             document.getElementById('productGender').value = product.gender || 'homme';
@@ -592,7 +592,7 @@ async function saveProduct(event) {
     const id = document.getElementById('productId').value;
     const imageFiles = document.getElementById('productImage').files;
     
-    const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
+    const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
     const selectedCategory = document.getElementById('productCategory').value;
     
     const productData = {
