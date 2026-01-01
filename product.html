@@ -129,7 +129,10 @@
         </div>
     </footer>
 
-    <script src="js/firebase-config.js"></script>
+    <script type="module">
+        // Initialize Firebase first
+        import('./js/firebase-config.js?v=2');
+    </script>
     <script src="js/main.js"></script>
     <script>
         // Get product ID from URL FIRST
