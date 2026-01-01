@@ -54,6 +54,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     updateDiagnostic('After initFirebase - window.ProductAPI: ' + (window.ProductAPI !== undefined ? 'available' : 'undefined'),
         window.ProductAPI !== undefined ? 'success' : 'error');
+    
+    // Now that Firebase is initialized, load products
+    updateDiagnostic('Loading best sellers and collections...', 'info');
+    
+    // Load best sellers if grid exists
+    if (document.getElementById('bestSellersGrid')) {
+        updateDiagnostic('Calling loadBestSellers()...', 'info');
+        loadBestSellers();
+    }
+    
+    // Load collections if grid exists
+    if (document.getElementById('collectionsGrid')) {
+        updateDiagnostic('Calling loadCollections()...', 'info');
+        loadCollections();
+    }
 });
 
 // ===== Enhanced Icon Mapping for Collections =====
@@ -134,10 +149,18 @@ async function getCategories() {
 
 // Load collections dynamically
 async function loadCollections() {
+    if (typeof updateDiagnostic === 'function') {
+        updateDiagnostic('loadCollections() called', 'info');
+    }
+    
     const categories = await getCategories();
     const collectionsGrid = document.getElementById('collectionsGrid');
     
     if (!collectionsGrid) return;
+    
+    if (typeof updateDiagnostic === 'function') {
+        updateDiagnostic('Rendering ' + categories.length + ' categories', 'success');
+    }
     
     // Filter visible categories and sort by order
     const visibleCategories = categories
@@ -822,10 +845,23 @@ async function getBestSellers() {
 
 // Load best sellers
 async function loadBestSellers() {
+    if (typeof updateDiagnostic === 'function') {
+        updateDiagnostic('loadBestSellers() called', 'info');
+    }
+    
     const bestSellersGrid = document.getElementById('bestSellersGrid');
     if (!bestSellersGrid) return;
     
+    if (typeof updateDiagnostic === 'function') {
+        updateDiagnostic('bestSellersGrid found, calling getBestSellers()...', 'info');
+    }
+    
     const bestSellers = await getBestSellers();
+    
+    if (typeof updateDiagnostic === 'function') {
+        updateDiagnostic('getBestSellers() returned ' + bestSellers.length + ' products', 
+            bestSellers.length > 0 ? 'success' : 'warning');
+    }
     
     if (bestSellers.length === 0) {
         bestSellersGrid.innerHTML = `
@@ -1257,15 +1293,29 @@ function initEnhancedSidebar() {
 
 // ===== Initialize All Features =====
 document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize UI features here (Firebase loading is handled separately)
     initEnhancedSidebar();
     initCart();
     
-    if (document.getElementById('bestSellersGrid')) {
-        loadBestSellers();
-    }
-    
     initScrollToTop();
     initScrollAnimations();
+    
+    // Load best sellers if grid exists (will use Firebase if available)
+    if (document.getElementById('bestSellersGrid')) {
+        // Delay slightly to ensure Firebase is initialized
+        setTimeout(() => {
+            updateDiagnostic('DOMContentLoaded: Calling loadBestSellers()', 'info');
+            loadBestSellers();
+        }, 100);
+    }
+    
+    // Load collections if grid exists
+    if (document.getElementById('collectionsGrid')) {
+        setTimeout(() => {
+            updateDiagnostic('DOMContentLoaded: Calling loadCollections()', 'info');
+            loadCollections();
+        }, 100);
+    }
     
     window.addEventListener('load', function() {
         hideLoading();
