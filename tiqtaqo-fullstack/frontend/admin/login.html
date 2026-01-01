@@ -284,7 +284,10 @@
         window.auth = auth;
 
         // Initialize Firebase
-        initFirebase();
+        const firebaseResult = initFirebase();
+        // Re-export after initialization
+        window.getAuth = () => getAuth(app);
+        window.auth = getAuth(app);
 
         // Login handler
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
