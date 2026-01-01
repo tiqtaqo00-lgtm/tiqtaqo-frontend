@@ -103,7 +103,8 @@ window.ProductAPI = {
         try {
             const productsRef = collection(db, 'products');
             let constraints = [
-                where('visible', '==', true),
+                // Remove visible filter to show all products
+                // where('visible', '==', true),
                 where('price', '>=', minPrice),
                 where('price', '<=', maxPrice),
                 orderBy(sortBy, 'desc')
