@@ -122,6 +122,17 @@
             display: block;
         }
 
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
         .login-btn {
             width: 100%;
             padding: 15px;
@@ -199,7 +210,7 @@
                 <label for="email">Email</label>
                 <div class="input-wrapper">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" name="email" required placeholder="tiqtaqo00@gmail.com">
+                    <input type="email" id="email" name="email" required placeholder="tiqtaqo00@gmail.com" value="tiqtaqo00@gmail.com">
                 </div>
             </div>
 
@@ -213,6 +224,10 @@
 
             <div class="error-message" id="errorMessage">
                 <i class="fas fa-exclamation-circle"></i> <span id="errorText">Email ou mot de passe incorrect</span>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i> <span id="successText">Connexion réussie!</span>
             </div>
 
             <button type="submit" class="login-btn" id="loginBtn">
@@ -234,39 +249,27 @@
         </div>
     </div>
 
-    <!-- Load Firebase and Login -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        // Firebase configuration - Tiqtaqo Store Project
-        const firebaseConfig = {
-            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
-            authDomain: "tiqtaqo-store.firebaseapp.com",
-            projectId: "tiqtaqo-store",
-            storageBucket: "tiqtaqo-store.firebasestorage.app",
-            messagingSenderId: "747111253966",
-            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+    <script>
+        // Simple admin credentials (stored locally for this demo)
+        // In production, use Firebase Auth or backend authentication
+        const ADMIN_CREDENTIALS = {
+            email: 'tiqtaqo00@gmail.com',
+            password: 'Med123medlgtm'
         };
 
-        // Initialize Firebase and Auth
-        let auth;
-        
-        try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            console.log('Firebase Auth initialized:', auth);
-        } catch (error) {
-            console.error('Firebase initialization error:', error);
+        // Check if already logged in
+        if (localStorage.getItem('admin_logged_in') === 'true') {
+            window.location.href = 'dashboard.html';
         }
 
         // Login handler
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
             const errorText = document.getElementById('errorText');
             const loginBtn = document.getElementById('loginBtn');
             
@@ -274,45 +277,42 @@
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
             
-            try {
-                if (!auth) {
-                    throw new Error('Firebase Auth n\'est pas initialisé');
-                }
-
-                console.log('Tentative de connexion avec:', email);
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                console.log('Connexion réussie:', userCredential.user);
-                
-                // Store admin session
-                localStorage.setItem('admin_logged_in', 'true');
-                localStorage.setItem('admin_email', email);
-                
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-            } catch (error) {
-                console.error('Login error:', error);
-                
-                let errorMessageText = 'Email ou mot de passe incorrect';
-                
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    errorMessageText = 'Email ou mot de passe incorrect';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessageText = 'Format d\'email invalide';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessageText = 'Trop de tentatives. Veuillez réessayer plus tard';
-                } else if (error.message) {
-                    errorMessageText = error.message;
-                }
-                
-                errorText.textContent = errorMessageText;
-                errorMessage.classList.add('show');
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se Connecter';
-                
-                setTimeout(() => {
+            // Simulate network delay for better UX
+            setTimeout(() => {
+                // Check credentials
+                if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+                    // Success
+                    console.log('Login successful');
+                    
+                    // Store admin session
+                    localStorage.setItem('admin_logged_in', 'true');
+                    localStorage.setItem('admin_email', email);
+                    
+                    // Show success message
                     errorMessage.classList.remove('show');
-                }, 3000);
-            }
+                    successMessage.classList.add('show');
+                    document.getElementById('successText').textContent = 'Connexion réussie! Redirection...';
+                    
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    // Failed
+                    console.log('Login failed - invalid credentials');
+                    
+                    errorText.textContent = 'Email ou mot de passe incorrect';
+                    errorMessage.classList.add('show');
+                    successMessage.classList.remove('show');
+                    
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se Connecter';
+                    
+                    setTimeout(() => {
+                        errorMessage.classList.remove('show');
+                    }, 3000);
+                }
+            }, 500);
         });
     </script>
 </body>
