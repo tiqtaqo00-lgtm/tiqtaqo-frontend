@@ -740,6 +740,47 @@ function closeCategoryModal() {
     document.getElementById('categoryModal').style.display = 'flex';
 }
 
+// Export functions to window for global access
+window.checkAuth = checkAuth;
+window.logout = logout;
+window.loadAdminInfo = loadAdminInfo;
+window.getProducts = getProducts;
+window.saveProducts = saveProducts;
+window.getCategories = getCategories;
+window.saveCategories = saveCategories;
+window.updateStats = updateStats;
+window.loadProductsTable = loadProductsTable;
+window.loadCategoriesTable = loadCategoriesTable;
+window.getCategoryName = getCategoryName;
+window.getGenderDisplay = getGenderDisplay;
+window.toggleProductBestSeller = toggleProductBestSeller;
+window.toggleProductVisibility = toggleProductVisibility;
+window.toggleCategoryVisibility = toggleCategoryVisibility;
+window.deleteProduct = deleteProduct;
+window.deleteCategory = deleteCategory;
+window.showAddProductModal = showAddProductModal;
+window.showAddCategoryModal = showAddCategoryModal;
+window.handleCategoryChange = handleCategoryChange;
+window.loadCategoryOptions = loadCategoryOptions;
+window.editProduct = editProduct;
+window.loadProductColors = loadProductColors;
+window.addColorRow = addColorRow;
+window.updateColorPreview = updateColorPreview;
+window.handleColorImageUpload = handleColorImageUpload;
+window.removeColorRow = removeColorRow;
+window.addNewColor = addNewColor;
+window.getProductColors = getProductColors;
+window.editCategory = editCategory;
+window.handleImageUpload = handleImageUpload;
+window.addImageToPreview = addImageToPreview;
+window.removePreviewImage = removePreviewImage;
+window.removeExistingImage = removeExistingImage;
+window.saveProduct = saveProduct;
+window.finalizeSaveProduct = finalizeSaveProduct;
+window.saveCategory = saveCategory;
+window.closeProductModal = closeProductModal;
+window.closeCategoryModal = closeCategoryModal;
+
 // Initialize dashboard
 async function initializeDashboard() {
     // Wait for Firebase to be ready (up to 5 seconds)
@@ -774,4 +815,4 @@ if (typeof window !== 'undefined') {
 }
 
 // Export for module usage
-export { initializeDashboard };
+export { initializeDashboard, checkAuth, logout, getProducts, saveProducts };

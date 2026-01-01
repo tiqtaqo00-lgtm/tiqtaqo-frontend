@@ -968,9 +968,10 @@
         }
         
         // Load admin.js as module (after Firebase is ready)
-        setTimeout(() => {
-            import('./admin.js');
-        }, 100);
+        setTimeout(async () => {
+            const adminModule = await import('./admin.js');
+            console.log('Admin module loaded:', adminModule);
+        }, 500);
     </script>
 </body>
 </html>
