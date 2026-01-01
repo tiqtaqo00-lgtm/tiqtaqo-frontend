@@ -2,14 +2,35 @@
  * Tiqtaqo E-commerce - Main JavaScript
  * Refactored for Firebase Backend with Pagination Support
  * Supports 100,000+ products with smooth performance
+ * Version: 3 (with debug logging)
  */
 
-// Initialize Firebase on page load
+console.log('main.js loaded - version 3');
+console.log('window.ProductAPI:', window.ProductAPI);
+
+// Initialize Firebase on page load - but wait for firebase-config to load
 document.addEventListener('DOMContentLoaded', async function() {
-    // Initialize Firebase if config is valid
-    if (typeof initFirebase === 'function') {
+    console.log('DOMContentLoaded fired');
+    console.log('window.initFirebase:', typeof window.initFirebase);
+    
+    // Wait for Firebase to be initialized
+    if (typeof window.initFirebase === 'function') {
+        console.log('Calling initFirebase from main.js');
         initFirebase();
+    } else {
+        console.warn('initFirebase not available yet, waiting...');
+        // Wait up to 3 seconds for Firebase to initialize
+        for (let i = 0; i < 30; i++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            if (typeof window.initFirebase === 'function') {
+                console.log('Firebase initialized after delay');
+                initFirebase();
+                break;
+            }
+        }
     }
+    
+    console.log('After initFirebase - window.ProductAPI:', window.ProductAPI !== undefined);
 });
 
 // ===== Enhanced Icon Mapping for Collections =====
@@ -143,9 +164,14 @@ async function getProducts(options = {}) {
         forceRefresh = true // Always force refresh to get latest data
     } = options;
 
+    console.log('getProducts called with options:', options);
+    console.log('window.ProductAPI available:', window.ProductAPI !== undefined);
+    console.log('window.ProductAPI.getProducts is function:', typeof window.ProductAPI?.getProducts === 'function');
+
     // Use Firebase API if available
     if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
         try {
+            console.log('Fetching from Firebase with forceRefresh:', forceRefresh);
             const result = await ProductAPI.getProducts({
                 category,
                 gender,
@@ -154,16 +180,23 @@ async function getProducts(options = {}) {
                 searchTerm,
                 pageSize,
                 lastDoc,
-                sortBy
+                sortBy,
+                forceRefresh // Pass forceRefresh to Firebase
             });
+            console.log('Firebase result:', result);
             return result;
         } catch (error) {
             console.error('Error fetching from Firebase:', error);
+            // Return empty array instead of falling back to localStorage
+            return { products: [], hasMore: false };
         }
     }
 
-    // Fallback to localStorage for demo/offline mode
-    const localProducts = localStorage.getItem('luxury_products');
+    // ProductAPI not available - this is an error condition
+    console.error('ProductAPI not available! Firebase may not be initialized.');
+    console.error('window.ProductAPI:', window.ProductAPI);
+    // Return empty array instead of falling back to localStorage
+    return { products: [], hasMore: false };
     if (localProducts) {
         let products = JSON.parse(localProducts);
         
