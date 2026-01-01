@@ -228,15 +228,15 @@
                 console.log('accessoires-homme.html: main.js functions ready');
                 
                 // Initialize Firebase if not already done
-                if (typeof initFirebase === 'function') {
-                    await initFirebase();
+                if (typeof window.initFirebase === 'function') {
+                    await window.initFirebase();
                     console.log('accessoires-homme.html: Firebase initialized');
                 }
                 
                 initCart();
                 initUI();
                 
-                await loadCategoryProducts('accessoires', 'homme');
+                await window.loadCategoryProducts('accessoires', 'homme');
                 console.log('accessoires-homme.html: Products loaded');
             } catch (error) {
                 console.error('accessoires-homme.html: Error:', error);
@@ -246,7 +246,7 @@
         initPage();
 
         async function loadCategoryProducts(category, gender) {
-            const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
+            const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
 

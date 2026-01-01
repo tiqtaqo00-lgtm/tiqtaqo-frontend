@@ -228,13 +228,13 @@
                 console.log('packs-femme.html: main.js functions ready');
                 
                 // Initialize Firebase if not already done
-                if (typeof initFirebase === 'function') {
-                    await initFirebase();
+                if (typeof window.initFirebase === 'function') {
+                    await window.initFirebase();
                     console.log('packs-femme.html: Firebase initialized');
                 }
                 
-                initCart();
-                initUI();
+                window.initCart();
+                window.initUI();
                 await loadCategoryProducts('packs', 'femme');
                 console.log('packs-femme.html: Products loaded');
             } catch (error) {
@@ -260,7 +260,7 @@
             
             try {
                 // Get products from Firebase with filters
-                const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
+                const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
                 
                 // Filter by visible status
