@@ -139,7 +139,8 @@ async function getProducts(options = {}) {
         searchTerm = '',
         pageSize = 24,
         lastDoc = null,
-        sortBy = 'created_at'
+        sortBy = 'created_at',
+        forceRefresh = true // Always force refresh to get latest data
     } = options;
 
     // Use Firebase API if available
@@ -191,7 +192,7 @@ async function getProducts(options = {}) {
 }
 
 // Get single product by ID
-async function getProduct(productId) {
+async function getProduct(productId, forceRefresh = true) {
     // Try Firebase first
     if (window.ProductAPI && typeof ProductAPI.getProduct === 'function') {
         try {
@@ -646,7 +647,7 @@ async function initFilterSidebar() {
     const currentCategory = getCurrentCategory();
     
     // Get price range from products
-    const result = await getProducts({ category: currentCategory, pageSize: 100 });
+    const result = await getProducts({ category: currentCategory, pageSize: 100, forceRefresh: true });
     const products = result.products || [];
     const maxProductPrice = products.length > 0 
         ? Math.max(...products.map(p => p.price || 0)) 
@@ -846,7 +847,8 @@ async function searchProducts(query) {
     if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
         const result = await ProductAPI.getProducts({
             searchTerm: query,
-            pageSize: 10
+            pageSize: 10,
+            forceRefresh: true
         });
         return result.products || [];
     }
