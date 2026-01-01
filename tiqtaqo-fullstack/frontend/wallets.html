@@ -194,6 +194,13 @@
 
         // Initialize Firebase and load products after initialization
         async function initPage() {
+            // Skip if products are already being loaded
+            if (window.isProductsLoading || window.initialProductsLoaded) {
+                return;
+            }
+            
+            window.isProductsLoading = true;
+            
             // Wait for Firebase to be ready
             if (typeof initFirebase === 'function') {
                 await initFirebase();
@@ -202,6 +209,15 @@
             // Initialize UI components
             initCart();
             initUI();
+            
+            // Initialize filter sidebar and load products
+            initFilterSidebar();
+            await loadCategoryProducts('wallets');
+            initInfiniteScroll();
+            
+            window.isProductsLoading = false;
+            window.initialProductsLoaded = true;
+        }
             
             // Initialize filter sidebar and load products
             initFilterSidebar();

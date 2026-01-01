@@ -1001,6 +1001,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'].includes(currentPage)) {
         // Wait for Firebase to be initialized before loading products
         const waitForFirebase = async () => {
+            // Skip if products are already being loaded by another handler
+            if (isProductsLoading || initialProductsLoaded) {
+                return;
+            }
+            
+            isProductsLoading = true;
+            
             // Wait up to 3 seconds for Firebase to initialize
             for (let i = 0; i < 30; i++) {
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -1023,6 +1030,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             loadCategoryProducts(currentPage);
             initInfiniteScroll();
+            
+            isProductsLoading = false;
+            initialProductsLoaded = true;
         };
         
         waitForFirebase();

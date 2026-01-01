@@ -180,6 +180,13 @@
 
         // Initialize Firebase and load products after initialization
         async function initPage() {
+            // Skip if products are already being loaded
+            if (window.isProductsLoading || window.initialProductsLoaded) {
+                return;
+            }
+            
+            window.isProductsLoading = true;
+            
             // Wait for Firebase to be ready
             if (typeof initFirebase === 'function') {
                 await initFirebase();
@@ -193,6 +200,9 @@
             initFilterSidebar();
             await loadCategoryProducts('femme');
             initInfiniteScroll();
+            
+            window.isProductsLoading = false;
+            window.initialProductsLoaded = true;
         }
 
         // Call the initialization function
