@@ -210,25 +210,9 @@
     <script type="module">
         // Note: initFirebase is available as window.initFirebase (global function)
         
-        async function waitForFunction(funcName, timeout = 10000) {
-            const startTime = Date.now();
-            while (Date.now() - startTime < timeout) {
-                if (typeof window[funcName] === 'function') {
-                    return true;
-                }
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            return false;
-        }
-        
         async function initPage() {
             try {
                 console.log('glasses-femme.html: Starting initialization...');
-                
-                // Wait for main.js functions
-                await waitForFunction('initCart');
-                await waitForFunction('initUI');
-                console.log('glasses-femme.html: main.js functions ready');
                 
                 // Initialize Firebase if not already done
                 if (typeof window.initFirebase === 'function') {
@@ -236,17 +220,26 @@
                     console.log('glasses-femme.html: Firebase initialized');
                 }
                 
-                window.initCart();
-                window.initUI();
+                // Call cart and UI functions if they exist
+                if (typeof window.initCart === 'function') {
+                    window.initCart();
+                    console.log('glasses-femme.html: initCart called');
+                }
+                if (typeof window.initUI === 'function') {
+                    window.initUI();
+                    console.log('glasses-femme.html: initUI called');
+                }
                 
-                await loadCategoryProducts('glasses', 'femme');
+                // Load products
+                await window.loadCategoryProducts('glasses', 'femme');
                 console.log('glasses-femme.html: Products loaded');
             } catch (error) {
                 console.error('glasses-femme.html: Error:', error);
             }
         }
-
-        initPage();
+        
+        // Wait a moment for scripts to load, then initialize
+        setTimeout(initPage, 100);
 
         async function loadCategoryProducts(category, gender) {
             const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });

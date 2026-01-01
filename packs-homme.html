@@ -252,25 +252,9 @@
     <script type="module">
         // Note: initFirebase is available as window.initFirebase (global function)
         
-        async function waitForFunction(funcName, timeout = 10000) {
-            const startTime = Date.now();
-            while (Date.now() - startTime < timeout) {
-                if (typeof window[funcName] === 'function') {
-                    return true;
-                }
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            return false;
-        }
-
         async function initPage() {
             try {
                 console.log('packs-homme.html: Starting initialization...');
-                
-                // Wait for main.js functions
-                await waitForFunction('initCart');
-                await waitForFunction('initUI');
-                console.log('packs-homme.html: main.js functions ready');
                 
                 // Initialize Firebase if not already done
                 if (typeof window.initFirebase === 'function') {
@@ -278,17 +262,26 @@
                     console.log('packs-homme.html: Firebase initialized');
                 }
                 
-                initCart();
-                initUI();
+                // Call cart and UI functions if they exist
+                if (typeof window.initCart === 'function') {
+                    window.initCart();
+                    console.log('packs-homme.html: initCart called');
+                }
+                if (typeof window.initUI === 'function') {
+                    window.initUI();
+                    console.log('packs-homme.html: initUI called');
+                }
+                
+                // Load products
                 await window.loadCategoryProducts('packs', 'homme');
                 console.log('packs-homme.html: Products loaded');
             } catch (error) {
                 console.error('packs-homme.html: Error:', error);
             }
         }
-
-        // Start initialization
-        initPage();
+        
+        // Wait a moment for scripts to load, then initialize
+        setTimeout(initPage, 100);
 
         async function loadCategoryProducts(category, gender) {
             const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
