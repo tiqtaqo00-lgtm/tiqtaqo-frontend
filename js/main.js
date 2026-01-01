@@ -143,9 +143,14 @@ async function getProducts(options = {}) {
         forceRefresh = true // Always force refresh to get latest data
     } = options;
 
+    console.log('getProducts called with options:', options);
+    console.log('window.ProductAPI available:', window.ProductAPI !== undefined);
+    console.log('window.ProductAPI.getProducts is function:', typeof window.ProductAPI?.getProducts === 'function');
+
     // Use Firebase API if available
     if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
         try {
+            console.log('Fetching from Firebase with forceRefresh:', forceRefresh);
             const result = await ProductAPI.getProducts({
                 category,
                 gender,
@@ -154,16 +159,23 @@ async function getProducts(options = {}) {
                 searchTerm,
                 pageSize,
                 lastDoc,
-                sortBy
+                sortBy,
+                forceRefresh // Pass forceRefresh to Firebase
             });
+            console.log('Firebase result:', result);
             return result;
         } catch (error) {
             console.error('Error fetching from Firebase:', error);
+            // Return empty array instead of falling back to localStorage
+            return { products: [], hasMore: false };
         }
     }
 
-    // Fallback to localStorage for demo/offline mode
-    const localProducts = localStorage.getItem('luxury_products');
+    // ProductAPI not available - this is an error condition
+    console.error('ProductAPI not available! Firebase may not be initialized.');
+    console.error('window.ProductAPI:', window.ProductAPI);
+    // Return empty array instead of falling back to localStorage
+    return { products: [], hasMore: false };
     if (localProducts) {
         let products = JSON.parse(localProducts);
         
