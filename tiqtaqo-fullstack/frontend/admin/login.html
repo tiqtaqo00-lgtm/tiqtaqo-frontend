@@ -229,30 +229,96 @@
         </div>
     </div>
 
-    <script src="../js/firebase-config.js"></script>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+    <!-- Load Firebase config as module -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, enableIndexedDbPersistence, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, startAfter, serverTimestamp, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase configuration - Tiqtaqo Store Project
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+            authDomain: "tiqtaqo-store.firebaseapp.com",
+            projectId: "tiqtaqo-store",
+            storageBucket: "tiqtaqo-store.firebasestorage.app",
+            messagingSenderId: "747111253966",
+            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+        };
+
+        // Initialize Firebase
+        let app;
+        let db;
+        let auth;
+        let firebaseInitialized = false;
+
+        function initFirebase() {
+            if (firebaseInitialized) return { db, auth };
             
-            // Initialize Firebase first
-            if (typeof initFirebase === 'function') {
-                initFirebase();
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                enableIndexedDbPersistence(db).catch((err) => {
+                    if (err.code === 'failed-precondition') {
+                        console.log('Multiples tabs open');
+                    } else if (err.code === 'unimplemented') {
+                        console.log('Browser does not support persistence');
+                    }
+                });
+                
+                firebaseInitialized = true;
+                console.log('Firebase initialized successfully');
+                return { db, auth };
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                return null;
             }
+        }
+
+        // Export to window
+        window.initFirebase = initFirebase;
+        window.isFirebaseReady = () => firebaseInitialized;
+        window.getDb = () => db;
+        window.getAuth = () => auth;
+        window.auth = auth;
+
+        // Initialize Firebase
+        initFirebase();
+
+        // Login handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
+            const loginBtn = document.querySelector('.login-btn');
             
-            // Simple authentication (in production, use proper backend authentication)
-            if (email === 'tiqtaqo00@gmail.com' && password === 'Med123medlgtm') {
+            // Disable button during login
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
+            
+            try {
+                const auth = window.getAuth();
+                if (!auth) {
+                    throw new Error('Firebase Auth not initialized');
+                }
+
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                
                 // Store admin session
                 localStorage.setItem('admin_logged_in', 'true');
                 localStorage.setItem('admin_email', email);
                 
                 // Redirect to dashboard
                 window.location.href = 'dashboard.html';
-            } else {
+            } catch (error) {
+                console.error('Login error:', error);
                 errorMessage.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se Connecter';
+                
                 setTimeout(() => {
                     errorMessage.classList.remove('show');
                 }, 3000);

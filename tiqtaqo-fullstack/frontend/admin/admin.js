@@ -742,11 +742,6 @@ function closeCategoryModal() {
 
 // Initialize dashboard
 async function initializeDashboard() {
-    // Initialize Firebase if needed
-    if (typeof initFirebase === 'function') {
-        initFirebase();
-    }
-    
     // Wait for Firebase to be ready (up to 5 seconds)
     let attempts = 0;
     const maxAttempts = 50; // 50 * 100ms = 5 seconds
@@ -768,4 +763,15 @@ async function initializeDashboard() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initializeDashboard);
+// Auto-initialize when loaded as module
+if (typeof window !== 'undefined') {
+    // Check if DOM is already ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    } else {
+        initializeDashboard();
+    }
+}
+
+// Export for module usage
+export { initializeDashboard };
