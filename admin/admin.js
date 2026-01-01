@@ -869,7 +869,7 @@ async function initializeDashboard() {
     }
 }
 
-// Auto-initialize when loaded as module
+// Auto-initialize when loaded
 if (typeof window !== 'undefined') {
     // Check if DOM is already ready
     if (document.readyState === 'loading') {
@@ -879,5 +879,4 @@ if (typeof window !== 'undefined') {
     }
 }
 
-// Export for module usage
-export { initializeDashboard, checkAuth, logout, getProducts, saveProducts };
+// All functions are exported to window above in this file
