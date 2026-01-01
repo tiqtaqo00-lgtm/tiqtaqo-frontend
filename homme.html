@@ -195,41 +195,44 @@
         </div>
     </footer>
 
+    <!-- Load Firebase first, then main.js -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Initialize category page after Firebase is ready -->
     <script type="module">
-        // Initialize Firebase and load products for category page
-        import { initFirebase } from './js/firebase-config.js?v=2';
+        import { initFirebase } from './js/firebase-config.js?v=3';
         
-        window.isProductsLoading = true;
-        
-        // Wait for main.js functions to be available
-        async function waitForMainJS() {
-            console.log('homme.html: Waiting for main.js...');
-            for (let i = 0; i < 50; i++) {
-                if (typeof initFilterSidebar === 'function' && typeof loadCategoryProducts === 'function') {
-                    console.log('homme.html: main.js loaded after ' + (i * 50) + 'ms');
+        async function waitForFunction(funcName, timeout = 10000) {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                if (typeof window[funcName] === 'function') {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 50));
             }
-            console.error('homme.html: main.js functions not available');
             return false;
         }
         
-        async function initPage() {
+        async function initCategoryPage() {
             try {
-                console.log('homme.html: Starting initialization...');
+                console.log('Category page: Starting initialization...');
                 
-                // Wait for main.js to load first
-                await waitForMainJS();
+                // Wait for main.js functions to be available
+                await waitForFunction('initFilterSidebar');
+                await waitForFunction('loadCategoryProducts');
+                console.log('Category page: main.js functions ready');
                 
-                // Initialize Firebase
-                await initFirebase();
-                console.log('homme.html: Firebase initialized');
+                // Initialize Firebase if not already done
+                if (typeof initFirebase === 'function') {
+                    await initFirebase();
+                    console.log('Category page: Firebase initialized');
+                }
                 
-                // Initialize UI and load products
+                // Initialize UI
                 initFilterSidebar();
-                console.log('homme.html: Filter sidebar initialized');
                 
+                // Add mobile filter button
                 const productsSection = document.querySelector('.products-section, #productsSection');
                 if (productsSection) {
                     const existingToggle = document.querySelector('.mobile-filter-toggle');
@@ -242,21 +245,18 @@
                     }
                 }
                 
+                // Load products for this category
                 await loadCategoryProducts('homme');
-                console.log('homme.html: Products loaded');
-                
                 initInfiniteScroll();
-                console.log('homme.html: Infinite scroll initialized');
                 
+                console.log('Category page: Initialization complete');
             } catch (error) {
-                console.error('homme.html: Error during initialization:', error);
-            } finally {
-                window.isProductsLoading = false;
+                console.error('Category page error:', error);
             }
         }
         
-        initPage();
+        // Start initialization
+        initCategoryPage();
     </script>
-    <script src="js/main.js"></script>
 </body>
 </html>

@@ -243,10 +243,12 @@
         </div>
     </footer>
 
+    <!-- Load Firebase first -->
+    <script src="js/firebase-config.js"></script>
+
     <script type="module">
-        // Import Firebase configuration and main functions
-        import { initFirebase, ProductAPI } from './js/firebase-config.js?v=2';
-        import { getProducts, getCategories, contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=2';
+        // Import main functions from main.js
+        import { getProducts, getCategories, contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=3';
 
         // Make functions globally accessible for inline onclick handlers
         window.getProducts = getProducts;
@@ -256,15 +258,43 @@
         window.initCart = initCart;
         window.initUI = initUI;
 
-        // Initialize Firebase
-        initFirebase();
+        async function waitForFunction(funcName, timeout = 10000) {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                if (typeof window[funcName] === 'function') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return false;
+        }
 
-        // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', async function() {
-            initCart();
-            initUI();
-            await loadCategoryProducts('packs', 'homme');
-        });
+        async function initPage() {
+            try {
+                console.log('packs-homme.html: Starting initialization...');
+                
+                // Wait for main.js functions
+                await waitForFunction('initCart');
+                await waitForFunction('initUI');
+                console.log('packs-homme.html: main.js functions ready');
+                
+                // Initialize Firebase if not already done
+                if (typeof initFirebase === 'function') {
+                    await initFirebase();
+                    console.log('packs-homme.html: Firebase initialized');
+                }
+                
+                initCart();
+                initUI();
+                await loadCategoryProducts('packs', 'homme');
+                console.log('packs-homme.html: Products loaded');
+            } catch (error) {
+                console.error('packs-homme.html: Error:', error);
+            }
+        }
+
+        // Start initialization
+        initPage();
 
         async function loadCategoryProducts(category, gender) {
             const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });

@@ -201,10 +201,12 @@
         </div>
     </footer>
 
+    <!-- Load Firebase first -->
+    <script src="js/firebase-config.js"></script>
+
     <script type="module">
-        // Import Firebase configuration and main functions
-        import { initFirebase } from './js/firebase-config.js?v=2';
-        import { contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=2';
+        // Import main functions from main.js
+        import { contactWhatsApp, addToCart, initCart, initUI } from './js/main.js?v=3';
 
         window.getProducts = getProducts;
         window.contactWhatsApp = contactWhatsApp;
@@ -212,11 +214,10 @@
         window.initCart = initCart;
         window.initUI = initUI;
 
-        window.isProductsLoading = true;
-        
-        async function waitForMainJS() {
-            for (let i = 0; i < 50; i++) {
-                if (typeof initCart === 'function' && typeof initUI === 'function') {
+        async function waitForFunction(funcName, timeout = 10000) {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                if (typeof window[funcName] === 'function') {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 50));
@@ -226,18 +227,26 @@
         
         async function initPage() {
             try {
-                await waitForMainJS();
-                await initFirebase();
+                console.log('wallets-homme.html: Starting initialization...');
+                
+                // Wait for main.js functions
+                await waitForFunction('initCart');
+                await waitForFunction('initUI');
+                console.log('wallets-homme.html: main.js functions ready');
+                
+                // Initialize Firebase if not already done
+                if (typeof initFirebase === 'function') {
+                    await initFirebase();
+                    console.log('wallets-homme.html: Firebase initialized');
+                }
                 
                 initCart();
                 initUI();
                 
                 await loadCategoryProducts('wallets', 'homme');
-                
+                console.log('wallets-homme.html: Products loaded');
             } catch (error) {
                 console.error('wallets-homme.html: Error:', error);
-            } finally {
-                window.isProductsLoading = false;
             }
         }
 
