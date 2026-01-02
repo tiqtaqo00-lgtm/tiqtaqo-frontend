@@ -2167,3 +2167,45 @@ window.filterProducts = filterProducts;
 window.sortProducts = sortProducts;
 window.searchProducts = searchProducts;
 window.loadMoreProducts = loadMoreProducts;
+window.initAddToCartButtons = initAddToCartButtons;
+
+// Initialize add to cart buttons with MutationObserver for dynamically added elements
+(function() {
+    // Initialize immediately
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAddToCartButtonsWithObserver);
+    } else {
+        initAddToCartButtonsWithObserver();
+    }
+    
+    function initAddToCartButtonsWithObserver() {
+        // Initialize the event delegation
+        initAddToCartButtons();
+        
+        // Also set up a MutationObserver to re-check for add-to-cart buttons
+        // This ensures buttons added dynamically work correctly
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // Element node
+                            // Check if the added node or its children have add-to-cart buttons
+                            const buttons = node.querySelectorAll ? node.querySelectorAll('.add-to-cart-btn') : [];
+                            if (node.classList && node.classList.contains('add-to-cart-btn')) {
+                                buttons.push(node);
+                            }
+                            if (buttons.length > 0) {
+                                console.log('MutationObserver detected', buttons.length, 'new add-to-cart buttons');
+                            }
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+    }
+})();
