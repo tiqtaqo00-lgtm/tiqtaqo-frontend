@@ -150,16 +150,16 @@
                         <div class="star-rating-input">
                             <label>Votre note:</label>
                             <div class="star-input-container" id="starInputContainer">
-                                <input type="radio" name="rating" value="1" id="star1">
-                                <label for="star1" onclick="setRating(1)"><i class="fas fa-star"></i></label>
-                                <input type="radio" name="rating" value="2" id="star2">
-                                <label for="star2" onclick="setRating(2)"><i class="fas fa-star"></i></label>
-                                <input type="radio" name="rating" value="3" id="star3">
-                                <label for="star3" onclick="setRating(3)"><i class="fas fa-star"></i></label>
-                                <input type="radio" name="rating" value="4" id="star4">
-                                <label for="star4" onclick="setRating(4)"><i class="fas fa-star"></i></label>
                                 <input type="radio" name="rating" value="5" id="star5">
                                 <label for="star5" onclick="setRating(5)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="4" id="star4">
+                                <label for="star4" onclick="setRating(4)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="3" id="star3">
+                                <label for="star3" onclick="setRating(3)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="2" id="star2">
+                                <label for="star2" onclick="setRating(2)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="1" id="star1">
+                                <label for="star1" onclick="setRating(1)"><i class="fas fa-star"></i></label>
                             </div>
                         </div>
                         <div class="form-group">
@@ -955,8 +955,6 @@
         .star-input-container {
             display: flex;
             gap: 5px;
-            direction: ltr;
-            flex-direction: row;
         }
         
         .star-input-container input[type="radio"] {
