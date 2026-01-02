@@ -394,7 +394,7 @@
             }
         }
 
-        // Simple hover zoom on image
+        // Magnifying glass zoom effect
         let imageZoomTimeout;
         function handleImageZoom(e) {
             const mainImage = document.getElementById('mainImage');
@@ -409,74 +409,68 @@
             // Hide hint
             if (zoomHint) zoomHint.style.display = 'none';
             
-            // Create or get zoom panel
-            let zoomPanel = document.getElementById('imageZoomPanel');
-            if (!zoomPanel) {
-                zoomPanel = document.createElement('div');
-                zoomPanel.id = 'imageZoomPanel';
-                zoomPanel.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    right: 20px;
-                    width: 300px;
-                    height: 300px;
-                    border: 3px solid var(--gold);
-                    border-radius: 15px;
-                    background: white;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-                    overflow: hidden;
-                    z-index: 1000;
-                    display: none;
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;
-                `;
-                document.body.appendChild(zoomPanel);
-            }
-            
             // Get image dimensions
             const imgRect = mainImage.getBoundingClientRect();
             const imgWidth = imgRect.width;
             const imgHeight = imgRect.height;
-            const imgSrc = mainImage.src;
             
             // Calculate mouse position relative to image
             const x = e.clientX - imgRect.left;
             const y = e.clientY - imgRect.top;
             
-            // Calculate percentage position
-            const xPercent = x / imgWidth;
-            const yPercent = y / imgHeight;
+            // Calculate percentage position for transform-origin
+            const xPercent = (x / imgWidth) * 100;
+            const yPercent = (y / imgHeight) * 100;
             
-            // Show zoom panel
-            zoomPanel.style.display = 'block';
-            zoomPanel.style.backgroundImage = `url(${imgSrc})`;
-            zoomPanel.style.backgroundSize = '400%';
-            
-            // Calculate background position to match mouse position
-            const bgX = (xPercent * 100) + '%';
-            const bgY = (yPercent * 100) + '%';
-            zoomPanel.style.backgroundPosition = `${bgX} ${bgY}`;
+            // Apply zoom effect with transform-origin at mouse position
+            mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+            mainImage.style.transform = 'scale(2.5)';
+            mainImage.style.transition = 'transform 0.1s ease-out';
+            mainImage.style.cursor = 'zoom-out';
+            imageContainer.style.overflow = 'hidden';
         }
         
         // Hide zoom when mouse leaves
         function hideImageZoom() {
+            const mainImage = document.getElementById('mainImage');
             const zoomHint = document.getElementById('zoomHint');
-            const zoomPanel = document.getElementById('imageZoomPanel');
+            const imageContainer = document.getElementById('mainImageContainer');
             
-            // Delay hiding to allow mouse to move to zoom panel
+            // Delay to allow mouse to re-enter
             imageZoomTimeout = setTimeout(() => {
-                if (zoomPanel) zoomPanel.style.display = 'none';
+                if (mainImage) {
+                    mainImage.style.transform = 'scale(1)';
+                    mainImage.style.transformOrigin = 'center center';
+                    mainImage.style.transition = 'transform 0.3s ease';
+                    mainImage.style.cursor = 'crosshair';
+                }
                 if (zoomHint) zoomHint.style.display = 'flex';
-            }, 100);
+            }, 200);
         }
 
-        // Keep zoom panel visible when mouse moves to it
+        // Keep zoom active when mouse moves within image
         document.addEventListener('mousemove', function(e) {
-            const zoomPanel = document.getElementById('imageZoomPanel');
-            if (zoomPanel && zoomPanel.style.display === 'block') {
+            const mainImage = document.getElementById('mainImage');
+            const imageContainer = document.getElementById('mainImageContainer');
+            
+            if (imageContainer && imageContainer.contains(e.target)) {
+                // Clear timeout and update zoom position
                 if (imageZoomTimeout) clearTimeout(imageZoomTimeout);
+                
+                if (mainImage.style.transform === 'scale(2.5)') {
+                    // Just update transform-origin without transition for smooth movement
+                    const imgRect = mainImage.getBoundingClientRect();
+                    const x = e.clientX - imgRect.left;
+                    const y = e.clientY - imgRect.top;
+                    const xPercent = (x / imgRect.width) * 100;
+                    const yPercent = (y / imgRect.height) * 100;
+                    
+                    mainImage.style.transition = 'none';
+                    mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+                }
+            } else if (mainImage && mainImage.style.transform === 'scale(2.5)') {
+                // Mouse left image area
+                hideImageZoom();
             }
         });
 
