@@ -425,20 +425,23 @@
 
         // Open order modal from product page
         async function openOrderModalFromProduct(productId) {
-            if (typeof openOrderModal === 'function') {
-                openOrderModal(productId, window.selectedProductColor, window.selectedProductColorHex);
+            // Check if main.js openOrderModal is available
+            if (typeof window.openOrderModal === 'function') {
+                console.log('Using openOrderModal from main.js');
+                window.openOrderModal(productId, window.selectedProductColor, window.selectedProductColorHex);
             } else {
-                // Fallback if main.js function not available
+                // Fallback - use inline function directly
+                console.log('Using openOrderModalDirect fallback');
                 await openOrderModalDirect(productId);
             }
         }
 
         // Add current product to cart
         function addCurrentProductToCart(productId) {
-            if (typeof addToCart === 'function') {
+            if (typeof window.addToCart === 'function') {
                 const product = window.currentProductForCart;
                 if (product) {
-                    addToCart(product, window.selectedProductColor, window.selectedProductColorHex);
+                    window.addToCart(product, window.selectedProductColor, window.selectedProductColorHex);
                 }
             } else {
                 showNotification('Erreur: Fonction addToCart non disponible', 'warning');
