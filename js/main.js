@@ -1282,6 +1282,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fix: Remove onclick from product cards and use event delegation instead
     setTimeout(fixProductCardClicks, 200);
+    // Also set up product card navigation handler
+    setupProductCardNavigation();
     
     initScrollToTop();
     initScrollAnimations();
@@ -1562,16 +1564,92 @@ let addToCartInProgress = false;
 
 // ===== FIX: Remove onclick from product cards and use event delegation =====
 function fixProductCardClicks() {
-    // Find all product cards
-    const productCards = document.querySelectorAll('.product-card[data-product-id]');
+    // Use MutationObserver to watch for dynamically added product cards
+    if (typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        // Check if the node itself is a product card
+                        if (node.classList && node.classList.contains('product-card')) {
+                            fixSingleCard(node);
+                        }
+                        // Check for product cards in children
+                        const cards = node.querySelectorAll && node.querySelectorAll('.product-card');
+                        if (cards) {
+                            cards.forEach(fixSingleCard);
+                        }
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
     
-    productCards.forEach(card => {
-        // Remove the onclick attribute
+    // Fix all existing product cards
+    const existingCards = document.querySelectorAll('.product-card');
+    existingCards.forEach(fixSingleCard);
+}
+
+function fixSingleCard(card) {
+    // Remove onclick attribute if exists
+    if (card.hasAttribute('onclick')) {
         card.removeAttribute('onclick');
-    });
+    }
     
-    // Now set up event delegation for card clicks
-    setupProductCardNavigation();
+    // Add data-product-id if missing but we can extract it from onclick
+    if (!card.hasAttribute('data-product-id')) {
+        // Try to extract product ID from the card's structure
+        const productId = extractProductIdFromCard(card);
+        if (productId) {
+            card.setAttribute('data-product-id', productId);
+        }
+    }
+}
+
+function extractProductIdFromCard(card) {
+    // Look for product ID in various places
+    // 1. Check if there's a data-id attribute
+    if (card.dataset.id) {
+        return card.dataset.id;
+    }
+    
+    // 2. Look for onclick attribute pattern: location.href='product.html?id=XXX'
+    const onclick = card.getAttribute('onclick');
+    if (onclick) {
+        const match = onclick.match(/product\.html\?id=([^']+)/);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    
+    // 3. Look for buttons with data-product-id inside the card
+    const buttonWithId = card.querySelector('[data-product-id]');
+    if (buttonWithId) {
+        return buttonWithId.dataset.productId;
+    }
+    
+    // 4. Look for any element with data-product-id
+    const anyElementWithId = card.querySelector('[data-product-id]');
+    if (anyElementWithId) {
+        return anyElementWithId.dataset.productId;
+    }
+    
+    // 5. Look for product link pattern in the card
+    const links = card.querySelectorAll('a[href*="product.html?id="]');
+    for (const link of links) {
+        const href = link.getAttribute('href');
+        const match = href.match(/product\.html\?id=([^&]+)/);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    
+    return null;
 }
 
 // Handle product card navigation through event delegation
