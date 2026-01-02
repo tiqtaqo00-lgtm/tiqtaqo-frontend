@@ -551,9 +551,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
             : (product.image || '');
         
         return `
-            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" 
-                 onclick="location.href='product.html?id=${product.id}'" 
-                 style="cursor: pointer;">
+            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" style="cursor: pointer;">
                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
                 <div class="product-image-container">
@@ -890,9 +888,7 @@ async function loadBestSellers() {
             : (product.image || '');
         
         return `
-            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" 
-                 onclick="location.href='product.html?id=${product.id}'" 
-                 style="cursor: pointer;">
+            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" style="cursor: pointer;">
                 <div class="best-seller-badge">
                     <i class="fas fa-fire"></i>
                     Best-Seller
@@ -1600,6 +1596,21 @@ function initAddToCartButtons() {
                     addToCartInProgress = false;
                     console.error('Error adding to cart:', error);
                 });
+            }
+        }
+    });
+    
+    // Product card navigation - navigate only when NOT clicking buttons
+    document.addEventListener('click', function(e) {
+        const productCard = e.target.closest('.product-card[data-product-id]');
+        if (productCard) {
+            // Only navigate if the click was NOT on a button
+            const clickedOnButton = e.target.tagName === 'BUTTON' || e.target.closest('button');
+            if (!clickedOnButton) {
+                const productId = productCard.dataset.productId;
+                if (productId) {
+                    window.location.href = `product.html?id=${productId}`;
+                }
             }
         }
     });
