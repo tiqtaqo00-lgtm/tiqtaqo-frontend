@@ -572,7 +572,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation();">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -914,7 +914,7 @@ async function loadBestSellers() {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation();">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -1605,6 +1605,33 @@ function initAddToCartButtons() {
     });
 }
 
+// Handle add to cart button click directly (for inline onclick)
+async function handleAddToCart(productId) {
+    console.log('handleAddToCart called with productId:', productId);
+    
+    if (addToCartInProgress) {
+        console.log('Add to cart already in progress, ignoring click');
+        return;
+    }
+    
+    if (productId) {
+        console.log('Adding product to cart:', productId);
+        
+        // Get product data and add to cart
+        const product = await getProduct(productId);
+        if (product) {
+            addToCartInProgress = true;
+            console.log('Product found, adding to cart:', product.name);
+            addToCart(product);
+            // Reset after a short delay
+            setTimeout(() => { addToCartInProgress = false; }, 500);
+        } else {
+            showNotification('Produit non trouvé!', 'warning');
+            addToCartInProgress = false;
+        }
+    }
+}
+
 // Make functions globally accessible
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
@@ -1616,6 +1643,7 @@ window.resetFilters = resetFilters;
 window.applyFilters = applyFilters;
 window.toggleMobileFilters = toggleMobileFilters;
 window.closeMobileFilters = closeMobileFilters;
+window.handleAddToCart = handleAddToCart;
 
 // ===== Order Modal =====
 function getOrderModalHTML() {
