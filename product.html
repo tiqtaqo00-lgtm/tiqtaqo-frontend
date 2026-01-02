@@ -425,25 +425,45 @@
 
         // Open order modal from product page
         async function openOrderModalFromProduct(productId) {
-            // Check if main.js openOrderModal is available
+            console.log('openOrderModalFromProduct called with productId:', productId);
+            
+            // Ensure selected color is available
+            if (!window.selectedProductColor && window.currentProductColors && window.currentProductColors.length > 0) {
+                window.selectedProductColor = window.currentProductColors[0].name;
+                window.selectedProductColorHex = window.currentProductColors[0].hex;
+            }
+            
+            // Use main.js openOrderModal function
             if (typeof window.openOrderModal === 'function') {
-                console.log('Using openOrderModal from main.js');
+                console.log('Calling openOrderModal from main.js');
                 window.openOrderModal(productId, window.selectedProductColor, window.selectedProductColorHex);
             } else {
-                // Fallback - use inline function directly
-                console.log('Using openOrderModalDirect fallback');
-                await openOrderModalDirect(productId);
+                console.error('openOrderModal function not found!');
+                showNotification('Erreur: Impossible d\'ouvrir la commande', 'error');
             }
         }
 
         // Add current product to cart
         function addCurrentProductToCart(productId) {
+            console.log('addCurrentProductToCart called with productId:', productId);
+            
+            // Ensure selected color is available
+            if (!window.selectedProductColor && window.currentProductColors && window.currentProductColors.length > 0) {
+                window.selectedProductColor = window.currentProductColors[0].name;
+                window.selectedProductColorHex = window.currentProductColors[0].hex;
+            }
+            
             if (typeof window.addToCart === 'function') {
                 const product = window.currentProductForCart;
                 if (product) {
+                    console.log('Adding product to cart:', product.name);
                     window.addToCart(product, window.selectedProductColor, window.selectedProductColorHex);
+                } else {
+                    console.error('currentProductForCart is not set');
+                    showNotification('Erreur: Produit non trouvé', 'warning');
                 }
             } else {
+                console.error('addToCart function not found!');
                 showNotification('Erreur: Fonction addToCart non disponible', 'warning');
             }
         }
