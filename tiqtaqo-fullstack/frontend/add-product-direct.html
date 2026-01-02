@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة منتج - TiqTaQo</title>
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc,
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+            authDomain: "tiqtaqo-store.firebaseapp.com",
+            projectId: "tiqtaqo-store",
+            storageBucket: "tiqtaqo-store.firebasestorage.app",
+            messagingSenderId: "747111253966",
+            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Add product function
+        window.addProductToFirebase = async function() {
+            const productData = {
+                name: document.getElementById('productName').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDescription').value,
+                image: document.getElementById('productImage').value || "https://via.placeholder.com/400x400?text=Product",
+                colors: [],
+                promotion: 0,
+                bestSeller: false,
+                visible: true,
+                gender: document.getElementById('productGender').value,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, 'products'), productData);
+                
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #d4edda; color: #155724; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h3>✅ تم إضافة المنتج بنجاح!</h3>
+                        <p>معرف المنتج: ${docRef.id}</p>
+                        <p>الاسم: ${productData.name}</p>
+                        <p>السعر: ${productData.price} درهم</p>
+                        <p>التصنيف: ${productData.category}</p>
+                        <a href="https://console.firebase.google.com/project/tiqtaqo-store/firestore/databases" 
+                           target="_blank" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+                            تحقق من Firebase
+                        </a>
+                    </div>
+                `;
+                
+                console.log('Product added with ID:', docRef.id);
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #f8d7da; color: #721c24; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h3>❌ خطأ!</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                console.error('Error:', error);
+            }
+        };
+
+        // Load existing products
+        window.loadExistingProducts = async function() {
+            try {
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDoc(doc(db, 'products', 'test'));
+                
+                document.getElementById('productsList').innerHTML = `
+                    <p style="color: #28a745;">✅ Firebase متصل بنجاح!</p>
+                    <p>يمكنك الآن إضافة منتج جديد بالأعلى</p>
+                `;
+            } catch (error) {
+                document.getElementById('productsList').innerHTML = `
+                    <p style="color: #dc3545;">❌ خطأ في الاتصال: ${error.message}</p>
+                `;
+            }
+        };
+
+        // Run on load
+        window.onload = loadExistingProducts;
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+        h1 {
+            color: #d4af37;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #d4af37 0%, #c9a227 100%);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+        .info {
+            background: rgba(212, 175, 55, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎁 إضافة منتج جديد</h1>
+    
+    <div class="info">
+        <p><strong>ملاحظة:</strong> هذا المنتج سيُضاف مباشرة إلى Firebase وسيظهر على جميع الأجهزة!</p>
+    </div>
+    
+    <div class="form-group">
+        <label>اسم المنتج:</label>
+        <input type="text" id="productName" placeholder="مثل: ساعة ذهبية فاخرة">
+    </div>
+    
+    <div class="form-group">
+        <label>السعر (بالدرهم):</label>
+        <input type="number" id="productPrice" placeholder="150">
+    </div>
+    
+    <div class="form-group">
+        <label>التصنيف:</label>
+        <select id="productCategory">
+            <option value="homme">Homme - رجالي</option>
+            <option value="femme">Femme - نسائي</option>
+            <option value="packs">Packs - مجموعات</option>
+            <option value="wallets">Wallets - محافظ</option>
+            <option value="glasses">Glasses - نظارات</option>
+            <option value="accessoires">Accessoires - إكسسوارات</option>
+            <option value="belts">Belts - أحزمة</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>الجنس:</label>
+        <select id="productGender">
+            <option value="homme">رجالي</option>
+            <option value="femme">نسائي</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>وصف المنتج:</label>
+        <textarea id="productDescription" rows="3" placeholder="وصف المنتج..."></textarea>
+    </div>
+    
+    <div class="form-group">
+        <label>رابط الصورة (اختياري):</label>
+        <input type="text" id="productImage" placeholder="https://example.com/image.jpg">
+    </div>
+    
+    <button onclick="addProductToFirebase()">➕ إضافة المنتج إلى Firebase</button>
+    
+    <div id="productsList" style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+        <p style="color: #ffc107;">جاري التحقق من الاتصال...</p>
+    </div>
+    
+    <div id="result"></div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="https://console.firebase.google.com/project/tiqtaqo-store/firestore/databases" 
+           target="_blank" style="color: #d4af37; text-decoration: none;">
+            🔗 فتح Firebase Console
+        </a>
+    </div>
+</body>
+</html>

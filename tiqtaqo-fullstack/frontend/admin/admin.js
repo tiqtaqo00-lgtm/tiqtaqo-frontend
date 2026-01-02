@@ -610,9 +610,9 @@ async function saveProduct(event) {
         created_at: new Date().toISOString()
     };
     
-    // Handle gender for branched categories (use trim() to handle any whitespace issues)
+    // Handle gender for branched categories
     if (branchedCategories.includes(selectedCategory)) {
-        productData.gender = document.getElementById('productGender').value.trim();
+        productData.gender = document.getElementById('productGender').value;
     } else {
         productData.gender = null;
     }
@@ -869,7 +869,7 @@ async function initializeDashboard() {
     }
 }
 
-// Auto-initialize when loaded
+// Auto-initialize when loaded as module
 if (typeof window !== 'undefined') {
     // Check if DOM is already ready
     if (document.readyState === 'loading') {
@@ -879,4 +879,5 @@ if (typeof window !== 'undefined') {
     }
 }
 
-// All functions are exported to window above in this file
+// Export for module usage
+export { initializeDashboard, checkAuth, logout, getProducts, saveProducts };

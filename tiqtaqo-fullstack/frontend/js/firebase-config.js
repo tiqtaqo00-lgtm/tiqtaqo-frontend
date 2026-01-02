@@ -175,14 +175,14 @@ window.ProductAPI = {
                 const price = product.price || 0;
                 if (price < minPrice || price > maxPrice) return false;
                 
-                // Category filter - use trim() to handle trailing spaces
-                if (category && (product.category || '').trim() !== category) return false;
+                // Category filter
+                if (category && product.category !== category) return false;
                 
-                // Gender filter - use trim() to handle trailing spaces
+                // Gender filter
                 if (gender) {
                     const genderCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
                     if (genderCategories.includes(category)) {
-                        if ((product.gender || '').trim() !== gender) return false;
+                        if (product.gender !== gender) return false;
                     }
                 }
                 

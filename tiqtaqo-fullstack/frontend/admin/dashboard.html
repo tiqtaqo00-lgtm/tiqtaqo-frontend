@@ -875,7 +875,12 @@
         </div>
     </div>
 
-    <!-- Load admin.js as regular script (not module) for proper window access -->
-    <script src="admin.js"></script>
+    <script type="module">
+        // Load admin.js - it handles Firebase initialization internally
+        setTimeout(async () => {
+            const adminModule = await import('./admin.js');
+            console.log('Admin module loaded:', adminModule);
+        }, 100);
+    </script>
 </body>
 </html>
