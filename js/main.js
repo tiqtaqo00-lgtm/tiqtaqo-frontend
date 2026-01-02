@@ -551,15 +551,17 @@ function renderProductsGrid(productsGrid, products, append = false) {
             : (product.image || '');
         
         return `
-            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}">
+            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" 
+                 onclick="location.href='product.html?id=${product.id}'" 
+                 style="cursor: pointer;">
                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
-                <div class="product-image-container navigation-click" data-product-id="${product.id}">
+                <div class="product-image-container">
                     <img src="${productImage}" alt="${product.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="product-info">
-                    <h3 class="navigation-click" data-product-id="${product.id}">${product.name}</h3>
+                    <h3>${product.name}</h3>
                     <div class="product-rating">${starsHtml}</div>
                     <p>${product.description || ''}</p>
                     <div class="product-price">
@@ -567,10 +569,10 @@ function renderProductsGrid(productsGrid, products, append = false) {
                         <span class="price">${Math.round(finalPrice)} DH</span>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" style="flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); openOrderModal('${product.id}'); return false;">
+                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.preventDefault(); event.stopPropagation(); addToCartFromCard('${product.id}'); return false;">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -888,18 +890,20 @@ async function loadBestSellers() {
             : (product.image || '');
         
         return `
-            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}">
+            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" 
+                 onclick="location.href='product.html?id=${product.id}'" 
+                 style="cursor: pointer;">
                 <div class="best-seller-badge">
                     <i class="fas fa-fire"></i>
                     Best-Seller
                 </div>
                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
-                <div class="product-image-container navigation-click" data-product-id="${product.id}">
+                <div class="product-image-container">
                     <img src="${productImage}" alt="${product.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="product-info">
-                    <h3 class="navigation-click" data-product-id="${product.id}">${product.name}</h3>
+                    <h3>${product.name}</h3>
                     <div class="product-rating">${starsHtml}</div>
                     <p>${product.description || ''}</p>
                     <div class="product-price">
@@ -907,10 +911,10 @@ async function loadBestSellers() {
                         <span class="price">${Math.round(finalPrice)} DH</span>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" style="flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); openOrderModal('${product.id}'); return false;">
+                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.preventDefault(); event.stopPropagation(); addToCartFromCard('${product.id}'); return false;">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -1280,16 +1284,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initCart();
     initAddToCartButtons();
     
-    // Fix: Remove onclick from product cards IMMEDIATELY and use event delegation instead
-    // Call immediately to catch any cards before user interaction
-    fixProductCardClicks();
-    
-    // Call again with small delay to catch any dynamically added cards
-    setTimeout(fixProductCardClicks, 50);
-    
-    // Also set up product card navigation handler IMMEDIATELY
-    setupProductCardNavigation();
-    
     initScrollToTop();
     initScrollAnimations();
     
@@ -1367,28 +1361,6 @@ function addToCart(product, selectedColor = null, selectedColorHex = null) {
     saveCart(cart);
     updateCartUI();
     showNotification('Produit ajouté au panier!');
-}
-
-// Add to cart from product card - used by onclick in product cards
-async function addToCartFromCard(productId) {
-    const product = await getProduct(productId);
-    if (product) {
-        addToCart(product);
-    } else {
-        showNotification('Produit non trouvé!', 'warning');
-    }
-}
-
-// Handle card click - returns false if clicked on button, true otherwise
-function handleCardClick(event, productId) {
-    // Check if clicked on or inside a button
-    if (event.target.closest('button')) {
-        event.preventDefault();
-        event.stopPropagation();
-        return false;
-    }
-    // Allow navigation to product page
-    return true;
 }
 
 function removeFromCart(productId) {
@@ -1589,134 +1561,6 @@ function showNotification(message, type = 'success') {
 let addToCartInitialized = false;
 let addToCartInProgress = false;
 
-// ===== FIX: Completely remove onclick from product cards and use pure event delegation =====
-function fixProductCardClicks() {
-    // First, immediately remove all onclick attributes from product cards
-    const allProductCards = document.querySelectorAll('.product-card');
-    allProductCards.forEach(card => {
-        // Remove onclick attribute
-        card.removeAttribute('onclick');
-        // Ensure data-product-id exists
-        if (!card.hasAttribute('data-product-id')) {
-            const productId = extractProductIdFromCard(card);
-            if (productId) {
-                card.setAttribute('data-product-id', productId);
-            }
-        }
-        // Make sure buttons don't trigger card navigation
-        const buttons = card.querySelectorAll('button');
-        buttons.forEach(btn => {
-            btn.setAttribute('data-card-button', 'true');
-        });
-    });
-
-    // Use MutationObserver to watch for dynamically added product cards
-    if (typeof MutationObserver !== 'undefined') {
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1) { // Element node
-                        // Check if the node itself is a product card
-                        if (node.classList && node.classList.contains('product-card')) {
-                            processProductCard(node);
-                        }
-                        // Check for product cards in children
-                        const cards = node.querySelectorAll && node.querySelectorAll('.product-card');
-                        if (cards) {
-                            cards.forEach(processProductCard);
-                        }
-                    }
-                });
-            });
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
-}
-
-function processProductCard(card) {
-    // Remove onclick attribute if exists
-    if (card.hasAttribute('onclick')) {
-        card.removeAttribute('onclick');
-        card.style.cursor = 'default';
-    }
-    
-    // Add data-product-id if missing
-    if (!card.hasAttribute('data-product-id')) {
-        const productId = extractProductIdFromCard(card);
-        if (productId) {
-            card.setAttribute('data-product-id', productId);
-        }
-    }
-    
-    // Add navigation-click class to image container and title if they exist
-    const imageContainer = card.querySelector('.product-image-container');
-    if (imageContainer && !imageContainer.classList.contains('navigation-click')) {
-        imageContainer.classList.add('navigation-click');
-        const productId = card.dataset.productId;
-        if (productId) {
-            imageContainer.setAttribute('data-product-id', productId);
-        }
-    }
-    
-    const title = card.querySelector('.product-info h3');
-    if (title && !title.classList.contains('navigation-click')) {
-        title.classList.add('navigation-click');
-        const productId = card.dataset.productId;
-        if (productId) {
-            title.setAttribute('data-product-id', productId);
-        }
-    }
-    
-    // Mark all buttons inside the card
-    const buttons = card.querySelectorAll('button, .btn-primary, .btn-secondary, .add-to-cart-btn');
-    buttons.forEach(btn => {
-        btn.setAttribute('data-card-button', 'true');
-    });
-}
-
-// Handle product card navigation through event delegation - ULTRA ROBUST VERSION
-function setupProductCardNavigation() {
-    // Remove any existing card click handlers
-    document.removeEventListener('click', handleProductCardClick, true);
-    document.removeEventListener('click', handleProductCardClick);
-    
-    // Add capture phase handler to intercept clicks BEFORE they reach the card
-    document.addEventListener('click', handleProductCardClickCapture, true);
-    
-    // Add bubble phase handler as backup
-    document.addEventListener('click', handleProductCardClick);
-}
-
-// Capture phase handler - intercepts clicks as they travel DOWN the DOM
-function handleProductCardClickCapture(e) {
-    // Check if click was on a button inside a product card
-    const button = e.target.closest('button');
-    const addToCartBtn = e.target.closest('.add-to-cart-btn');
-    const primaryBtn = e.target.closest('.btn-primary');
-    const secondaryBtn = e.target.closest('.btn-secondary');
-    
-    if (button || addToCartBtn || primaryBtn || secondaryBtn) {
-        // Stop the click from propagating further down to the card
-        e.stopImmediatePropagation();
-    }
-}
-
-function handleProductCardClick(e) {
-    // Check if click was on a navigation-click element (image or title)
-    const navElement = e.target.closest('.navigation-click');
-    
-    if (navElement) {
-        const productId = navElement.dataset.productId || navElement.closest('[data-product-id]')?.dataset.productId;
-        if (productId) {
-            window.location.href = `product.html?id=${productId}`;
-        }
-    }
-}
-
 function initAddToCartButtons() {
     // Prevent multiple initializations
     if (addToCartInitialized) {
@@ -1772,8 +1616,6 @@ window.resetFilters = resetFilters;
 window.applyFilters = applyFilters;
 window.toggleMobileFilters = toggleMobileFilters;
 window.closeMobileFilters = closeMobileFilters;
-window.addToCartFromCard = addToCartFromCard;
-window.handleCardClick = handleCardClick;
 
 // ===== Order Modal =====
 function getOrderModalHTML() {
