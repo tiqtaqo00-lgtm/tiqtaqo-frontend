@@ -3577,50 +3577,38 @@ body {
     }
 }
 
-/* ===== ULTRA FIX: Prevent card click when clicking buttons ===== */
-/* This ensures that clicking on buttons inside product cards doesn't trigger card navigation */
-.product-card {
-    position: relative;
-}
+/* ===== ULTRA FIX: Make buttons stop all propagation - RADICAL SOLUTION ===== */
+/* This uses the most aggressive approach to prevent card clicks from button clicks */
 
+/* Make ALL buttons inside product cards completely isolated */
 .product-card button,
 .product-card .btn-primary,
 .product-card .btn-secondary,
 .product-card .add-to-cart-btn {
     position: relative;
-    z-index: 10;
-    cursor: pointer;
-    /* Use CSS to stop click propagation */
+    z-index: 999 !important;
+    cursor: pointer !important;
     pointer-events: auto !important;
 }
 
-/* Make sure all clickable elements inside cards don't trigger card navigation */
+/* Ensure icons don't interfere */
+.product-card button i {
+    pointer-events: none !important;
+    position: relative;
+    z-index: 1000 !important;
+}
+
+/* Make sure buttons capture all events */
+.product-card button::before,
 .product-card .btn-primary::before,
 .product-card .btn-secondary::before,
-.product-card .add-to-cart-btn::before,
-.product-card button::before {
+.product-card .add-to-cart-btn::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
     z-index: -1;
-    /* This pseudo-element ensures the click doesn't bubble up in some browsers */
-    pointer-events: none;
-}
-
-/* Additional protection: make sure icons inside buttons don't cause card clicks */
-.product-card button i {
-    pointer-events: none;
-}
-
-/* Make the entire card non-clickable via CSS except for the specific navigation areas */
-.product-card {
-    cursor: pointer;
-}
-
-.product-card > *:not(button):not(.btn-primary):not(.btn-secondary):not(.add-to-cart-btn) {
-    pointer-events: auto;
 }
 

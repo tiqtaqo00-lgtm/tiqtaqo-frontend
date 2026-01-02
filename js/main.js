@@ -551,26 +551,26 @@ function renderProductsGrid(productsGrid, products, append = false) {
             : (product.image || '');
         
         return `
-            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" style="cursor: pointer;">
+            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" data-navigation-area="true">
                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
-                <div class="product-image-container">
+                <div class="product-image-container" data-card-part="image">
                     <img src="${productImage}" alt="${product.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="product-info">
-                    <h3>${product.name}</h3>
-                    <div class="product-rating">${starsHtml}</div>
-                    <p>${product.description || ''}</p>
-                    <div class="product-price">
+                    <h3 data-card-part="title">${product.name}</h3>
+                    <div class="product-rating" data-card-part="rating">${starsHtml}</div>
+                    <p data-card-part="desc">${product.description || ''}</p>
+                    <div class="product-price" data-card-part="price">
                         ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
                         <span class="price">${Math.round(finalPrice)} DH</span>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                    <div style="display: flex; gap: 10px;" data-card-part="buttons">
+                        <button class="btn-primary" style="flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); openOrderModal('${product.id}'); return false;">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); addToCartFromCard('${product.id}')">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.preventDefault(); event.stopPropagation(); addToCartFromCard('${product.id}'); return false;">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -907,10 +907,10 @@ async function loadBestSellers() {
                         <span class="price">${Math.round(finalPrice)} DH</span>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                        <button class="btn-primary" style="flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); openOrderModal('${product.id}'); return false;">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); addToCartFromCard('${product.id}')">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.preventDefault(); event.stopPropagation(); addToCartFromCard('${product.id}'); return false;">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
