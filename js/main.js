@@ -572,7 +572,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation();">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -914,7 +914,7 @@ async function loadBestSellers() {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation();">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
