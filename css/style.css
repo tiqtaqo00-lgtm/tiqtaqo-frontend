@@ -3577,21 +3577,27 @@ body {
     }
 }
 
-/* ===== FIX: Prevent card click when clicking buttons ===== */
+/* ===== ULTRA FIX: Prevent card click when clicking buttons ===== */
 /* This ensures that clicking on buttons inside product cards doesn't trigger card navigation */
-.product-card button {
+.product-card {
     position: relative;
-    z-index: 100;
-    cursor: pointer;
 }
 
+.product-card button,
 .product-card .btn-primary,
 .product-card .btn-secondary,
 .product-card .add-to-cart-btn {
-    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+    /* Use CSS to stop click propagation */
+    pointer-events: auto !important;
 }
 
-/* Use a pseudo-element to capture clicks on buttons and prevent them from reaching the card */
+/* Make sure all clickable elements inside cards don't trigger card navigation */
+.product-card .btn-primary::before,
+.product-card .btn-secondary::before,
+.product-card .add-to-cart-btn::before,
 .product-card button::before {
     content: '';
     position: absolute;
@@ -3600,5 +3606,21 @@ body {
     right: 0;
     bottom: 0;
     z-index: -1;
+    /* This pseudo-element ensures the click doesn't bubble up in some browsers */
+    pointer-events: none;
+}
+
+/* Additional protection: make sure icons inside buttons don't cause card clicks */
+.product-card button i {
+    pointer-events: none;
+}
+
+/* Make the entire card non-clickable via CSS except for the specific navigation areas */
+.product-card {
+    cursor: pointer;
+}
+
+.product-card > *:not(button):not(.btn-primary):not(.btn-secondary):not(.add-to-cart-btn) {
+    pointer-events: auto;
 }
 

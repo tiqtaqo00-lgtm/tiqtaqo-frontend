@@ -1280,9 +1280,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initCart();
     initAddToCartButtons();
     
-    // Fix: Remove onclick from product cards and use event delegation instead
-    setTimeout(fixProductCardClicks, 200);
-    // Also set up product card navigation handler
+    // Fix: Remove onclick from product cards IMMEDIATELY and use event delegation instead
+    // Call immediately to catch any cards before user interaction
+    fixProductCardClicks();
+    
+    // Call again with small delay to catch any dynamically added cards
+    setTimeout(fixProductCardClicks, 50);
+    
+    // Also set up product card navigation handler IMMEDIATELY
     setupProductCardNavigation();
     
     initScrollToTop();
@@ -1572,8 +1577,27 @@ function showNotification(message, type = 'success') {
 let addToCartInitialized = false;
 let addToCartInProgress = false;
 
-// ===== FIX: Remove onclick from product cards and use event delegation =====
+// ===== FIX: Completely remove onclick from product cards and use pure event delegation =====
 function fixProductCardClicks() {
+    // First, immediately remove all onclick attributes from product cards
+    const allProductCards = document.querySelectorAll('.product-card');
+    allProductCards.forEach(card => {
+        // Remove onclick attribute
+        card.removeAttribute('onclick');
+        // Ensure data-product-id exists
+        if (!card.hasAttribute('data-product-id')) {
+            const productId = extractProductIdFromCard(card);
+            if (productId) {
+                card.setAttribute('data-product-id', productId);
+            }
+        }
+        // Make sure buttons don't trigger card navigation
+        const buttons = card.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.setAttribute('data-card-button', 'true');
+        });
+    });
+
     // Use MutationObserver to watch for dynamically added product cards
     if (typeof MutationObserver !== 'undefined') {
         const observer = new MutationObserver(function(mutations) {
@@ -1582,12 +1606,12 @@ function fixProductCardClicks() {
                     if (node.nodeType === 1) { // Element node
                         // Check if the node itself is a product card
                         if (node.classList && node.classList.contains('product-card')) {
-                            fixSingleCard(node);
+                            processProductCard(node);
                         }
                         // Check for product cards in children
                         const cards = node.querySelectorAll && node.querySelectorAll('.product-card');
                         if (cards) {
-                            cards.forEach(fixSingleCard);
+                            cards.forEach(processProductCard);
                         }
                     }
                 });
@@ -1599,72 +1623,32 @@ function fixProductCardClicks() {
             subtree: true
         });
     }
-    
-    // Fix all existing product cards
-    const existingCards = document.querySelectorAll('.product-card');
-    existingCards.forEach(fixSingleCard);
 }
 
-function fixSingleCard(card) {
+function processProductCard(card) {
     // Remove onclick attribute if exists
     if (card.hasAttribute('onclick')) {
         card.removeAttribute('onclick');
     }
     
-    // Add data-product-id if missing but we can extract it from onclick
+    // Add data-product-id if missing
     if (!card.hasAttribute('data-product-id')) {
-        // Try to extract product ID from the card's structure
         const productId = extractProductIdFromCard(card);
         if (productId) {
             card.setAttribute('data-product-id', productId);
         }
     }
+    
+    // Mark all buttons inside the card
+    const buttons = card.querySelectorAll('button, .btn-primary, .btn-secondary, .add-to-cart-btn');
+    buttons.forEach(btn => {
+        btn.setAttribute('data-card-button', 'true');
+    });
 }
 
-function extractProductIdFromCard(card) {
-    // Look for product ID in various places
-    // 1. Check if there's a data-id attribute
-    if (card.dataset.id) {
-        return card.dataset.id;
-    }
-    
-    // 2. Look for onclick attribute pattern: location.href='product.html?id=XXX'
-    const onclick = card.getAttribute('onclick');
-    if (onclick) {
-        const match = onclick.match(/product\.html\?id=([^']+)/);
-        if (match && match[1]) {
-            return match[1];
-        }
-    }
-    
-    // 3. Look for buttons with data-product-id inside the card
-    const buttonWithId = card.querySelector('[data-product-id]');
-    if (buttonWithId) {
-        return buttonWithId.dataset.productId;
-    }
-    
-    // 4. Look for any element with data-product-id
-    const anyElementWithId = card.querySelector('[data-product-id]');
-    if (anyElementWithId) {
-        return anyElementWithId.dataset.productId;
-    }
-    
-    // 5. Look for product link pattern in the card
-    const links = card.querySelectorAll('a[href*="product.html?id="]');
-    for (const link of links) {
-        const href = link.getAttribute('href');
-        const match = href.match(/product\.html\?id=([^&]+)/);
-        if (match && match[1]) {
-            return match[1];
-        }
-    }
-    
-    return null;
-}
-
-// Handle product card navigation through event delegation
+// Handle product card navigation through event delegation - ULTRA ROBUST VERSION
 function setupProductCardNavigation() {
-    // Remove any existing card click handlers to avoid duplicates
+    // Remove any existing card click handlers
     document.removeEventListener('click', handleProductCardClick);
     
     // Add new event delegation handler
@@ -1672,21 +1656,24 @@ function setupProductCardNavigation() {
 }
 
 function handleProductCardClick(e) {
+    // Check if click was on a button or inside a button element
+    const clickedButton = e.target.closest('button');
+    const clickedOnButtonWithDataAttr = e.target.closest('[data-card-button="true"]');
+    const clickedOnPrimaryBtn = e.target.closest('.btn-primary');
+    const clickedOnSecondaryBtn = e.target.closest('.btn-secondary');
+    const clickedOnAddToCartBtn = e.target.closest('.add-to-cart-btn');
+    
+    // If clicked on ANY button, DO NOT navigate
+    if (clickedButton || clickedOnButtonWithDataAttr || clickedOnPrimaryBtn || clickedOnSecondaryBtn || clickedOnAddToCartBtn) {
+        return;
+    }
+    
+    // Check if clicked on a product card with data-product-id
     const card = e.target.closest('.product-card[data-product-id]');
     if (card) {
-        // Check if the click was on a button or inside a button
-        const isButtonClick = e.target.tagName === 'BUTTON' || 
-                              e.target.closest('button') ||
-                              e.target.closest('.btn-primary') ||
-                              e.target.closest('.btn-secondary') ||
-                              e.target.closest('.add-to-cart-btn');
-        
-        // Only navigate if NOT clicking on a button
-        if (!isButtonClick) {
-            const productId = card.dataset.productId;
-            if (productId) {
-                window.location.href = `product.html?id=${productId}`;
-            }
+        const productId = card.dataset.productId;
+        if (productId) {
+            window.location.href = `product.html?id=${productId}`;
         }
     }
 }
