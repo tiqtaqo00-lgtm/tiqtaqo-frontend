@@ -572,7 +572,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary" style="padding: 12px;" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/'/g, "\\'")})" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -580,6 +580,9 @@ function renderProductsGrid(productsGrid, products, append = false) {
             </div>
         `;
     }).join('');
+    
+    // Initialize add to cart event listeners
+    initAddToCartButtons();
     
     productsGrid.innerHTML = html;
     
@@ -914,7 +917,7 @@ async function loadBestSellers() {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary" style="padding: 12px;" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/'/g, "\\'")})" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -922,6 +925,9 @@ async function loadBestSellers() {
             </div>
         `;
     }).join('');
+    
+    // Initialize add to cart event listeners
+    initAddToCartButtons();
     
     initScrollAnimations();
 }
@@ -1281,6 +1287,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Only initialize UI features here (Firebase loading is handled separately)
     initEnhancedSidebar();
     initCart();
+    initAddToCartButtons();
     
     initScrollToTop();
     initScrollAnimations();
@@ -1553,6 +1560,32 @@ function showNotification(message, type = 'success') {
         notification.style.animation = 'slideOutDown 0.3s ease forwards';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// Initialize add to cart buttons using event delegation
+function initAddToCartButtons() {
+    // Use event delegation for dynamically added buttons
+    document.addEventListener('click', function(e) {
+        const addToCartBtn = e.target.closest('.add-to-cart-btn');
+        if (addToCartBtn) {
+            e.stopPropagation();
+            const productId = addToCartBtn.dataset.productId;
+            if (productId) {
+                // Get product data from the card
+                const productCard = addToCartBtn.closest('.product-card');
+                if (productCard) {
+                    // Extract product data from the card's data attributes or regenerate it
+                    getProduct(productId).then(product => {
+                        if (product) {
+                            addToCart(product);
+                        } else {
+                            showNotification('Produit non trouvé!', 'warning');
+                        }
+                    });
+                }
+            }
+        }
+    });
 }
 
 // Make functions globally accessible
