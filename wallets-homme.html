@@ -181,15 +181,13 @@
         window.initCart = initCart;
         window.initUI = initUI;
 
-        // Initialize Firebase
+        // Initialize Firebase first
         initFirebase();
 
-        // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', async function() {
-            initCart();
-            initUI();
-            await loadCategoryProducts('wallets', 'homme');
-        });
+        // Load products immediately (don't wait for DOMContentLoaded)
+        loadCategoryProducts('wallets', 'homme');
+        initCart();
+        initUI();
 
         async function loadCategoryProducts(category, gender) {
             const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });

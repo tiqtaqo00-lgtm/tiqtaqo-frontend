@@ -181,16 +181,6 @@
         window.initCart = initCart;
         window.initUI = initUI;
 
-        // Initialize Firebase
-        initFirebase();
-
-        // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', async function() {
-            initCart();
-            initUI();
-            await loadCategoryProducts('accessoires', 'femme');
-        });
-
         async function loadCategoryProducts(category, gender) {
             const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
@@ -246,6 +236,24 @@
                 `;
             }).join('');
         }
+
+        // Initialize Firebase and load products after initialization
+        async function initPage() {
+            // Wait for Firebase to be ready
+            if (typeof initFirebase === 'function') {
+                await initFirebase();
+            }
+            
+            // Initialize UI components
+            initCart();
+            initUI();
+            
+            // Load products
+            await loadCategoryProducts('accessoires', 'femme');
+        }
+
+        // Call the initialization function
+        initPage();
     </script>
 </body>
 </html>

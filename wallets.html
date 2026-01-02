@@ -177,9 +177,56 @@
     </footer>
 
     <script type="module">
-        // Initialize Firebase first
-        import('./js/firebase-config.js?v=2');
+        // Import Firebase configuration and main functions
+        import { initFirebase, ProductAPI } from './js/firebase-config.js?v=2';
+        import { getProducts, getCategories, contactWhatsApp, addToCart, initCart, initUI, initFilterSidebar, loadCategoryProducts, initInfiniteScroll } from './js/main.js?v=2';
+
+        // Make functions globally accessible for inline onclick handlers
+        window.getProducts = getProducts;
+        window.getCategories = getCategories;
+        window.contactWhatsApp = contactWhatsApp;
+        window.addToCart = addToCart;
+        window.initCart = initCart;
+        window.initUI = initUI;
+        window.initFilterSidebar = initFilterSidebar;
+        window.loadCategoryProducts = loadCategoryProducts;
+        window.initInfiniteScroll = initInfiniteScroll;
+
+        // Initialize Firebase and load products after initialization
+        async function initPage() {
+            // Skip if products are already being loaded
+            if (window.isProductsLoading || window.initialProductsLoaded) {
+                return;
+            }
+            
+            window.isProductsLoading = true;
+            
+            // Wait for Firebase to be ready
+            if (typeof initFirebase === 'function') {
+                await initFirebase();
+            }
+            
+            // Initialize UI components
+            initCart();
+            initUI();
+            
+            // Initialize filter sidebar and load products
+            initFilterSidebar();
+            await loadCategoryProducts('wallets');
+            initInfiniteScroll();
+            
+            window.isProductsLoading = false;
+            window.initialProductsLoaded = true;
+        }
+            
+            // Initialize filter sidebar and load products
+            initFilterSidebar();
+            await loadCategoryProducts('wallets');
+            initInfiniteScroll();
+        }
+
+        // Call the initialization function
+        initPage();
     </script>
-    <script src="js/main.js"></script>
 </body>
 </html>

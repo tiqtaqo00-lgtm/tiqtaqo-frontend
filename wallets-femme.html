@@ -169,16 +169,18 @@
     </footer>
 
     <script type="module">
-        // Initialize Firebase first
-        import('./js/firebase-config.js?v=2');
-    </script>
-    <script src="js/main.js"></script>
-    <script>
-        // Load products filtered by category and gender
-        document.addEventListener('DOMContentLoaded', async function() {
-            await loadCategoryProducts('wallets', 'femme');
-        });
-        
+        // Import Firebase configuration and main functions
+        import { initFirebase, ProductAPI } from './js/firebase-config.js?v=2';
+        import { getProducts, getCategories, contactWhatsApp, addToCart, initCart, initUI, loadCategoryProducts } from './js/main.js?v=2';
+
+        // Make functions globally accessible for inline onclick handlers
+        window.getProducts = getProducts;
+        window.getCategories = getCategories;
+        window.contactWhatsApp = contactWhatsApp;
+        window.addToCart = addToCart;
+        window.initCart = initCart;
+        window.initUI = initUI;
+
         async function loadCategoryProducts(category, gender) {
             const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
@@ -234,6 +236,34 @@
                 `;
             }).join('');
         }
+
+        // Initialize Firebase and load products after initialization
+        async function initPage() {
+            // Skip if products are already being loaded
+            if (window.isProductsLoading || window.initialProductsLoaded) {
+                return;
+            }
+            
+            window.isProductsLoading = true;
+            
+            // Wait for Firebase to be ready
+            if (typeof initFirebase === 'function') {
+                await initFirebase();
+            }
+            
+            // Initialize UI components
+            initCart();
+            initUI();
+            
+            // Load products
+            await loadCategoryProducts('wallets', 'femme');
+            
+            window.isProductsLoading = false;
+            window.initialProductsLoaded = true;
+        }
+
+        // Call the initialization function
+        initPage();
     </script>
 </body>
 </html>
