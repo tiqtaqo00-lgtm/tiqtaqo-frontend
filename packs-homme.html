@@ -8,29 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        #diagnostic-panel {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.9);
-            color: #0f0;
-            padding: 15px;
-            border-radius: 10px;
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 99999;
-            max-width: 350px;
-            max-height: 300px;
-            overflow: auto;
-        }
-        #diagnostic-panel .status-item {
-            margin: 5px 0;
-            padding: 3px 0;
-            border-bottom: 1px solid #333;
-        }
-        #diagnostic-panel .error { color: #f00; }
-        #diagnostic-panel .success { color: #0f0; }
-        #diagnostic-panel .warning { color: #ff0; }
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 135px 0 80px;
@@ -76,13 +53,6 @@
     </style>
 </head>
 <body>
-    <!-- Diagnostic Panel for troubleshooting -->
-    <div id="diagnostic-panel">
-        <div style="font-weight: bold; color: #fff; margin-bottom: 10px;">🔧 Diagnostic Panel</div>
-        <div id="diagnostic-content">
-            <div class="status-item">Loading...</div>
-        </div>
-    </div>
 
     <!-- Navigation Bar -->
     <nav class="navbar">
