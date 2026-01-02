@@ -581,9 +581,6 @@ function renderProductsGrid(productsGrid, products, append = false) {
         `;
     }).join('');
     
-    // Initialize add to cart event listeners
-    initAddToCartButtons();
-    
     productsGrid.innerHTML = html;
     
     // Re-initialize scroll animations
@@ -927,8 +924,6 @@ async function loadBestSellers() {
     }).join('');
     
     // Initialize add to cart event listeners
-    initAddToCartButtons();
-    
     initScrollAnimations();
 }
 
@@ -1562,27 +1557,49 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Initialize add to cart buttons using event delegation
+// Initialize add to cart buttons using event delegation (only once)
+let addToCartInitialized = false;
+let addToCartInProgress = false;
+
 function initAddToCartButtons() {
+    // Prevent multiple initializations
+    if (addToCartInitialized) {
+        return;
+    }
+    addToCartInitialized = true;
+    
     // Use event delegation for dynamically added buttons
     document.addEventListener('click', function(e) {
         const addToCartBtn = e.target.closest('.add-to-cart-btn');
         if (addToCartBtn) {
+            e.preventDefault();
             e.stopPropagation();
+            
+            // Prevent double clicks
+            if (addToCartInProgress) {
+                console.log('Add to cart already in progress, ignoring click');
+                return;
+            }
+            
             const productId = addToCartBtn.dataset.productId;
             if (productId) {
-                // Get product data from the card
-                const productCard = addToCartBtn.closest('.product-card');
-                if (productCard) {
-                    // Extract product data from the card's data attributes or regenerate it
-                    getProduct(productId).then(product => {
-                        if (product) {
-                            addToCart(product);
-                        } else {
-                            showNotification('Produit non trouvé!', 'warning');
-                        }
-                    });
-                }
+                console.log('Adding product to cart:', productId);
+                
+                // Get product data and add to cart
+                getProduct(productId).then(product => {
+                    if (product) {
+                        addToCartInProgress = true;
+                        console.log('Product found, adding to cart:', product.name);
+                        addToCart(product);
+                        // Reset after a short delay
+                        setTimeout(() => { addToCartInProgress = false; }, 500);
+                    } else {
+                        showNotification('Produit non trouvé!', 'warning');
+                    }
+                }).catch(error => {
+                    addToCartInProgress = false;
+                    console.error('Error adding to cart:', error);
+                });
             }
         }
     });
