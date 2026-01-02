@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار التصنيفات - TiqTaQo</title>
+    <script type="module">
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+            authDomain: "tiqtaqo-store.firebaseapp.com",
+            projectId: "tiqtaqo-store",
+            storageBucket: "tiqtaqo-store.firebasestorage.app",
+            messagingSenderId: "747111253966",
+            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+        };
+
+        async function testCategories() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p style="color: #ffc107;">🔄 جاري تحميل المنتجات...</p>';
+            
+            try {
+                // Initialize Firebase
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+                const { getFirestore, collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                
+                // Get all products
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                if (snapshot.size === 0) {
+                    results.innerHTML = `
+                        <div style="background: #fff3cd; padding: 20px; border-radius: 10px; color: #856404;">
+                            <h3>⚠️ لا توجد منتجات!</h3>
+                            <p>لم يتم العثور على أي منتجات في قاعدة البيانات.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let productsHtml = '';
+                let categories = {};
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const category = data.category || 'بدون تصنيف';
+                    const gender = data.gender || 'بدون جنس';
+                    
+                    // Count products per category
+                    if (!categories[category]) {
+                        categories[category] = [];
+                    }
+                    categories[category].push({
+                        id: doc.id,
+                        name: data.name,
+                        gender: gender,
+                        price: data.price
+                    });
+                    
+                    productsHtml += `
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin: 10px 0; border-right: 4px solid #d4af37;">
+                            <h4 style="margin: 0 0 10px 0; color: #d4af37;">${data.name || 'بدون اسم'}</h4>
+                            <p style="margin: 5px 0;"><strong>التصنيف (category):</strong> <code style="background: #333; padding: 2px 8px; border-radius: 4px;">${category}</code></p>
+                            <p style="margin: 5px 0;"><strong>الجنس (gender):</strong> <code style="background: #333; padding: 2px 8px; border-radius: 4px;">${gender}</code></p>
+                            <p style="margin: 5px 0;"><strong>السعر:</strong> ${data.price || 0} درهم</p>
+                            <p style="margin: 5px 0; color: #999; font-size: 11px;"><strong>المعرف:</strong> ${doc.id}</p>
+                            <a href="product.html?id=${doc.id}" target="_blank" style="color: #28a745;">🔗 فتح المنتج</a>
+                        </div>
+                    `;
+                });
+                
+                // Create category summary
+                let categorySummary = '';
+                for (const [cat, products] of Object.entries(categories)) {
+                    categorySummary += `
+                        <div style="background: rgba(40, 167, 69, 0.2); padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #28a745;">
+                            <h4 style="margin: 0 0 10px 0; color: #28a745;">📁 ${cat}</h4>
+                            <p style="margin: 0 0 10px 0; color: #ccc;">عدد المنتجات: ${products.length}</p>
+                            <ul style="margin: 0; padding-right: 20px; color: #aaa;">
+                                ${products.map(p => `<li>${p.name} (${p.gender})</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                results.innerHTML = `
+                    <div style="background: #d4edda; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h3 style="color: #155724; margin-top: 0;">✅ تم العثور على ${snapshot.size} منتج!</h3>
+                    </div>
+                    
+                    <h3 style="color: #d4af37;">📊 ملخص التصنيفات:</h3>
+                    ${categorySummary}
+                    
+                    <h3 style="color: #d4af37; margin-top: 30px;">📦 جميع المنتجات:</h3>
+                    ${productsHtml}
+                `;
+                
+            } catch (error) {
+                results.innerHTML = `
+                    <div style="background: #f8d7da; padding: 20px; border-radius: 10px; color: #721c24;">
+                        <h3>❌ خطأ!</h3>
+                        <p>${error.message}</p>
+                        <p style="font-size: 12px; color: #666;">${error.stack}</p>
+                    </div>
+                `;
+                console.error('Error:', error);
+            }
+        }
+        
+        window.onload = testCategories;
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        h1 {
+            color: #d4af37;
+            text-align: center;
+        }
+        h3 {
+            color: #d4af37;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        #results {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .refresh-btn {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .info-box {
+            background: rgba(255, 193, 7, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #ffc107;
+        }
+        .info-box h3 {
+            color: #ffc107;
+            margin-top: 0;
+        }
+        code {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 اختبار التصنيفات</h1>
+    
+    <div class="info-box">
+        <h3>ℹ️ لماذا لا يظهر المنتج في الأقسام؟</h3>
+        <p>هذا الاختبار سيعرض لك:</p>
+        <ol style="text-align: right; padding-right: 20px;">
+            <li>جميع المنتجات في قاعدة البيانات</li>
+            <li>قيمة <code>category</code> لكل منتج (هذا مهم!)</li>
+            <li>قيمة <code>gender</code> لكل منتج</li>
+        </ol>
+        <p style="color: #ffc107;">💡 المشكلة قد تكون: التصنيف في المنتج لا يتطابق مع التصنيف المتوقع في الصفحة!</p>
+    </div>
+    
+    <button class="refresh-btn" onclick="location.reload()">🔄 إعادة التحميل</button>
+    
+    <div id="results">
+        <p style="color: #ffc107;">جاري التحميل...</p>
+    </div>
+    
+    <a href="index.html" class="refresh-btn" style="text-align: center; text-decoration: none;">🏠 العودة للرئيسية</a>
+</body>
+</html>
