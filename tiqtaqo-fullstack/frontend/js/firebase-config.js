@@ -3,35 +3,6 @@
  * Supports 100,000+ products with offline persistence
  */
 
-// Firebase SDK imports (using CDN for static hosting)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getFirestore, 
-    enableIndexedDbPersistence,
-    collection, 
-    doc, 
-    getDoc, 
-    getDocs,
-    getDocsFromServer,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    query,
-    where,
-    orderBy,
-    limit,
-    startAfter,
-    serverTimestamp,
-    increment,
-    writeBatch
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { 
-    getAuth, 
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
 // Firebase configuration - Tiqtaqo Store Project
 const firebaseConfig = {
     apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
@@ -47,6 +18,34 @@ let app;
 let db;
 let auth;
 let firebaseInitialized = false;
+let firebaseModulesLoaded = false;
+
+// Load Firebase modules dynamically
+async function loadFirebaseModules() {
+    if (firebaseModulesLoaded) return true;
+    
+    try {
+        // Load Firebase SDKs
+        const [{ initializeApp: firebaseInit }, 
+                { getFirestore, enableIndexedDbPersistence, collection, doc, getDoc, getDocs, getDocsFromServer, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, startAfter, serverTimestamp, increment, writeBatch },
+                { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }] = await Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"),
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js")
+        ]);
+        
+        // Store functions globally for use
+        window.firebaseInit = firebaseInit;
+        window.firestoreFunctions = { getFirestore, enableIndexedDbPersistence, collection, doc, getDoc, getDocs, getDocsFromServer, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, startAfter, serverTimestamp, increment, writeBatch };
+        window.authFunctions = { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+        
+        firebaseModulesLoaded = true;
+        return true;
+    } catch (error) {
+        console.error('Error loading Firebase modules:', error);
+        return false;
+    }
+}
 
 // Check if we have valid config
 const isValidConfig = () => {
@@ -54,8 +53,15 @@ const isValidConfig = () => {
            firebaseConfig.apiKey !== undefined;
 };
 
-const initFirebase = () => {
+const initFirebase = async () => {
     if (firebaseInitialized) return { db, auth };
+    
+    // Load Firebase modules first
+    const loaded = await loadFirebaseModules();
+    if (!loaded) {
+        console.error('Failed to load Firebase modules');
+        return null;
+    }
     
     // Update diagnostic panel
     if (typeof updateDiagnostic === 'function') {
@@ -63,12 +69,12 @@ const initFirebase = () => {
     }
     
     try {
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
+        app = window.firebaseInit(firebaseConfig);
+        db = window.firestoreFunctions.getFirestore(app);
+        auth = window.authFunctions.getAuth(app);
         
         // Enable offline persistence (Critical for reducing reads)
-        enableIndexedDbPersistence(db).catch((err) => {
+        window.firestoreFunctions.enableIndexedDbPersistence(db).catch((err) => {
             if (err.code === 'failed-precondition') {
                 if (typeof updateDiagnostic === 'function') {
                     updateDiagnostic('firebase-config: Multiple tabs - persistence in one tab only', 'warning');
@@ -103,6 +109,7 @@ window.initFirebase = initFirebase;
 window.isFirebaseReady = () => firebaseInitialized;
 window.getDb = () => db;
 window.getAuth = () => auth;
+window.loadFirebaseModules = loadFirebaseModules;
 
 // Product API functions
 window.ProductAPI = {
