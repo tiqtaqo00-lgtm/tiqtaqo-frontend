@@ -570,7 +570,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); addToCartFromCard('${product.id}')">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -910,7 +910,7 @@ async function loadBestSellers() {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); addToCartFromCard('${product.id}')">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -1364,6 +1364,16 @@ function addToCart(product, selectedColor = null, selectedColorHex = null) {
     showNotification('Produit ajouté au panier!');
 }
 
+// Add to cart from product card - used by onclick in product cards
+async function addToCartFromCard(productId) {
+    const product = await getProduct(productId);
+    if (product) {
+        addToCart(product);
+    } else {
+        showNotification('Produit non trouvé!', 'warning');
+    }
+}
+
 function removeFromCart(productId) {
     let cart = getCart();
     cart = cart.filter(item => item.id !== productId);
@@ -1736,6 +1746,7 @@ window.resetFilters = resetFilters;
 window.applyFilters = applyFilters;
 window.toggleMobileFilters = toggleMobileFilters;
 window.closeMobileFilters = closeMobileFilters;
+window.addToCartFromCard = addToCartFromCard;
 
 // ===== Order Modal =====
 function getOrderModalHTML() {
