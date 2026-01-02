@@ -1280,6 +1280,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initCart();
     initAddToCartButtons();
     
+    // Fix: Remove onclick from product cards and use event delegation instead
+    setTimeout(fixProductCardClicks, 200);
+    
     initScrollToTop();
     initScrollAnimations();
     
@@ -1557,6 +1560,49 @@ function showNotification(message, type = 'success') {
 let addToCartInitialized = false;
 let addToCartInProgress = false;
 
+// ===== FIX: Remove onclick from product cards and use event delegation =====
+function fixProductCardClicks() {
+    // Find all product cards
+    const productCards = document.querySelectorAll('.product-card[data-product-id]');
+    
+    productCards.forEach(card => {
+        // Remove the onclick attribute
+        card.removeAttribute('onclick');
+    });
+    
+    // Now set up event delegation for card clicks
+    setupProductCardNavigation();
+}
+
+// Handle product card navigation through event delegation
+function setupProductCardNavigation() {
+    // Remove any existing card click handlers to avoid duplicates
+    document.removeEventListener('click', handleProductCardClick);
+    
+    // Add new event delegation handler
+    document.addEventListener('click', handleProductCardClick);
+}
+
+function handleProductCardClick(e) {
+    const card = e.target.closest('.product-card[data-product-id]');
+    if (card) {
+        // Check if the click was on a button or inside a button
+        const isButtonClick = e.target.tagName === 'BUTTON' || 
+                              e.target.closest('button') ||
+                              e.target.closest('.btn-primary') ||
+                              e.target.closest('.btn-secondary') ||
+                              e.target.closest('.add-to-cart-btn');
+        
+        // Only navigate if NOT clicking on a button
+        if (!isButtonClick) {
+            const productId = card.dataset.productId;
+            if (productId) {
+                window.location.href = `product.html?id=${productId}`;
+            }
+        }
+    }
+}
+
 function initAddToCartButtons() {
     // Prevent multiple initializations
     if (addToCartInitialized) {
@@ -1596,21 +1642,6 @@ function initAddToCartButtons() {
                     addToCartInProgress = false;
                     console.error('Error adding to cart:', error);
                 });
-            }
-        }
-    });
-    
-    // Product card navigation - navigate only when NOT clicking buttons
-    document.addEventListener('click', function(e) {
-        const productCard = e.target.closest('.product-card[data-product-id]');
-        if (productCard) {
-            // Only navigate if the click was NOT on a button
-            const clickedOnButton = e.target.tagName === 'BUTTON' || e.target.closest('button');
-            if (!clickedOnButton) {
-                const productId = productCard.dataset.productId;
-                if (productId) {
-                    window.location.href = `product.html?id=${productId}`;
-                }
             }
         }
     });

@@ -3576,3 +3576,29 @@ body {
         box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
     }
 }
+
+/* ===== FIX: Prevent card click when clicking buttons ===== */
+/* This ensures that clicking on buttons inside product cards doesn't trigger card navigation */
+.product-card button {
+    position: relative;
+    z-index: 100;
+    cursor: pointer;
+}
+
+.product-card .btn-primary,
+.product-card .btn-secondary,
+.product-card .add-to-cart-btn {
+    pointer-events: auto;
+}
+
+/* Use a pseudo-element to capture clicks on buttons and prevent them from reaching the card */
+.product-card button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
