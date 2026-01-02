@@ -284,11 +284,13 @@
 
                     <div class="product-detail-card">
                         <div class="product-gallery">
-                            <div class="main-image-container" id="mainImageContainer" onclick="toggleImageZoom()" style="cursor: zoom-in;">
-                                <img src="${productImages[0] || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22400%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'}" alt="${product.name}" id="mainImage" class="main-image" style="transition: transform 0.3s ease;">
+                            <div class="main-image-container" id="mainImageContainer" style="cursor: crosshair; position: relative; overflow: hidden;">
+                                <img src="${productImages[0] || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22400%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'}" alt="${product.name}" id="mainImage" class="main-image" onmousemove="handleImageZoom(event)" onmouseleave="hideImageZoom()">
+                                <div class="zoom-lens" id="zoomLens" style="display: none;"></div>
+                                <div class="zoom-result" id="zoomResult" style="display: none;"></div>
                                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
-                                <div class="zoom-hint" id="zoomHint" style="display: ${productImages.length > 1 ? 'flex' : 'none'};"><i class="fas fa-search"></i> Cliquez pour zoomer</div>
+                                <div class="zoom-hint" id="zoomHint"><i class="fas fa-search"></i> Passez la souris pour zoomer</div>
                             </div>
                             
                             ${productImages.length > 1 ? `
@@ -394,30 +396,95 @@
             }
         }
 
-        // Toggle image zoom
-        let isImageZoomed = false;
-        function toggleImageZoom() {
+        // Toggle image zoom on hover
+        function handleImageZoom(e) {
             const mainImage = document.getElementById('mainImage');
-            const zoomHint = document.getElementById('zoomHint');
+            const zoomLens = document.getElementById('zoomLens');
+            const zoomResult = document.getElementById('zoomResult');
             const imageContainer = document.getElementById('mainImageContainer');
+            const zoomHint = document.getElementById('zoomHint');
             
-            if (!mainImage) return;
+            if (!mainImage || !zoomLens || !zoomResult || !imageContainer) return;
             
-            isImageZoomed = !isImageZoomed;
+            // Hide hint
+            if (zoomHint) zoomHint.style.display = 'none';
             
-            if (isImageZoomed) {
-                // Zoom in
-                mainImage.style.transform = 'scale(2)';
-                mainImage.style.cursor = 'zoom-out';
-                if (imageContainer) imageContainer.style.cursor = 'zoom-out';
-                if (zoomHint) zoomHint.innerHTML = '<i class="fas fa-search-minus"></i> Cliquez pour réduire';
-            } else {
-                // Zoom out
+            // Get image dimensions
+            const imgRect = mainImage.getBoundingClientRect();
+            const imgWidth = imgRect.width;
+            const imgHeight = imgRect.height;
+            
+            // Calculate mouse position relative to image
+            const x = e.clientX - imgRect.left;
+            const y = e.clientY - imgRect.top;
+            
+            // Lens size
+            const lensSize = 100;
+            
+            // Position the lens
+            const lensX = x - lensSize / 2;
+            const lensY = y - lensSize / 2;
+            
+            // Ensure lens stays within image bounds
+            const clampedLensX = Math.max(0, Math.min(lensX, imgWidth - lensSize));
+            const clampedLensY = Math.max(0, Math.min(lensY, imgHeight - lensSize));
+            
+            // Show and position the lens
+            zoomLens.style.display = 'block';
+            zoomLens.style.width = lensSize + 'px';
+            zoomLens.style.height = lensSize + 'px';
+            zoomLens.style.left = clampedLensX + 'px';
+            zoomLens.style.top = clampedLensY + 'px';
+            zoomLens.style.position = 'absolute';
+            zoomLens.style.border = '2px solid var(--gold)';
+            zoomLens.style.borderRadius = '50%';
+            zoomLens.style.pointerEvents = 'none';
+            zoomLens.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
+            
+            // Calculate zoom level
+            const zoomLevel = 2;
+            
+            // Get image source
+            const imgSrc = mainImage.src;
+            
+            // Show zoom result panel
+            zoomResult.style.display = 'block';
+            zoomResult.style.position = 'absolute';
+            zoomResult.style.right = '-250px';
+            zoomResult.style.top = '0';
+            zoomResult.style.width = '250px';
+            zoomResult.style.height = '250px';
+            zoomResult.style.backgroundImage = `url(${imgSrc})`;
+            zoomResult.style.backgroundSize = (imgWidth * zoomLevel) + 'px ' + (imgHeight * zoomLevel) + 'px';
+            zoomResult.style.border = '2px solid var(--gold)';
+            zoomResult.style.borderRadius = '10px';
+            zoomResult.style.boxShadow = '0 5px 20px rgba(0,0,0,0.2)';
+            zoomResult.style.overflow = 'hidden';
+            
+            // Calculate background position for zoom result
+            const bgX = -((clampedLensX * zoomLevel) - (125 - lensSize / 2));
+            const bgY = -((clampedLensY * zoomLevel) - (125 - lensSize / 2));
+            zoomResult.style.backgroundPosition = bgX + 'px ' + bgY + 'px';
+            
+            // Also apply lens effect on the main image
+            mainImage.style.transformOrigin = `${clampedLensX + lensSize / 2}px ${clampedLensY + lensSize / 2}px`;
+            mainImage.style.transform = 'scale(2)';
+        }
+        
+        // Hide zoom when mouse leaves
+        function hideImageZoom() {
+            const mainImage = document.getElementById('mainImage');
+            const zoomLens = document.getElementById('zoomLens');
+            const zoomResult = document.getElementById('zoomResult');
+            const zoomHint = document.getElementById('zoomHint');
+            
+            if (zoomLens) zoomLens.style.display = 'none';
+            if (zoomResult) zoomResult.style.display = 'none';
+            if (mainImage) {
                 mainImage.style.transform = 'scale(1)';
-                mainImage.style.cursor = 'zoom-in';
-                if (imageContainer) imageContainer.style.cursor = 'zoom-in';
-                if (zoomHint) zoomHint.innerHTML = '<i class="fas fa-search"></i> Cliquez pour zoomer';
+                mainImage.style.transformOrigin = 'center center';
             }
+            if (zoomHint) zoomHint.style.display = 'flex';
         }
 
         // Select product color
@@ -500,7 +567,8 @@
         window.selectProductColor = selectProductColor;
         window.openOrderModalFromProduct = openOrderModalFromProduct;
         window.addCurrentProductToCart = addCurrentProductToCart;
-        window.toggleImageZoom = toggleImageZoom;
+        window.handleImageZoom = handleImageZoom;
+        window.hideImageZoom = hideImageZoom;
 
         // Run when DOM is ready
         if (document.readyState === 'loading') {
