@@ -1310,12 +1310,17 @@
 
         // Open order modal with product info
         async function openOrderModal(productId) {
-            // Try direct Firebase first
-            let product = await getProductDirect(productId);
+            console.log('openOrderModal called with productId:', productId);
             
-            // Fallback to API method
-            if (!product) {
-                product = await getProduct(productId);
+            // Use window.getProduct from main.js
+            let product = null;
+            if (typeof window.getProduct === 'function') {
+                console.log('Using window.getProduct from main.js');
+                product = await window.getProduct(productId);
+            } else {
+                console.error('window.getProduct not available!');
+                showNotification('Erreur: Fonction non disponible', 'error');
+                return;
             }
 
             if (!product) {
