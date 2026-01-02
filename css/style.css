@@ -3577,10 +3577,23 @@ body {
     }
 }
 
-/* ===== ULTRA FIX: Make buttons stop all propagation - RADICAL SOLUTION ===== */
-/* This uses the most aggressive approach to prevent card clicks from button clicks */
+/* ===== NEW APPROACH: Only specific elements trigger navigation ===== */
+/* Product cards themselves are NOT clickable - only specific elements are */
 
-/* Make ALL buttons inside product cards completely isolated */
+.product-card {
+    cursor: default;
+}
+
+/* Only these elements trigger navigation */
+.product-card .navigation-click {
+    cursor: pointer;
+}
+
+.product-card .navigation-click:hover {
+    text-decoration: underline;
+}
+
+/* All buttons are completely isolated */
 .product-card button,
 .product-card .btn-primary,
 .product-card .btn-secondary,
@@ -3591,18 +3604,13 @@ body {
     pointer-events: auto !important;
 }
 
-/* Ensure icons don't interfere */
 .product-card button i {
     pointer-events: none !important;
     position: relative;
     z-index: 1000 !important;
 }
 
-/* Make sure buttons capture all events */
-.product-card button::before,
-.product-card .btn-primary::before,
-.product-card .btn-secondary::before,
-.product-card .add-to-cart-btn::before {
+.product-card button::before {
     content: '';
     position: absolute;
     top: -10px;

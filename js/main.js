@@ -551,22 +551,22 @@ function renderProductsGrid(productsGrid, products, append = false) {
             : (product.image || '');
         
         return `
-            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" onclick="if(event.target.closest('button')){event.preventDefault();event.stopPropagation();return false;}">
+            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}">
                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
-                <div class="product-image-container" data-card-part="image">
+                <div class="product-image-container navigation-click" data-product-id="${product.id}">
                     <img src="${productImage}" alt="${product.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="product-info">
-                    <h3 data-card-part="title">${product.name}</h3>
-                    <div class="product-rating" data-card-part="rating">${starsHtml}</div>
-                    <p data-card-part="desc">${product.description || ''}</p>
-                    <div class="product-price" data-card-part="price">
+                    <h3 class="navigation-click" data-product-id="${product.id}">${product.name}</h3>
+                    <div class="product-rating">${starsHtml}</div>
+                    <p>${product.description || ''}</p>
+                    <div class="product-price">
                         ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
                         <span class="price">${Math.round(finalPrice)} DH</span>
                     </div>
-                    <div style="display: flex; gap: 10px;" data-card-part="buttons">
+                    <div style="display: flex; gap: 10px;">
                         <button class="btn-primary" style="flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); openOrderModal('${product.id}'); return false;">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
@@ -888,18 +888,18 @@ async function loadBestSellers() {
             : (product.image || '');
         
         return `
-            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" style="cursor: pointer;" onclick="if(event.target.closest('button')){event.preventDefault();event.stopPropagation();return false;}">
+            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}">
                 <div class="best-seller-badge">
                     <i class="fas fa-fire"></i>
                     Best-Seller
                 </div>
                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
-                <div class="product-image-container">
+                <div class="product-image-container navigation-click" data-product-id="${product.id}">
                     <img src="${productImage}" alt="${product.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="product-info">
-                    <h3>${product.name}</h3>
+                    <h3 class="navigation-click" data-product-id="${product.id}">${product.name}</h3>
                     <div class="product-rating">${starsHtml}</div>
                     <p>${product.description || ''}</p>
                     <div class="product-price">
@@ -1641,6 +1641,7 @@ function processProductCard(card) {
     // Remove onclick attribute if exists
     if (card.hasAttribute('onclick')) {
         card.removeAttribute('onclick');
+        card.style.cursor = 'default';
     }
     
     // Add data-product-id if missing
@@ -1648,6 +1649,25 @@ function processProductCard(card) {
         const productId = extractProductIdFromCard(card);
         if (productId) {
             card.setAttribute('data-product-id', productId);
+        }
+    }
+    
+    // Add navigation-click class to image container and title if they exist
+    const imageContainer = card.querySelector('.product-image-container');
+    if (imageContainer && !imageContainer.classList.contains('navigation-click')) {
+        imageContainer.classList.add('navigation-click');
+        const productId = card.dataset.productId;
+        if (productId) {
+            imageContainer.setAttribute('data-product-id', productId);
+        }
+    }
+    
+    const title = card.querySelector('.product-info h3');
+    if (title && !title.classList.contains('navigation-click')) {
+        title.classList.add('navigation-click');
+        const productId = card.dataset.productId;
+        if (productId) {
+            title.setAttribute('data-product-id', productId);
         }
     }
     
@@ -1686,22 +1706,11 @@ function handleProductCardClickCapture(e) {
 }
 
 function handleProductCardClick(e) {
-    // Check if click was on a button or inside a button element
-    const clickedButton = e.target.closest('button');
-    const clickedOnButtonWithDataAttr = e.target.closest('[data-card-button="true"]');
-    const clickedOnPrimaryBtn = e.target.closest('.btn-primary');
-    const clickedOnSecondaryBtn = e.target.closest('.btn-secondary');
-    const clickedOnAddToCartBtn = e.target.closest('.add-to-cart-btn');
+    // Check if click was on a navigation-click element (image or title)
+    const navElement = e.target.closest('.navigation-click');
     
-    // If clicked on ANY button, DO NOT navigate
-    if (clickedButton || clickedOnButtonWithDataAttr || clickedOnPrimaryBtn || clickedOnSecondaryBtn || clickedOnAddToCartBtn) {
-        return;
-    }
-    
-    // Check if clicked on a product card with data-product-id
-    const card = e.target.closest('.product-card[data-product-id]');
-    if (card) {
-        const productId = card.dataset.productId;
+    if (navElement) {
+        const productId = navElement.dataset.productId || navElement.closest('[data-product-id]')?.dataset.productId;
         if (productId) {
             window.location.href = `product.html?id=${productId}`;
         }
