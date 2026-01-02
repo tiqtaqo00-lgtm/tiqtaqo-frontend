@@ -117,6 +117,77 @@
         <!-- Product details will be loaded here -->
     </section>
 
+    <!-- Reviews Section -->
+    <section class="reviews-section" id="reviewsSection">
+        <div class="container">
+            <div class="reviews-container">
+                <h2 class="reviews-title">
+                    <i class="fas fa-star"></i>
+                    Avis des Clients
+                </h2>
+                
+                <!-- Rating Summary -->
+                <div class="product-rating-display" id="ratingDisplay">
+                    <div class="rating-summary">
+                        <div class="rating-stars" id="ratingStars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="rating-info">
+                            <span class="rating-value" id="ratingValue">0.0</span>
+                            <span class="rating-count" id="ratingCount">(0 avis)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Write Review Form -->
+                <div class="write-review-form" id="writeReviewForm">
+                    <h3><i class="fas fa-pen"></i> Ajouter un Avis</h3>
+                    <form id="reviewForm" onsubmit="return submitReview(event)">
+                        <div class="star-rating-input">
+                            <label>Votre note:</label>
+                            <div class="star-input-container" id="starInputContainer">
+                                <input type="radio" name="rating" value="5" id="star5">
+                                <label for="star5" onclick="setRating(5)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="4" id="star4">
+                                <label for="star4" onclick="setRating(4)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="3" id="star3">
+                                <label for="star3" onclick="setRating(3)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="2" id="star2">
+                                <label for="star2" onclick="setRating(2)"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="1" id="star1">
+                                <label for="star1" onclick="setRating(1)"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reviewerName">Votre nom:</label>
+                            <input type="text" id="reviewerName" name="reviewerName" required placeholder="Entrez votre nom">
+                        </div>
+                        <div class="form-group">
+                            <label for="reviewText">Votre avis:</label>
+                            <textarea id="reviewText" name="reviewText" rows="4" required placeholder="Partagez votre expérience avec ce produit..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Soumettre l'Avis
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Reviews List -->
+                <div class="reviews-list" id="reviewsList">
+                    <div class="no-reviews" id="noReviews">
+                        <i class="fas fa-comment-dots"></i>
+                        <p>Aucun avis pour le moment. Soyez le premier à donner votre avis!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -371,6 +442,11 @@
             window.currentProductForCart = product;
             window.currentProductColors = productColors;
             window.currentProductImages = productImages;
+            
+            // Initialize reviews section
+            if (typeof initReviews === 'function') {
+                initReviews(productId);
+            }
         }
 
         // Change main image when thumbnail is clicked
@@ -1690,6 +1766,258 @@
                 console.log('updateCartUI not found');
             }
         }
+        
+        // ========== REVIEWS SYSTEM ==========
+        let currentProductId = null;
+        let selectedRating = 0;
+        
+        // Initialize reviews when product is loaded
+        async function initReviews(productId) {
+            currentProductId = productId;
+            await loadReviews(productId);
+            await updateRatingDisplay(productId);
+        }
+        
+        // Load and display reviews
+        async function loadReviews(productId) {
+            const reviewsList = document.getElementById('reviewsList');
+            const noReviews = document.getElementById('noReviews');
+            
+            if (!reviewsList) return;
+            
+            try {
+                // Initialize Firebase if not already done
+                if (typeof initFirebase === 'function') {
+                    initFirebase();
+                }
+                
+                // Wait a bit for Firebase to initialize
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Check if ReviewAPI is available
+                if (typeof window.ReviewAPI === 'undefined' || typeof window.ReviewAPI.getReviews !== 'function') {
+                    console.log('ReviewAPI not available, showing placeholder');
+                    reviewsList.innerHTML = `
+                        <div class="no-reviews">
+                            <i class="fas fa-comment-dots"></i>
+                            <p>Les avis sont en cours de chargement...</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const reviews = await window.ReviewAPI.getReviews(productId);
+                
+                if (reviews.length === 0) {
+                    reviewsList.innerHTML = `
+                        <div class="no-reviews">
+                            <i class="fas fa-comment-dots"></i>
+                            <p>Aucun avis pour le moment. Soyez le premier à donner votre avis!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Render reviews
+                reviewsList.innerHTML = reviews.map(review => `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="reviewer-details">
+                                    <h4>${escapeHtml(review.name || 'Anonyme')}</h4>
+                                    <span class="review-date">${formatDate(review.created_at)}</span>
+                                </div>
+                            </div>
+                            <div class="review-rating">
+                                ${generateStars(review.rating || 5)}
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            <p>${escapeHtml(review.comment || '')}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                reviewsList.innerHTML = `
+                    <div class="no-reviews">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Erreur lors du chargement des avis. Veuillez réessayer plus tard.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update rating display
+        async function updateRatingDisplay(productId) {
+            const ratingValue = document.getElementById('ratingValue');
+            const ratingCount = document.getElementById('ratingCount');
+            const ratingStars = document.getElementById('ratingStars');
+            
+            if (!ratingValue) return;
+            
+            try {
+                if (typeof window.ProductAPI !== 'undefined' && typeof window.ProductAPI.getProduct === 'function') {
+                    const product = await window.ProductAPI.getProduct(productId);
+                    if (product) {
+                        const average = product.rating_average || 0;
+                        const count = product.rating_count || 0;
+                        
+                        ratingValue.textContent = average.toFixed(1);
+                        ratingCount.textContent = `(${count} avis)`;
+                        
+                        if (ratingStars) {
+                            ratingStars.innerHTML = generateStars(average);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating rating display:', error);
+            }
+        }
+        
+        // Set rating from star input
+        function setRating(rating) {
+            selectedRating = rating;
+            console.log('Rating set to:', rating);
+        }
+        
+        // Submit new review
+        async function submitReview(event) {
+            event.preventDefault();
+            
+            if (!currentProductId) {
+                showNotification('Produit non identifié!', 'error');
+                return false;
+            }
+            
+            if (selectedRating === 0) {
+                showNotification('Veuillez sélectionner une note!', 'warning');
+                return false;
+            }
+            
+            const name = document.getElementById('reviewerName').value.trim();
+            const comment = document.getElementById('reviewText').value.trim();
+            
+            if (!name || !comment) {
+                showNotification('Veuillez remplir tous les champs!', 'warning');
+                return false;
+            }
+            
+            try {
+                // Initialize Firebase if not already done
+                if (typeof initFirebase === 'function') {
+                    initFirebase();
+                }
+                
+                // Check if ReviewAPI is available
+                if (typeof window.ReviewAPI === 'undefined' || typeof window.ReviewAPI.addReview !== 'function') {
+                    showNotification('Le système d\'avis n\'est pas encore disponible!', 'error');
+                    return false;
+                }
+                
+                // Add review to Firebase
+                const reviewId = await window.ReviewAPI.addReview(currentProductId, {
+                    name: name,
+                    comment: comment,
+                    rating: selectedRating,
+                    approved: true
+                });
+                
+                if (reviewId) {
+                    showNotification('Merci pour votre avis!', 'success');
+                    
+                    // Reset form
+                    document.getElementById('reviewForm').reset();
+                    selectedRating = 0;
+                    
+                    // Reload reviews and update rating
+                    await loadReviews(currentProductId);
+                    await updateRatingDisplay(currentProductId);
+                } else {
+                    showNotification('Erreur lors de l\'envoi de l\'avis!', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                showNotification('Erreur lors de l\'envoi de l\'avis!', 'error');
+            }
+            
+            return false;
+        }
+        
+        // Generate star rating HTML
+        function generateStars(rating) {
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.round(rating)) {
+                    starsHtml += '<i class="fas fa-star" style="color: var(--gold);"></i>';
+                } else {
+                    starsHtml += '<i class="fas fa-star" style="color: #ddd;"></i>';
+                }
+            }
+            return starsHtml;
+        }
+        
+        // Format date from Firebase timestamp
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Recently';
+            
+            try {
+                // Handle Firebase Timestamp
+                if (typeof timestamp.toDate === 'function') {
+                    const date = timestamp.toDate();
+                    return date.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+                
+                // Handle regular date string
+                if (typeof timestamp === 'string') {
+                    const date = new Date(timestamp);
+                    return date.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+                
+                // Handle Date object
+                if (timestamp instanceof Date) {
+                    return timestamp.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+                
+                return 'Recently';
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'Recently';
+            }
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Make functions globally available
+        window.submitReview = submitReview;
+        window.setRating = setRating;
+        window.initReviews = initReviews;
+        window.loadReviews = loadReviews;
+        window.updateRatingDisplay = updateRatingDisplay;
     </script>
 </body>
 </html>
