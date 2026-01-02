@@ -225,7 +225,7 @@
                         const mobileToggle = document.createElement('button');
                         mobileToggle.className = 'mobile-filter-toggle';
                         mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
-                        mobileToggle.onclick = toggleMobileFilters;
+                        mobileToggle.onclick = window.toggleMobileFilters;
                         productsSection.insertBefore(mobileToggle, productsSection.firstChild);
                     }
                 }

@@ -119,6 +119,22 @@
         </div>
     </section>
 
+    <!-- Filter Section -->
+    <div class="filter-section" id="filterSection">
+        <div class="filter-overlay" onclick="window.toggleMobileFilters()"></div>
+        <div class="filter-sidebar">
+            <div class="filter-header">
+                <h3><i class="fas fa-filter"></i> Filtres</h3>
+                <button class="close-filter" onclick="window.toggleMobileFilters()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="filter-content">
+                <!-- Filter content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- Products Section -->
     <section class="products-section">
         <div class="container">
@@ -209,7 +225,7 @@
                         const mobileToggle = document.createElement('button');
                         mobileToggle.className = 'mobile-filter-toggle';
                         mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
-                        mobileToggle.onclick = toggleMobileFilters;
+                        mobileToggle.onclick = window.toggleMobileFilters;
                         productsSection.insertBefore(mobileToggle, productsSection.firstChild);
                     }
                 }
