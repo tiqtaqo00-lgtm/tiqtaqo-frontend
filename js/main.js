@@ -551,7 +551,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
             : (product.image || '');
         
         return `
-            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" data-navigation-area="true">
+            <div class="product-card scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" onclick="if(event.target.closest('button')){event.preventDefault();event.stopPropagation();return false;}">
                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
                 <div class="product-image-container" data-card-part="image">
@@ -888,7 +888,7 @@ async function loadBestSellers() {
             : (product.image || '');
         
         return `
-            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" style="cursor: pointer;">
+            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" data-product-id="${product.id}" style="cursor: pointer;" onclick="if(event.target.closest('button')){event.preventDefault();event.stopPropagation();return false;}">
                 <div class="best-seller-badge">
                     <i class="fas fa-fire"></i>
                     Best-Seller
@@ -1379,6 +1379,18 @@ async function addToCartFromCard(productId) {
     }
 }
 
+// Handle card click - returns false if clicked on button, true otherwise
+function handleCardClick(event, productId) {
+    // Check if clicked on or inside a button
+    if (event.target.closest('button')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    }
+    // Allow navigation to product page
+    return true;
+}
+
 function removeFromCart(productId) {
     let cart = getCart();
     cart = cart.filter(item => item.id !== productId);
@@ -1649,10 +1661,28 @@ function processProductCard(card) {
 // Handle product card navigation through event delegation - ULTRA ROBUST VERSION
 function setupProductCardNavigation() {
     // Remove any existing card click handlers
+    document.removeEventListener('click', handleProductCardClick, true);
     document.removeEventListener('click', handleProductCardClick);
     
-    // Add new event delegation handler
+    // Add capture phase handler to intercept clicks BEFORE they reach the card
+    document.addEventListener('click', handleProductCardClickCapture, true);
+    
+    // Add bubble phase handler as backup
     document.addEventListener('click', handleProductCardClick);
+}
+
+// Capture phase handler - intercepts clicks as they travel DOWN the DOM
+function handleProductCardClickCapture(e) {
+    // Check if click was on a button inside a product card
+    const button = e.target.closest('button');
+    const addToCartBtn = e.target.closest('.add-to-cart-btn');
+    const primaryBtn = e.target.closest('.btn-primary');
+    const secondaryBtn = e.target.closest('.btn-secondary');
+    
+    if (button || addToCartBtn || primaryBtn || secondaryBtn) {
+        // Stop the click from propagating further down to the card
+        e.stopImmediatePropagation();
+    }
 }
 
 function handleProductCardClick(e) {
@@ -1734,6 +1764,7 @@ window.applyFilters = applyFilters;
 window.toggleMobileFilters = toggleMobileFilters;
 window.closeMobileFilters = closeMobileFilters;
 window.addToCartFromCard = addToCartFromCard;
+window.handleCardClick = handleCardClick;
 
 // ===== Order Modal =====
 function getOrderModalHTML() {
