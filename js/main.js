@@ -2162,6 +2162,16 @@ function initScrollAnimations() {
     `;
     document.head.appendChild(style);
     
+    const cards = document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card');
+    
+    if (cards.length === 0) return;
+    
+    // Add scroll-animate class to all cards
+    cards.forEach((card, index) => {
+        card.classList.add('scroll-animate');
+        card.classList.add(`stagger-${(index % 6) + 1}`);
+    });
+    
     if ('IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -2170,15 +2180,25 @@ function initScrollAnimations() {
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+        }, { threshold: 0.01, rootMargin: '0px 0px -50px 0px' });
         
-        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card').forEach((card, index) => {
-            card.classList.add('scroll-animate');
-            card.classList.add(`stagger-${(index % 6) + 1}`);
+        cards.forEach(card => {
             observer.observe(card);
         });
+        
+        // Also check immediately for elements already in viewport
+        setTimeout(() => {
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+                if (isInViewport && !card.classList.contains('animated')) {
+                    card.classList.add('animated');
+                }
+            });
+        }, 100);
     } else {
-        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card').forEach(card => {
+        // Fallback for browsers without IntersectionObserver
+        cards.forEach(card => {
             card.classList.add('animated');
         });
     }
