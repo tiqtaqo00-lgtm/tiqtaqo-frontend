@@ -814,11 +814,15 @@ async function applyFilters() {
 function closeMobileFilters() {
     const filterSidebar = document.getElementById('filterSection');
     const mobileToggle = document.querySelector('.mobile-filter-toggle');
+    const navFilterToggle = document.getElementById('filterToggle');
     if (filterSidebar) {
         filterSidebar.classList.remove('active');
     }
     if (mobileToggle) {
         mobileToggle.classList.remove('active');
+    }
+    if (navFilterToggle) {
+        navFilterToggle.classList.remove('active');
     }
     document.body.style.overflow = '';
 }
@@ -827,14 +831,17 @@ function closeMobileFilters() {
 function toggleMobileFilters() {
     const filterSidebar = document.getElementById('filterSection');
     const mobileToggle = document.querySelector('.mobile-filter-toggle');
+    const navFilterToggle = document.getElementById('filterToggle');
     if (filterSidebar) {
         filterSidebar.classList.toggle('active');
         if (filterSidebar.classList.contains('active')) {
             document.body.style.overflow = 'hidden';
             if (mobileToggle) mobileToggle.classList.add('active');
+            if (navFilterToggle) navFilterToggle.classList.add('active');
         } else {
             document.body.style.overflow = '';
             if (mobileToggle) mobileToggle.classList.remove('active');
+            if (navFilterToggle) navFilterToggle.classList.remove('active');
         }
     }
 }

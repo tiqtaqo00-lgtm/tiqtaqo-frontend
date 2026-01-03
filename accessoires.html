@@ -42,6 +42,11 @@
                 <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
             </button>
             
+            <!-- Filter Button (only on category pages) -->
+            <button class="filter-toggle" id="filterToggle" onclick="toggleMobileFilters()">
+                <i class="fas fa-filter"></i>
+            </button>
+            
             <div class="nav-spacer"></div>
         </div>
     </nav>
@@ -207,7 +212,9 @@
                     initFilterSidebar();
                 }
                 
-                // Add mobile filter button
+                // Add mobile filter button - NOW USING NAVBAR BUTTON INSTEAD
+                // Commented out since filter toggle is now in navbar
+                /*
                 const productsSection = document.querySelector('.products-section, #productsSection');
                 if (productsSection) {
                     const existingToggle = document.querySelector('.mobile-filter-toggle');
@@ -219,6 +226,7 @@
                         productsSection.insertBefore(mobileToggle, productsSection.firstChild);
                     }
                 }
+                */
                 
                 // Load products for this category
                 console.log('Loading category products...');

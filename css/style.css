@@ -2591,6 +2591,34 @@ body {
     background-color: rgba(212, 175, 55, 0.1);
 }
 
+/* Filter Toggle Button in Navbar */
+.filter-toggle {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 115px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+}
+
+.filter-toggle:hover {
+    transform: scale(1.1);
+    background-color: rgba(212, 175, 55, 0.1);
+}
+
+.filter-toggle.active {
+    color: #fff;
+    background-color: rgba(212, 175, 55, 0.2);
+}
+
 .cart-badge {
     position: absolute;
     top: -5px;
