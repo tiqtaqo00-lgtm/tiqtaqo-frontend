@@ -779,7 +779,7 @@ body {
     overflow: hidden;
 }
 
-/* Accessory-themed background elements */
+/* Accessory-themed background elements - Dense pattern */
 .products-section::before {
     content: '';
     position: absolute;
@@ -788,26 +788,77 @@ body {
     right: 0;
     bottom: 0;
     background-image: 
-        /* Wallet-inspired rectangles */
-        radial-gradient(ellipse at 15% 25%, rgba(212, 175, 55, 0.06) 0%, transparent 35%),
-        radial-gradient(ellipse at 85% 75%, rgba(212, 175, 55, 0.05) 0%, transparent 30%),
-        /* Glasses-inspired double circles */
-        radial-gradient(circle at 30% 20%, rgba(212, 175, 55, 0.04) 0%, transparent 20%),
-        radial-gradient(circle at 35% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 15%),
-        radial-gradient(circle at 70% 80%, rgba(212, 175, 55, 0.04) 0%, transparent 20%),
-        radial-gradient(circle at 75% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 15%),
-        /* Accessory chain/strip patterns */
-        linear-gradient(90deg, transparent 48%, rgba(212, 175, 55, 0.015) 50%, transparent 52%),
-        linear-gradient(0deg, transparent 48%, rgba(212, 175, 55, 0.01) 50%, transparent 52%),
-        /* Subtle corner accents */
-        radial-gradient(circle at 5% 5%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
-        radial-gradient(circle at 95% 95%, rgba(212, 175, 55, 0.03) 0%, transparent 40%);
-    background-size: 100% 100%;
+        /* Many small dots/beads (jewelry style) */
+        radial-gradient(circle at 5% 10%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 12% 18%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 20% 8%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 28% 22%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 36% 5%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 44% 15%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 52% 25%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 60% 12%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 68% 20%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 76% 8%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 84% 18%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 92% 10%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        /* Row 2 */
+        radial-gradient(circle at 8% 35%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 16% 42%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 24% 32%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 32% 45%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 40% 38%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 48% 50%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 56% 35%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 64% 48%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 72% 40%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 80% 52%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 88% 38%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 96% 45%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        /* Row 3 */
+        radial-gradient(circle at 3% 60%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 11% 72%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 19% 58%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 27% 68%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 35% 55%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 43% 75%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 51% 62%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 59% 70%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 67% 58%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 75% 65%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 83% 72%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 91% 60%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        /* Row 4 */
+        radial-gradient(circle at 6% 85%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 14% 92%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 22% 88%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 30% 95%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 38% 82%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 46% 90%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 54% 86%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 62% 94%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 70% 88%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 78% 92%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        radial-gradient(circle at 86% 85%, rgba(0, 0, 0, 0.05) 2px, transparent 3px),
+        radial-gradient(circle at 94% 95%, rgba(0, 0, 0, 0.06) 2px, transparent 3px),
+        /* Larger accessory shapes */
+        radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 25% 30%, rgba(0, 0, 0, 0.025) 0%, transparent 35%),
+        radial-gradient(ellipse at 75% 70%, rgba(0, 0, 0, 0.025) 0%, transparent 35%),
+        /* Gold accent shapes */
+        radial-gradient(circle at 40% 25%, rgba(212, 175, 55, 0.04) 0%, transparent 15%),
+        radial-gradient(circle at 60% 75%, rgba(212, 175, 55, 0.04) 0%, transparent 15%);
+    background-size: 150px 150px;
+    background-position: 0 0, 25px 0, 50px 0, 75px 0, 100px 0, 125px 0,
+                        0 30px, 25px 30px, 50px 30px, 75px 30px, 100px 30px, 125px 30px,
+                        0 60px, 25px 60px, 50px 60px, 75px 60px, 100px 60px, 125px 60px,
+                        0 90px, 25px 90px, 50px 90px, 75px 90px, 100px 90px, 125px 90px,
+                        0 120px, 25px 120px, 50px 120px, 75px 120px, 100px 120px, 125px 120px,
+                        0 0, 50% 50%, 25% 30%, 75% 70%, 40% 25%, 60% 75%;
     pointer-events: none;
     z-index: 0;
 }
 
-/* Floating accessory-related shapes */
+/* Floating geometric shapes */
 .products-section::after {
     content: '';
     position: absolute;
@@ -816,37 +867,44 @@ body {
     right: 0;
     bottom: 0;
     background-image: 
-        /* Wallet rectangle shapes */
-        radial-gradient(ellipse at 20% 70%, rgba(212, 175, 55, 0.04) 0%, transparent 40%),
-        radial-gradient(ellipse at 80% 30%, rgba(212, 175, 55, 0.04) 0%, transparent 35%),
-        /* Glasses bridge shape (small connection) */
-        radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.025) 0%, transparent 15%),
-        /* Accessory dots/beads pattern */
-        radial-gradient(circle at 25% 40%, rgba(212, 175, 55, 0.02) 0%, transparent 8%),
-        radial-gradient(circle at 75% 60%, rgba(212, 175, 55, 0.02) 0%, transparent 8%),
-        radial-gradient(circle at 40% 85%, rgba(212, 175, 55, 0.02) 0%, transparent 6%),
-        radial-gradient(circle at 60% 15%, rgba(212, 175, 55, 0.02) 0%, transparent 6%);
-    background-size: 400px 400px, 450px 450px, 200px 200px, 
-                    800px 800px, 800px 800px, 700px 700px, 700px 700px;
-    background-position: 0 0, 100% 100%, 50% 50%, 
-                        25% 40%, 75% 60%, 40% 85%, 60% 15%;
-    animation: floatShapes 25s ease-in-out infinite;
+        /* Many small squares (accessory patterns) */
+        radial-gradient(circle at 10% 15%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 20% 55%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 30% 85%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 40% 25%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 50% 65%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 60% 95%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 70% 35%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 80% 75%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        radial-gradient(circle at 90% 15%, rgba(0, 0, 0, 0.04) 3px, transparent 4px),
+        /* Glasses-inspired shapes */
+        radial-gradient(ellipse at 15% 45%, rgba(0, 0, 0, 0.03) 0%, transparent 20%),
+        radial-gradient(ellipse at 85% 55%, rgba(0, 0, 0, 0.03) 0%, transparent 20%),
+        /* Wallet shapes */
+        radial-gradient(ellipse at 35% 75%, rgba(0, 0, 0, 0.025) 0%, transparent 25%),
+        radial-gradient(ellipse at 65% 25%, rgba(0, 0, 0, 0.025) 0%, transparent 25%),
+        /* Gold accent circles */
+        radial-gradient(circle at 55% 40%, rgba(212, 175, 55, 0.03) 0%, transparent 12%),
+        radial-gradient(circle at 45% 85%, rgba(212, 175, 55, 0.03) 0%, transparent 12%);
+    background-size: 200px 200px, 100% 100%;
+    background-position: 0 0, 15% 45%, 85% 55%, 35% 75%, 65% 25%, 55% 40%, 45% 85%;
+    animation: floatShapes 30s ease-in-out infinite;
     pointer-events: none;
     z-index: 0;
 }
 
 @keyframes floatShapes {
     0%, 100% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0) translateX(0);
     }
     25% {
-        transform: translateY(-10px) rotate(1deg);
+        transform: translateY(-8px) translateX(5px);
     }
     50% {
-        transform: translateY(-15px) rotate(-0.5deg);
+        transform: translateY(-5px) translateX(-3px);
     }
     75% {
-        transform: translateY(-8px) rotate(0.5deg);
+        transform: translateY(-10px) translateX(2px);
     }
 }
 
