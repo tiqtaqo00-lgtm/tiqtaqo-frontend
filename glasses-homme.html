@@ -179,15 +179,39 @@
     <script type="module">
         // Note: initFirebase is available as window.initFirebase (global function)
         
+        async function waitForFunction(funcName, timeout = 15000) {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                if (typeof window[funcName] === 'function') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return false;
+        }
+        
         async function initPage() {
             try {
                 console.log('glasses-homme.html: Starting initialization...');
+                
+                // Wait for main.js functions to be available (up to 15 seconds)
+                console.log('Waiting for loadCategoryProducts...');
+                await waitForFunction('loadCategoryProducts');
+                console.log('main.js functions ready');
+                
+                // Wait for Firebase to be available
+                console.log('Waiting for initFirebase...');
+                await waitForFunction('initFirebase');
+                console.log('Firebase ready');
                 
                 // Initialize Firebase if not already done
                 if (typeof window.initFirebase === 'function') {
                     await window.initFirebase();
                     console.log('glasses-homme.html: Firebase initialized');
                 }
+                
+                // Small delay to ensure Firebase is fully initialized
+                await new Promise(resolve => setTimeout(resolve, 200));
                 
                 // Call cart and UI functions if they exist
                 if (typeof window.initCart === 'function') {
@@ -200,14 +224,21 @@
                 }
                 
                 // Load products
-                await window.loadCategoryProducts('glasses', 'homme');
-                console.log('glasses-homme.html: Products loaded');
+                if (typeof window.loadCategoryProducts === 'function') {
+                    await window.loadCategoryProducts('glasses', 'homme');
+                    console.log('glasses-homme.html: Products loaded');
+                }
             } catch (error) {
                 console.error('glasses-homme.html: Error:', error);
+                // Try to load products anyway as fallback
+                if (typeof window.loadCategoryProducts === 'function') {
+                    console.log('Attempting fallback product load...');
+                    window.loadCategoryProducts('glasses', 'homme');
+                }
             }
         }
         
-        // Wait a moment for scripts to load, then initialize
+        // Start initialization after a small delay to ensure scripts are loaded
         setTimeout(initPage, 100);
 
         async function loadCategoryProducts(category, gender) {

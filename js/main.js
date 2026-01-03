@@ -2,58 +2,71 @@
  * Tiqtaqo E-commerce - Main JavaScript
  * Refactored for Firebase Backend with Pagination Support
  * Supports 100,000+ products with smooth performance
- * Version: 4 (with screen diagnostic panel)
  */
 
-// Screen diagnostic function
+// Screen diagnostic function - only works on pages with diagnostic panel
 function updateDiagnostic(message, type = 'info') {
-    const panel = document.getElementById('diagnostic-content');
-    if (!panel) return;
-    
-    const div = document.createElement('div');
-    div.className = 'status-item ' + type;
-    div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
-    panel.appendChild(div);
-    panel.scrollTop = panel.scrollHeight;
-    
-    // Also log to console
-    console.log(message);
+    try {
+        const panel = document.getElementById('diagnostic-content');
+        if (!panel) return;
+        
+        const div = document.createElement('div');
+        div.className = 'status-item ' + type;
+        div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
+        panel.appendChild(div);
+        panel.scrollTop = panel.scrollHeight;
+        
+        // Also log to console
+        console.log(message);
+    } catch (e) {
+        // Silent fail if diagnostic panel doesn't exist
+        console.log(message);
+    }
 }
 
-console.log('main.js loaded - version 4');
-updateDiagnostic('main.js loaded', 'success');
-updateDiagnostic('window.ProductAPI: ' + (window.ProductAPI !== undefined ? 'available' : 'undefined'), 
-    window.ProductAPI !== undefined ? 'success' : 'warning');
+console.log('main.js loaded');
 
 // Initialize Firebase on page load - but wait for firebase-config to load
 document.addEventListener('DOMContentLoaded', async function() {
-    updateDiagnostic('DOMContentLoaded fired', 'info');
-    updateDiagnostic('window.initFirebase: ' + (typeof window.initFirebase), 
-        typeof window.initFirebase === 'function' ? 'success' : 'error');
+    // Check if this is a category page - category pages handle their own initialization
+    const isCategoryPage = document.getElementById('productsGrid') && !document.getElementById('bestSellersGrid');
     
-    // Wait for Firebase to be initialized
+    if (isCategoryPage) {
+        // Category pages have their own init logic in inline scripts
+        // Just wait for Firebase to be available for other functions
+        for (let i = 0; i < 50; i++) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            if (window.ProductAPI !== undefined) {
+                break;
+            }
+            if (i === 49) {
+                console.log('Warning: ProductAPI not available after 2.5s');
+            }
+        }
+        return;
+    }
+    
+    // For homepage and other pages, initialize normally
+    updateDiagnostic('DOMContentLoaded fired', 'info');
+    
+    // Wait for Firebase to be initialized (up to 5 seconds)
+    for (let i = 0; i < 50; i++) {
+        if (typeof window.initFirebase === 'function') {
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // Initialize Firebase if available
     if (typeof window.initFirebase === 'function') {
         updateDiagnostic('Calling initFirebase from main.js', 'success');
         initFirebase();
     } else {
-        updateDiagnostic('initFirebase not available, waiting...', 'warning');
-        // Wait up to 3 seconds for Firebase to initialize
-        for (let i = 0; i < 30; i++) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            if (typeof window.initFirebase === 'function') {
-                updateDiagnostic('Firebase initialized after ' + (i * 100) + 'ms delay', 'success');
-                initFirebase();
-                break;
-            }
-            if (i === 29) {
-                updateDiagnostic('ERROR: Firebase not initialized after 3 seconds!', 'error');
-                updateDiagnostic('This means firebase-config.js may not be loaded properly', 'error');
-            }
-        }
+        updateDiagnostic('ERROR: initFirebase not available!', 'error');
+        return;
     }
     
-    updateDiagnostic('After initFirebase - window.ProductAPI: ' + (window.ProductAPI !== undefined ? 'available' : 'undefined'),
-        window.ProductAPI !== undefined ? 'success' : 'error');
+    updateDiagnostic('Firebase initialized', 'success');
     
     // Now that Firebase is initialized, load products
     updateDiagnostic('Loading best sellers and collections...', 'info');

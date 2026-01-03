@@ -167,7 +167,7 @@
     <script type="module">
         // Note: initFirebase is available as window.initFirebase (global function)
         
-        async function waitForFunction(funcName, timeout = 10000) {
+        async function waitForFunction(funcName, timeout = 15000) {
             const startTime = Date.now();
             while (Date.now() - startTime < timeout) {
                 if (typeof window[funcName] === 'function') {
@@ -182,10 +182,15 @@
             try {
                 console.log('Category page: Starting initialization...');
                 
-                // Wait for main.js functions to be available
-                await waitForFunction('initFilterSidebar');
+                // Wait for main.js functions to be available (up to 15 seconds)
+                console.log('Waiting for loadCategoryProducts...');
                 await waitForFunction('loadCategoryProducts');
-                console.log('Category page: main.js functions ready');
+                console.log('main.js functions ready');
+                
+                // Wait for Firebase to be available
+                console.log('Waiting for initFirebase...');
+                await waitForFunction('initFirebase');
+                console.log('Firebase ready');
                 
                 // Initialize Firebase if not already done
                 if (typeof initFirebase === 'function') {
@@ -193,8 +198,14 @@
                     console.log('Category page: Firebase initialized');
                 }
                 
+                // Small delay to ensure Firebase is fully initialized
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
                 // Initialize UI
-                initFilterSidebar();
+                console.log('Initializing filter sidebar...');
+                if (typeof initFilterSidebar === 'function') {
+                    initFilterSidebar();
+                }
                 
                 // Add mobile filter button
                 const productsSection = document.querySelector('.products-section, #productsSection');
@@ -210,17 +221,29 @@
                 }
                 
                 // Load products for this category
-                await loadCategoryProducts('accessoires');
-                initInfiniteScroll();
+                console.log('Loading category products...');
+                if (typeof loadCategoryProducts === 'function') {
+                    await loadCategoryProducts('accessoires');
+                }
+                
+                // Initialize infinite scroll if available
+                if (typeof initInfiniteScroll === 'function') {
+                    initInfiniteScroll();
+                }
                 
                 console.log('Category page: Initialization complete');
             } catch (error) {
                 console.error('Category page error:', error);
+                // Try to load products anyway as fallback
+                if (typeof loadCategoryProducts === 'function') {
+                    console.log('Attempting fallback product load...');
+                    loadCategoryProducts('accessoires');
+                }
             }
         }
         
-        // Start initialization
-        initCategoryPage();
+        // Start initialization after a small delay to ensure scripts are loaded
+        setTimeout(initCategoryPage, 100);
     </script>
 </body>
 </html>
