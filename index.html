@@ -234,26 +234,5 @@
 
     <script type="module" src="js/firebase-config.js?v=2"></script>
     <script type="module" src="js/main.js"></script>
-    
-    <!-- Initialize Diagnostic Panel -->
-    <script>
-        // Wait for main.js to load, then initialize diagnostic panel
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                if (typeof createDiagnosticPanel === 'function') {
-                    createDiagnosticPanel();
-                    updateDiagnostic('🔧 Diagnostic Panel Ready', 'success');
-                    updateDiagnostic('Page: index.html', 'info');
-                }
-            }, 500);
-        });
-        
-        // Listen for Firebase initialization
-        window.addEventListener('firebase-loaded', function() {
-            if (typeof updateDiagnostic === 'function') {
-                updateDiagnostic('Firebase modules loaded', 'success');
-            }
-        });
-    </script>
 </body>
 </html>

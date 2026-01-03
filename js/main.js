@@ -2,368 +2,33 @@
  * Tiqtaqo E-commerce - Main JavaScript
  * Refactored for Firebase Backend with Pagination Support
  * Supports 100,000+ products with smooth performance
- * Version: 5 (with enhanced diagnostic panel)
  */
 
-// ===== Enhanced Diagnostic Panel =====
-function createDiagnosticPanel() {
-    // Check if already exists
-    if (document.getElementById('diagnostic-panel')) return;
-    
-    const panel = document.createElement('div');
-    panel.id = 'diagnostic-panel';
-    panel.innerHTML = `
-        <div class="diagnostic-header" onclick="toggleDiagnosticPanel()">
-            <span><i class="fas fa-stethoscope"></i> 🔧 Diagnostic Panel</span>
-            <button class="diagnostic-close" onclick="event.stopPropagation(); closeDiagnosticPanel()">×</button>
-        </div>
-        <div class="diagnostic-summary" id="diagnostic-summary"></div>
-        <div class="diagnostic-content" id="diagnostic-content"></div>
-        <div class="diagnostic-footer">
-            <button onclick="clearDiagnosticLog()"><i class="fas fa-trash"></i> Clear</button>
-            <button onclick="reloadPageDiagnostic()"><i class="fas fa-sync"></i> Reload</button>
-        </div>
-    `;
-    
-    // Add styles
-    const style = document.createElement('style');
-    style.textContent = `
-        #diagnostic-panel {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 380px;
-            max-height: 450px;
-            background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
-            z-index: 99999;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 12px;
-            overflow: hidden;
-            animation: slideInUp 0.5s ease;
-        }
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(50px); }
-        }
-        .diagnostic-header {
-            background: linear-gradient(135deg, #d4af37 0%, #c9a227 100%);
-            color: #1a1a1a;
-            padding: 12px 15px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-        .diagnostic-header:hover {
-            background: linear-gradient(135deg, #e5c14a 0%, #dab32f 100%);
-        }
-        .diagnostic-close {
-            background: rgba(0,0,0,0.2);
-            border: none;
-            color: #1a1a1a;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-        }
-        .diagnostic-close:hover {
-            background: rgba(0,0,0,0.4);
-            color: white;
-        }
-        .diagnostic-summary {
-            background: rgba(212, 175, 55, 0.15);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 12px;
-        }
-        .diagnostic-summary h4 {
-            margin: 0 0 8px 0;
-            color: #d4af37;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-        }
-        .summary-item {
-            background: rgba(0,0,0,0.3);
-            padding: 6px 8px;
-            border-radius: 4px;
-        }
-        .summary-item label {
-            color: #888;
-            font-size: 9px;
-            text-transform: uppercase;
-        }
-        .summary-item span {
-            display: block;
-            color: #fff;
-            font-weight: 600;
-            margin-top: 2px;
-            font-size: 11px;
-        }
-        .summary-item span.ready { color: #4caf50; }
-        .summary-item span.error { color: #f44336; }
-        .summary-item span.pending { color: #ffc107; }
-        .diagnostic-content {
-            max-height: 220px;
-            overflow-y: auto;
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-        }
-        .diagnostic-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .diagnostic-content::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.1);
-        }
-        .diagnostic-content::-webkit-scrollbar-thumb {
-            background: #d4af37;
-            border-radius: 3px;
-        }
-        .status-item {
-            padding: 6px 10px;
-            margin: 3px 0;
-            border-radius: 6px;
-            font-size: 11px;
-            animation: fadeIn 0.3s ease;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .status-item.info {
-            background: rgba(33, 150, 243, 0.15);
-            border-left: 3px solid #2196f3;
-            color: #64b5f6;
-        }
-        .status-item.success {
-            background: rgba(76, 175, 80, 0.15);
-            border-left: 3px solid #4caf50;
-            color: #81c784;
-        }
-        .status-item.warning {
-            background: rgba(255, 193, 7, 0.15);
-            border-left: 3px solid #ffc107;
-            color: #ffd54f;
-        }
-        .status-item.error {
-            background: rgba(244, 67, 54, 0.15);
-            border-left: 3px solid #f44336;
-            color: #e57373;
-        }
-        .status-time {
-            opacity: 0.6;
-            font-size: 10px;
-            white-space: nowrap;
-        }
-        .diagnostic-footer {
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-            display: flex;
-            gap: 8px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        .diagnostic-footer button {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-        .diagnostic-footer button:hover {
-            background: rgba(212, 175, 55, 0.3);
-        }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(panel);
-    updateDiagnosticSummary();
-}
-
-function updateDiagnostic(message, type = 'info') {
-    // Create panel if not exists
-    if (!document.getElementById('diagnostic-panel')) {
-        createDiagnosticPanel();
-    }
-    
-    const panel = document.getElementById('diagnostic-content');
-    if (!panel) return;
-    
-    const div = document.createElement('div');
-    div.className = 'status-item ' + type;
-    
-    const time = new Date().toLocaleTimeString('fr-FR', { 
-        hour12: false, 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit' 
-    });
-    
-    // Add icon based on type
-    let icon = 'ℹ️';
-    if (type === 'success') icon = '✅';
-    else if (type === 'warning') icon = '⚠️';
-    else if (type === 'error') icon = '❌';
-    
-    div.innerHTML = `
-        <span class="status-time">${time}</span>
-        <span>${icon} ${message}</span>
-    `;
-    
-    panel.appendChild(div);
-    panel.scrollTop = panel.scrollHeight;
-    
-    // Also log to console
-    console.log(`[DIAGNOSTIC ${type.toUpperCase()}] ${message}`);
-    
-    // Update summary
-    updateDiagnosticSummary();
-}
-
-function updateDiagnosticSummary() {
-    const summary = document.getElementById('diagnostic-summary');
-    if (!summary) return;
-    
-    const pageName = window.location.pathname.split('/').pop() || 'index.html';
-    const hasFirebase = typeof initFirebase === 'function';
-    const hasProductAPI = window.ProductAPI !== undefined;
-    const firebaseReady = window.firebaseInitialized === true;
-    
-    summary.innerHTML = `
-        <h4><i class="fas fa-chart-bar"></i> Summary: ${pageName}</h4>
-        <div class="summary-grid">
-            <div class="summary-item">
-                <label>Firebase SDK</label>
-                <span class="${hasFirebase ? 'ready' : 'error'}">${hasFirebase ? '✅ Loaded' : '❌ Missing'}</span>
-            </div>
-            <div class="summary-item">
-                <label>Firebase Ready</label>
-                <span class="${firebaseReady ? 'ready' : 'pending'}">${firebaseReady ? '✅ Ready' : '⏳ Loading...'}</span>
-            </div>
-            <div class="summary-item">
-                <label>ProductAPI</label>
-                <span class="${hasProductAPI ? 'ready' : 'pending'}">${hasProductAPI ? '✅ Available' : '⏳ Waiting...'}</span>
-            </div>
-            <div class="summary-item">
-                <label>Page Status</label>
-                <span class="ready">📄 ${pageName}</span>
-            </div>
-        </div>
-    `;
-}
-
-function toggleDiagnosticPanel() {
-    const panel = document.getElementById('diagnostic-panel');
-    const content = document.getElementById('diagnostic-content');
-    const summary = document.getElementById('diagnostic-summary');
-    if (panel) {
-        if (panel.style.height === '60px') {
-            panel.style.height = 'auto';
-            panel.style.maxHeight = '450px';
-            content.style.display = 'block';
-            summary.style.display = 'block';
-        } else {
-            panel.style.height = '60px';
-            panel.style.maxHeight = '60px';
-            content.style.display = 'none';
-            summary.style.display = 'none';
-        }
-    }
-}
-
-function closeDiagnosticPanel() {
-    const panel = document.getElementById('diagnostic-panel');
-    if (panel) {
-        panel.style.animation = 'fadeOut 0.3s ease forwards';
-        setTimeout(() => panel.remove(), 300);
-    }
-}
-
-function clearDiagnosticLog() {
-    const content = document.getElementById('diagnostic-content');
-    if (content) {
-        content.innerHTML = '';
-        updateDiagnostic('Log cleared', 'info');
-    }
-}
-
-function reloadPageDiagnostic() {
-    updateDiagnostic('Reloading page...', 'warning');
-    setTimeout(() => window.location.reload(), 500);
-}
-
-console.log('main.js loaded - version 5');
-if (typeof updateDiagnostic === 'function') {
-    updateDiagnostic('main.js loaded - version 5', 'success');
-}
+console.log('main.js loaded');
 
 // Initialize Firebase on page load - but wait for firebase-config to load
 document.addEventListener('DOMContentLoaded', async function() {
-    updateDiagnostic('DOMContentLoaded fired', 'info');
-    updateDiagnostic('window.initFirebase: ' + (typeof window.initFirebase), 
-        typeof window.initFirebase === 'function' ? 'success' : 'error');
-    
     // Wait for Firebase to be initialized
     if (typeof window.initFirebase === 'function') {
-        updateDiagnostic('Calling initFirebase from main.js', 'success');
         initFirebase();
     } else {
-        updateDiagnostic('initFirebase not available, waiting...', 'warning');
         // Wait up to 3 seconds for Firebase to initialize
         for (let i = 0; i < 30; i++) {
             await new Promise(resolve => setTimeout(resolve, 100));
             if (typeof window.initFirebase === 'function') {
-                updateDiagnostic('Firebase initialized after ' + (i * 100) + 'ms delay', 'success');
                 initFirebase();
                 break;
-            }
-            if (i === 29) {
-                updateDiagnostic('ERROR: Firebase not initialized after 3 seconds!', 'error');
-                updateDiagnostic('This means firebase-config.js may not be loaded properly', 'error');
             }
         }
     }
     
-    updateDiagnostic('After initFirebase - window.ProductAPI: ' + (window.ProductAPI !== undefined ? 'available' : 'undefined'),
-        window.ProductAPI !== undefined ? 'success' : 'error');
-    
-    // Now that Firebase is initialized, load products
-    updateDiagnostic('Loading best sellers and collections...', 'info');
-    
     // Load best sellers if grid exists
     if (document.getElementById('bestSellersGrid')) {
-        updateDiagnostic('Calling loadBestSellers()...', 'info');
         loadBestSellers();
     }
     
     // Load collections if grid exists
     if (document.getElementById('collectionsGrid')) {
-        updateDiagnostic('Calling loadCollections()...', 'info');
         loadCollections();
     }
 });
@@ -446,18 +111,10 @@ async function getCategories() {
 
 // Load collections dynamically
 async function loadCollections() {
-    if (typeof updateDiagnostic === 'function') {
-        updateDiagnostic('loadCollections() called', 'info');
-    }
-    
     const categories = await getCategories();
     const collectionsGrid = document.getElementById('collectionsGrid');
     
     if (!collectionsGrid) return;
-    
-    if (typeof updateDiagnostic === 'function') {
-        updateDiagnostic('Rendering ' + categories.length + ' categories', 'success');
-    }
     
     // Filter visible categories and sort by order
     const visibleCategories = categories
@@ -504,14 +161,11 @@ async function getProducts(options = {}) {
         pageSize = 24,
         lastDoc = null,
         sortBy = 'created_at',
-        forceRefresh = true // Always force refresh to get latest data
+        forceRefresh = true
     } = options;
-
-    updateDiagnostic('getProducts called - category: ' + (category || 'all') + ', forceRefresh: ' + forceRefresh);
     
     // Use Firebase API if available
     if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
-        updateDiagnostic('Using Firebase API (window.ProductAPI available)', 'success');
         try {
             const result = await ProductAPI.getProducts({
                 category,
@@ -522,45 +176,15 @@ async function getProducts(options = {}) {
                 pageSize,
                 lastDoc,
                 sortBy,
-                forceRefresh // Pass forceRefresh to Firebase
+                forceRefresh
             });
-            const productCount = result.products ? result.products.length : 0;
-            updateDiagnostic('Firebase returned ' + productCount + ' products', productCount > 0 ? 'success' : 'warning');
             return result;
         } catch (error) {
-            updateDiagnostic('Firebase ERROR: ' + error.message, 'error');
+            console.error('Error fetching product from Firebase:', error);
             return { products: [], hasMore: false };
         }
     }
-
-    // ProductAPI not available - this is an error condition
-    updateDiagnostic('ERROR: ProductAPI not available! Firebase not initialized.', 'error');
-    updateDiagnostic('This means firebase-config.js is not loaded or has an error', 'error');
-    return { products: [], hasMore: false };
-    if (localProducts) {
-        let products = JSON.parse(localProducts);
-        
-        // Apply filters locally
-        if (category) {
-            products = products.filter(p => p.category === category);
-        }
-        if (gender) {
-            products = products.filter(p => p.gender === gender);
-        }
-        if (searchTerm) {
-            const searchLower = searchTerm.toLowerCase();
-            products = products.filter(p => 
-                p.name?.toLowerCase().includes(searchLower) ||
-                p.description?.toLowerCase().includes(searchLower)
-            );
-        }
-        
-        return {
-            products: products.slice(0, pageSize),
-            hasMore: products.length > pageSize
-        };
-    }
-
+    
     return { products: [], hasMore: false };
 }
 
@@ -723,15 +347,8 @@ let productsState = {
 
 // Load filtered and sorted products for category page with pagination
 async function loadFilteredCategoryProducts(category, append = false) {
-    updateDiagnostic('loadFilteredCategoryProducts: category=' + category + ', append=' + append, 'info');
-    
     const productsGrid = document.getElementById('productsGrid');
-    if (!productsGrid) {
-        updateDiagnostic('❌ productsGrid element NOT FOUND!', 'error');
-        return;
-    }
-    
-    updateDiagnostic('✅ productsGrid found', 'success');
+    if (!productsGrid) return;
     
     // Show loading
     if (!append) {
@@ -762,7 +379,6 @@ async function loadFilteredCategoryProducts(category, append = false) {
     
     try {
         // Fetch from Firebase with pagination
-        updateDiagnostic('⏳ Fetching products from Firebase...', 'info');
         const result = await getProducts({
             category,
             gender: filters.genders.length > 0 ? filters.genders[0] : null,
@@ -772,8 +388,6 @@ async function loadFilteredCategoryProducts(category, append = false) {
             lastDoc: append ? productsState.lastDoc : null,
             sortBy: sortBy === 'newest' ? 'created_at' : sortBy
         });
-        
-        updateDiagnostic('✅ getProducts returned ' + (result.products?.length || 0) + ' products', 'success');
         
         let products = result.products || [];
         
@@ -797,14 +411,11 @@ async function loadFilteredCategoryProducts(category, append = false) {
         productsState.lastDoc = result.lastDoc;
         productsState.hasMore = result.hasMore;
         
-        updateDiagnostic('📦 Rendering ' + productsState.products.length + ' products', 'info');
-        
         // Render products
         renderProductsGrid(productsGrid, productsState.products, append);
         
     } catch (error) {
         console.error('Error loading products:', error);
-        updateDiagnostic('❌ Error loading products: ' + error.message, 'error');
         if (!append) {
             productsGrid.innerHTML = `
                 <div class="error-loading" style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
@@ -822,62 +433,13 @@ async function loadFilteredCategoryProducts(category, append = false) {
     productsState.loading = false;
 }
 
-console.log('[DIAGNOSTIC] All main functions are now globally available:');
-console.log('- loadCategoryProducts');
-console.log('- loadFilteredCategoryProducts');
-console.log('- getProducts');
-console.log('- renderProductsGrid');
-
-// Add manual test button to diagnostic panel
-function addManualTestButton() {
-    const footer = document.querySelector('.diagnostic-footer');
-    if (footer) {
-        const testBtn = document.createElement('button');
-        testBtn.innerHTML = '<i class="fas fa-vial"></i> Test';
-        testBtn.style.flex = '1';
-        testBtn.style.background = 'rgba(33, 150, 243, 0.3)';
-        testBtn.onclick = async function() {
-            updateDiagnostic('🧪 Manual test started...', 'info');
-            
-            // Check if functions are available
-            updateDiagnostic('loadCategoryProducts: ' + (typeof loadCategoryProducts), 'info');
-            updateDiagnostic('loadFilteredCategoryProducts: ' + (typeof loadFilteredCategoryProducts), 'info');
-            updateDiagnostic('getProducts: ' + (typeof getProducts), 'info');
-            
-            // Try to load products
-            if (typeof loadCategoryProducts === 'function') {
-                updateDiagnostic('⏳ Calling loadCategoryProducts("femme")...', 'info');
-                try {
-                    await loadCategoryProducts('femme');
-                    updateDiagnostic('✅ Test completed!', 'success');
-                } catch (e) {
-                    updateDiagnostic('❌ Test failed: ' + e.message, 'error');
-                }
-            } else {
-                updateDiagnostic('❌ loadCategoryProducts not available!', 'error');
-            }
-        };
-        footer.insertBefore(testBtn, footer.firstChild);
-    }
-}
-
-// Add test button when panel is created
-const originalCreateDiagnosticPanel = createDiagnosticPanel;
-createDiagnosticPanel = function() {
-    originalCreateDiagnosticPanel();
-    setTimeout(addManualTestButton, 100);
-};
-
 // Render products grid
 function renderProductsGrid(productsGrid, products, append = false) {
-    updateDiagnostic('renderProductsGrid called with ' + products.length + ' products', 'info');
-    
     if (!append) {
         productsGrid.innerHTML = '';
     }
     
     if (products.length === 0 && !append) {
-        updateDiagnostic('⚠️ No products found!', 'warning');
         productsGrid.innerHTML = `
             <div class="no-products" style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
                 <i class="fas fa-search" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
@@ -890,8 +452,6 @@ function renderProductsGrid(productsGrid, products, append = false) {
         `;
         return;
     }
-    
-    updateDiagnostic('✅ Rendering ' + products.length + ' products', 'success');
     
     const html = products.map((product, index) => {
         const hasPromotion = product.promotion && product.promotion > 0;
@@ -1070,29 +630,19 @@ function getCurrentCategory() {
     return filename;
 }
 
-// Load products for specific category (legacy function)
+// Load products for specific category
 async function loadCategoryProducts(category) {
-    updateDiagnostic('🎯 loadCategoryProducts("' + category + '") CALLED', 'info');
-    updateDiagnostic('📍 productsGrid exists: ' + (!!document.getElementById('productsGrid')), 'info');
-    
     // Make sure it's available globally
     window.loadCategoryProducts = loadCategoryProducts;
     
     try {
-        const result = await loadFilteredCategoryProducts(category);
-        updateDiagnostic('✅ loadCategoryProducts completed successfully', 'success');
-        return result;
+        await loadFilteredCategoryProducts(category);
+        return true;
     } catch (error) {
-        updateDiagnostic('❌ loadCategoryProducts error: ' + error.message, 'error');
-        throw error;
+        console.error('Error loading category products:', error);
+        return false;
     }
 }
-
-// Make it global immediately
-window.loadCategoryProducts = loadCategoryProducts;
-window.loadFilteredCategoryProducts = loadFilteredCategoryProducts;
-window.getProducts = getProducts;
-window.renderProductsGrid = renderProductsGrid;
 
 // Initialize filter sidebar
 async function initFilterSidebar() {
@@ -1112,10 +662,25 @@ async function initFilterSidebar() {
     filterSection.innerHTML = `
         <div class="filter-sidebar">
             <div class="filter-header">
-                <h3><i class="fas fa-filter"></i> Filtres</h3>
-                <button class="reset-filters-btn" onclick="resetFilters()">
-                    <i class="fas fa-redo"></i> Réinitialiser
+                <h3><i class="fas fa-sliders-h"></i> Filtres & Tri</h3>
+                <button class="close-filter" onclick="closeMobileFilters()">
+                    <i class="fas fa-times"></i>
                 </button>
+            </div>
+            
+            <!-- Gender Filter -->
+            <div class="filter-group" id="genderFilterGroup">
+                <h4><i class="fas fa-venus-mars"></i> Genre</h4>
+                <label class="filter-checkbox-label">
+                    <input type="checkbox" name="filterGender" value="homme" onchange="applyFilters()">
+                    <span class="checkmark"></span>
+                    Homme
+                </label>
+                <label class="filter-checkbox-label">
+                    <input type="checkbox" name="filterGender" value="femme" onchange="applyFilters()">
+                    <span class="checkmark"></span>
+                    Femme
+                </label>
             </div>
             
             <!-- Price Filter -->
@@ -1129,24 +694,9 @@ async function initFilterSidebar() {
                 <p class="filter-hint">Prix jusqu'à ${maxProductPrice} DH</p>
             </div>
             
-            <!-- Gender Filter (for branched categories) -->
-            <div class="filter-group" id="genderFilterGroup">
-                <h4><i class="fas fa-users"></i> Genre</h4>
-                <label class="filter-checkbox-label">
-                    <input type="checkbox" name="filterGender" value="homme" onchange="applyFilters()">
-                    <span class="checkmark"></span>
-                    Homme
-                </label>
-                <label class="filter-checkbox-label">
-                    <input type="checkbox" name="filterGender" value="femme" onchange="applyFilters()">
-                    <span class="checkmark"></span>
-                    Femme
-                </label>
-            </div>
-            
             <!-- Sort Options -->
             <div class="filter-group">
-                <h4><i class="fas fa-sort"></i> Trier par</h4>
+                <h4><i class="fas fa-sort-amount-down"></i> Trier par</h4>
                 <select id="sortSelect" onchange="applyFilters()">
                     <option value="newest">Plus récents</option>
                     <option value="price_asc">Prix: croissant</option>
@@ -1158,7 +708,7 @@ async function initFilterSidebar() {
             
             <!-- Apply Button (Mobile) -->
             <button class="apply-filters-btn" onclick="closeMobileFilters()">
-                <i class="fas fa-check"></i> Appliquer
+                <i class="fas fa-check"></i> Appliquer les filtres
             </button>
         </div>
     `;
@@ -1225,23 +775,10 @@ async function getBestSellers() {
 
 // Load best sellers
 async function loadBestSellers() {
-    if (typeof updateDiagnostic === 'function') {
-        updateDiagnostic('loadBestSellers() called', 'info');
-    }
-    
     const bestSellersGrid = document.getElementById('bestSellersGrid');
     if (!bestSellersGrid) return;
     
-    if (typeof updateDiagnostic === 'function') {
-        updateDiagnostic('bestSellersGrid found, calling getBestSellers()...', 'info');
-    }
-    
     const bestSellers = await getBestSellers();
-    
-    if (typeof updateDiagnostic === 'function') {
-        updateDiagnostic('getBestSellers() returned ' + bestSellers.length + ' products', 
-            bestSellers.length > 0 ? 'success' : 'warning');
-    }
     
     if (bestSellers.length === 0) {
         bestSellersGrid.innerHTML = `
@@ -1270,192 +807,108 @@ async function loadBestSellers() {
             : (product.image || '');
         
         return `
-            <div class="product-card best-seller scroll-animate stagger-${(index % 6) + 1}" 
-                 onclick="location.href='product.html?id=${product.id}'" 
-                 style="cursor: pointer;">
-                <div class="best-seller-badge">
-                    <i class="fas fa-fire"></i>
-                    Best-Seller
-                </div>
-                ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
-                <div class="product-image-container">
+            <div class="best-seller scroll-animate stagger-${(index % 6) + 1}">
+                <div class="best-seller-image" onclick="location.href='product.html?id=${product.id}'">
+                    ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                     <img src="${productImage}" alt="${product.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                 </div>
-                <div class="product-info">
-                    <h3>${product.name}</h3>
-                    <div class="product-rating">${starsHtml}</div>
-                    <p>${product.description || ''}</p>
-                    <div class="product-price">
+                <div class="best-seller-info">
+                    <h3 onclick="location.href='product.html?id=${product.id}'">${product.name}</h3>
+                    <div class="best-seller-rating">${starsHtml}</div>
+                    <p class="price">
                         ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                        <span class="price">${Math.round(finalPrice)} DH</span>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
-                            <i class="fas fa-shopping-cart"></i> Commander
-                        </button>
-                        <button class="btn-secondary" style="padding: 12px;" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/'/g, "\\'")})" title="Ajouter au panier">
-                            <i class="fas fa-shopping-bag"></i>
-                        </button>
-                    </div>
+                        <span class="sale-price">${Math.round(finalPrice)} DH</span>
+                    </p>
+                    <button class="btn-primary" onclick="openOrderModal('${product.id}')">
+                        <i class="fas fa-shopping-cart"></i> Commander
+                    </button>
                 </div>
             </div>
         `;
     }).join('');
     
+    // Re-initialize scroll animations
     initScrollAnimations();
 }
 
-// ===== Search Functionality =====
-
-// Search products
-async function searchProducts(query) {
-    if (!query || query.length < 2) return [];
+// ===== Initialize Enhanced UI =====
+function initUI() {
+    initEnhancedSidebar();
+    initCart();
+    initScrollToTop();
+    initScrollAnimations();
     
-    // Use Firebase search if available
-    if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
-        const result = await ProductAPI.getProducts({
-            searchTerm: query,
-            pageSize: 10,
-            forceRefresh: true
-        });
-        return result.products || [];
+    // Load best sellers if grid exists
+    if (document.getElementById('bestSellersGrid')) {
+        setTimeout(() => loadBestSellers(), 100);
     }
     
-    // Fallback to localStorage
-    const products = JSON.parse(localStorage.getItem('luxury_products') || '[]');
-    const queryLower = query.toLowerCase();
-    
-    return products.filter(product => {
-        return product.visible && (
-            (product.name && product.name.toLowerCase().includes(queryLower)) ||
-            (product.description && product.description.toLowerCase().includes(queryLower)) ||
-            (product.category && product.category.toLowerCase().includes(queryLower))
-        );
-    }).slice(0, 10);
-}
-
-// ===== WhatsApp Contact =====
-function contactWhatsApp(productName, price) {
-    const phoneNumber = '212674743106';
-    const message = `Bonjour, je suis intéressé(e) par: ${productName} - ${price} DH`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-}
-
-// ===== Sidebar Functionality =====
-document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-    const closeSidebar = document.getElementById('closeSidebar');
-    const overlay = document.getElementById('overlay');
-    
-    if (menuToggle) {
-        menuToggle.addEventListener('click', function() {
-            sidebar.classList.add('active');
-            overlay.classList.add('active');
-        });
-    }
-    
-    if (closeSidebar) {
-        closeSidebar.addEventListener('click', function() {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-    }
-    
-    if (overlay) {
-        overlay.addEventListener('click', function() {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-    }
-    
-    // Load collections on homepage
+    // Load collections if grid exists
     if (document.getElementById('collectionsGrid')) {
-        loadCollections();
+        setTimeout(() => loadCollections(), 100);
     }
     
-    // Load products on category pages (wait for Firebase first)
-    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    if (['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'].includes(currentPage)) {
-        // Wait for Firebase to be initialized before loading products
-        const waitForFirebase = async () => {
-            // Skip if products are already being loaded by another handler
-            if (isProductsLoading || initialProductsLoaded) {
-                return;
-            }
-            
-            isProductsLoading = true;
-            
-            // Wait up to 3 seconds for Firebase to initialize
-            for (let i = 0; i < 30; i++) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                if (typeof window.ProductAPI !== 'undefined') {
-                    break;
-                }
-            }
-            
-            // Now load products
-            initFilterSidebar();
-            
-            const productsSection = document.querySelector('.products-section, #productsSection');
-            if (productsSection) {
-                const mobileToggle = document.createElement('button');
-                mobileToggle.className = 'mobile-filter-toggle';
-                mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
-                mobileToggle.onclick = toggleMobileFilters;
-                productsSection.insertBefore(mobileToggle, productsSection.firstChild);
-            }
-            
-            loadCategoryProducts(currentPage);
-            initInfiniteScroll();
-            
-            isProductsLoading = false;
-            initialProductsLoaded = true;
-        };
-        
-        waitForFirebase();
+    // Initialize mobile filter toggle with improved design
+    const mobileToggle = document.querySelector('.mobile-filter-toggle');
+    if (mobileToggle) {
+        mobileToggle.className = 'mobile-filter-toggle';
+        mobileToggle.innerHTML = '<i class="fas fa-sliders-h"></i>';
+        mobileToggle.onclick = toggleMobileFilters;
     }
-});
-
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
+    
+    // Add filter styles for sidebar
+    addFilterStyles();
+    
+    // Setup mobile filter overlay
+    setupMobileFilterOverlay();
+    
+    // Initialize filter sidebar and load products
+    if (document.getElementById('filterSection')) {
+        initFilterSidebar();
+    }
+    
+    // Load products for category pages
+    const currentCategory = getCurrentCategory();
+    if (currentCategory && document.getElementById('productsGrid')) {
+        loadCategoryProducts(currentCategory);
+    }
+    
+    // Setup enhanced search
+    setupEnhancedSearch();
+    
+    // Initialize infinite scroll
+    initInfiniteScroll();
+    
+    window.addEventListener('load', function() {
+        hideLoading();
     });
-});
+}
 
-// ===== Search Functionality (Desktop) =====
-document.addEventListener('DOMContentLoaded', async function() {
-    const desktopSearchContainer = document.querySelector('.search-container.desktop-search');
-    const desktopSearchInput = document.getElementById('desktopSearchInput');
-    const desktopSearchBtn = document.getElementById('desktopSearchBtn');
+// ===== Enhanced Search =====
+function setupEnhancedSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchContainer = document.querySelector('.search-container');
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
     
-    if (desktopSearchBtn && desktopSearchContainer && desktopSearchInput) {
-        desktopSearchBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            desktopSearchContainer.classList.toggle('active');
-            if (desktopSearchContainer.classList.contains('active')) {
-                desktopSearchInput.focus();
-            }
+    if (searchInput && searchContainer) {
+        searchInput.addEventListener('focus', function() {
+            searchContainer.classList.add('focused');
         });
         
-        desktopSearchInput.addEventListener('input', debounce(async function(e) {
+        searchInput.addEventListener('blur', function() {
+            // Delay removing focus class to allow clicking on results
+            setTimeout(() => {
+                searchContainer.classList.remove('focused');
+            }, 200);
+        });
+        
+        searchInput.addEventListener('input', debounce(async function(e) {
             const query = e.target.value.trim().toLowerCase();
-            let searchResults = desktopSearchContainer.querySelector('.search-results');
             
             if (query.length < 2) {
-                if (searchResults) {
-                    searchResults.remove();
-                }
+                if (searchResults) searchResults.innerHTML = '';
                 return;
             }
             
@@ -1463,96 +916,93 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (products.length === 0) {
                 if (searchResults) {
-                    searchResults.remove();
-                }
-            } else {
-                if (!searchResults) {
-                    searchResults = document.createElement('div');
-                    searchResults.className = 'search-results';
-                    desktopSearchContainer.appendChild(searchResults);
-                }
-                
-                searchResults.innerHTML = products.map(product => {
-                    const hasPromotion = product.promotion && product.promotion > 0;
-                    const finalPrice = hasPromotion 
-                        ? product.price - (product.price * product.promotion / 100)
-                        : product.price;
-                    
-                    const imageUrl = (product.images && product.images.length > 0) 
-                        ? product.images[0] 
-                        : (product.image || '');
-                    const rating = product.rating_average ? {
-                        average: product.rating_average,
-                        count: product.rating_count
-                    } : null;
-                    
-                    return `
-                        <div class="search-result-item" onclick="viewProduct('${product.id}')">
-                            <div class="search-result-image">
-                                ${imageUrl ? 
-                                    `<img src="${imageUrl}" alt="${product.name}" onerror="this.innerHTML='<i class=\\'fas fa-box\\'></i>'">` : 
-                                    '<i class="fas fa-box"></i>'}
-                            </div>
-                            <div class="search-result-info">
-                                <h4>${product.name}</h4>
-                                <div class="search-result-price">
-                                    <span class="price">${Math.round(finalPrice)} DH</span>
-                                    ${rating ? `<span class="rating">★ ${rating.average}</span>` : ''}
-                                </div>
-                            </div>
+                    searchResults.innerHTML = `
+                        <div class="search-no-results">
+                            <i class="fas fa-search"></i>
+                            <p>Aucun produit trouvé pour "${query}"</p>
                         </div>
                     `;
-                }).join('');
+                }
+            } else {
+                if (searchResults) {
+                    searchResults.innerHTML = products.map(product => {
+                        const hasPromotion = product.promotion && product.promotion > 0;
+                        const finalPrice = hasPromotion 
+                            ? product.price - (product.price * product.promotion / 100)
+                            : product.price;
+                        
+                        const imageUrl = (product.images && product.images.length > 0) 
+                            ? product.images[0] 
+                            : (product.image || '');
+                        const rating = product.rating_average ? {
+                            average: product.rating_average,
+                            count: product.rating_count
+                        } : null;
+                        
+                        return `
+                            <div class="search-result-item" onclick="viewProduct('${product.id}')">
+                                <div class="search-result-image">
+                                    ${imageUrl ? 
+                                        `<img src="${imageUrl}" alt="${product.name}" onerror="this.innerHTML='<i class=\\'fas fa-box\\'></i>'">` : 
+                                        '<i class="fas fa-box"></i>'}
+                                </div>
+                                <div class="search-result-info">
+                                    <h4>${product.name}</h4>
+                                    <div class="search-result-price">
+                                        <span class="price">${Math.round(finalPrice)} DH</span>
+                                        ${rating ? `<span class="rating">★ ${rating.average}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
             }
         }, 300));
         
         document.addEventListener('click', function(e) {
-            if (!desktopSearchContainer.contains(e.target)) {
-                desktopSearchContainer.classList.remove('active');
-                const searchResults = desktopSearchContainer.querySelector('.search-results');
-                if (searchResults) {
-                    searchResults.remove();
-                }
+            if (!searchContainer.contains(e.target)) {
+                searchContainer.classList.remove('focused');
+                if (searchResults) searchResults.innerHTML = '';
             }
         });
     }
     
     // ===== Search Modal Functionality (Mobile) =====
-    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
-    const searchModal = document.getElementById('searchModal');
-    const closeSearchModal = document.getElementById('closeSearchModal');
-    const searchModalInput = document.getElementById('searchModalInput');
-    const searchModalResults = document.getElementById('searchModalResults');
+    const mobileSearchContainer = document.getElementById('mobileSearchContainer');
+    const closeMobileSearch = document.getElementById('closeMobileSearch');
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    const mobileSearchResults = document.getElementById('mobileSearchResults');
     
-    if (mobileSearchBtn && searchModal) {
+    if (mobileSearchBtn && mobileSearchContainer) {
         mobileSearchBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            searchModal.classList.add('active');
-            setTimeout(() => searchModalInput.focus(), 300);
+            mobileSearchContainer.classList.add('active');
+            setTimeout(() => mobileSearchInput.focus(), 300);
         });
     }
     
-    if (closeSearchModal && searchModal) {
-        closeSearchModal.addEventListener('click', function() {
-            searchModal.classList.remove('active');
+    if (closeMobileSearch && mobileSearchContainer) {
+        closeMobileSearch.addEventListener('click', function() {
+            mobileSearchContainer.classList.remove('active');
         });
     }
     
-    if (searchModal) {
-        searchModal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                searchModal.classList.remove('active');
+    if (mobileSearchContainer) {
+        mobileSearchContainer.addEventListener('click', function(e) {
+            if (e.target === mobileSearchContainer) {
+                mobileSearchContainer.classList.remove('active');
             }
         });
     }
     
-    if (searchModalInput && searchModalResults) {
-        searchModalInput.addEventListener('input', debounce(async function(e) {
+    if (mobileSearchInput && mobileSearchResults) {
+        mobileSearchInput.addEventListener('input', debounce(async function(e) {
             const query = e.target.value.trim().toLowerCase();
             
             if (query.length < 2) {
-                searchModalResults.innerHTML = `
+                mobileSearchResults.innerHTML = `
                     <div class="search-modal-placeholder">
                         <i class="fas fa-search"></i>
                         <p>Tapez pour rechercher</p>
@@ -1564,14 +1014,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             const products = await searchProducts(query);
             
             if (products.length === 0) {
-                searchModalResults.innerHTML = `
+                mobileSearchResults.innerHTML = `
                     <div class="search-modal-no-results">
                         <i class="fas fa-search"></i>
                         <p>Aucun produit trouvé pour "${query}"</p>
                     </div>
                 `;
             } else {
-                searchModalResults.innerHTML = products.map(product => {
+                mobileSearchResults.innerHTML = products.map(product => {
                     const hasPromotion = product.promotion && product.promotion > 0;
                     const finalPrice = hasPromotion 
                         ? product.price - (product.price * product.promotion / 100)
@@ -1586,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     } : null;
                     
                     return `
-                        <div class="search-modal-item" onclick="viewProduct('${product.id}'); searchModal.classList.remove('active');">
+                        <div class="search-modal-item" onclick="viewProduct('${product.id}'); mobileSearchContainer.classList.remove('active');">
                             <div class="search-modal-item-image">
                                 ${imageUrl ? 
                                     `<img src="${imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">` : 
@@ -1605,7 +1055,80 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }, 300));
     }
-});
+    
+    // Desktop search container
+    const desktopSearchContainer = document.querySelector('.desktop-search-container');
+    const desktopSearchInput = document.getElementById('desktopSearchInput');
+    const desktopSearchResults = document.getElementById('desktopSearchResults');
+    
+    if (desktopSearchContainer && desktopSearchInput) {
+        desktopSearchInput.addEventListener('input', debounce(async function(e) {
+            const query = e.target.value.trim().toLowerCase();
+            
+            if (query.length < 2) {
+                if (desktopSearchResults) desktopSearchResults.innerHTML = '';
+                return;
+            }
+            
+            const products = await searchProducts(query);
+            
+            if (products.length === 0) {
+                if (desktopSearchResults) {
+                    desktopSearchResults.innerHTML = `
+                        <div class="search-no-results" style="padding: 20px; text-align: center; color: #999;">
+                            <i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>Aucun produit trouvé pour "${query}"</p>
+                        </div>
+                    `;
+                }
+            } else {
+                if (desktopSearchResults) {
+                    desktopSearchResults.innerHTML = products.map(product => {
+                        const hasPromotion = product.promotion && product.promotion > 0;
+                        const finalPrice = hasPromotion 
+                            ? product.price - (product.price * product.promotion / 100)
+                            : product.price;
+                        
+                        const imageUrl = (product.images && product.images.length > 0) 
+                            ? product.images[0] 
+                            : (product.image || '');
+                        const rating = product.rating_average ? {
+                            average: product.rating_average,
+                            count: product.rating_count
+                        } : null;
+                        
+                        return `
+                            <div class="search-result-item" onclick="viewProduct('${product.id}')">
+                                <div class="search-result-image">
+                                    ${imageUrl ? 
+                                        `<img src="${imageUrl}" alt="${product.name}" onerror="this.innerHTML='<i class=\\'fas fa-box\\'></i>'">` : 
+                                        '<i class="fas fa-box"></i>'}
+                                </div>
+                                <div class="search-result-info">
+                                    <h4>${product.name}</h4>
+                                    <div class="search-result-price">
+                                        <span class="price">${Math.round(finalPrice)} DH</span>
+                                        ${rating ? `<span class="rating">★ ${rating.average}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        }, 300));
+        
+        document.addEventListener('click', function(e) {
+            if (!desktopSearchContainer.contains(e.target)) {
+                desktopSearchContainer.classList.remove('active');
+                const searchResults = desktopSearchContainer.querySelector('.search-results');
+                if (searchResults) {
+                    searchResults.remove();
+                }
+            }
+        });
+    }
+}
 
 // Debounce helper
 function debounce(func, wait) {
@@ -1707,18 +1230,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load best sellers if grid exists (will use Firebase if available)
     if (document.getElementById('bestSellersGrid')) {
         // Delay slightly to ensure Firebase is initialized
-        setTimeout(() => {
-            updateDiagnostic('DOMContentLoaded: Calling loadBestSellers()', 'info');
-            loadBestSellers();
-        }, 100);
+        setTimeout(() => loadBestSellers(), 100);
     }
     
     // Load collections if grid exists
     if (document.getElementById('collectionsGrid')) {
-        setTimeout(() => {
-            updateDiagnostic('DOMContentLoaded: Calling loadCollections()', 'info');
-            loadCollections();
-        }, 100);
+        setTimeout(() => loadCollections(), 100);
     }
     
     window.addEventListener('load', function() {
@@ -2484,68 +2001,373 @@ function addOrderModalStyles() {
     document.head.appendChild(styles);
 }
 
-// ===== Scroll Animation =====
-function initScrollAnimations() {
+// ===== Filter Styles =====
+function addFilterStyles() {
+    if (document.getElementById('filter-styles')) return;
+    
     const style = document.createElement('style');
+    style.id = 'filter-styles';
     style.textContent = `
-        .scroll-animate { opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .scroll-animate.animated { opacity: 1; transform: translateY(0); }
-        .collection-card.scroll-animate { transform: translateY(40px) scale(0.95); }
-        .collection-card.scroll-animate.animated { transform: translateY(0) scale(1); }
-        .product-card.scroll-animate { transform: translateY(40px) scale(0.98); }
-        .product-card.scroll-animate.animated { transform: translateY(0) scale(1); }
-        .scroll-animate.stagger-1 { transition-delay: 0ms; }
-        .scroll-animate.stagger-2 { transition-delay: 100ms; }
-        .scroll-animate.stagger-3 { transition-delay: 200ms; }
-        .scroll-animate.stagger-4 { transition-delay: 300ms; }
-        .scroll-animate.stagger-5 { transition-delay: 400ms; }
-        .scroll-animate.stagger-6 { transition-delay: 500ms; }
+        /* ===== Filter Section Styles ===== */
+        .filter-section {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+        }
+        
+        .filter-section.active {
+            display: block;
+        }
+        
+        .filter-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        
+        .filter-sidebar {
+            position: absolute;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100%;
+            background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+            transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-section.active .filter-sidebar {
+            right: 0;
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            border-bottom: 2px solid var(--gold);
+            position: relative;
+        }
+        
+        .filter-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        .filter-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .filter-header h3 i {
+            font-size: 22px;
+        }
+        
+        .close-filter {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--gold);
+            font-size: 18px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .close-filter:hover {
+            background: var(--gold);
+            color: var(--black);
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+        
+        .filter-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+        }
+        
+        .filter-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .filter-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .filter-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--gold) 0%, rgba(212, 175, 55, 0.5) 100%);
+            border-radius: 10px;
+        }
+        
+        /* Filter Groups */
+        .filter-group {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        
+        .filter-group h4 {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-group h4 i {
+            color: var(--gold);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(212, 175, 55, 0.15);
+            border-radius: 10px;
+        }
+        
+        .filter-hint {
+            color: #999;
+            font-size: 12px;
+            margin: 10px 0 0 0;
+        }
+        
+        .price-inputs {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .price-inputs input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        
+        .price-inputs input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        
+        .price-inputs input::placeholder {
+            color: #666;
+        }
+        
+        .price-inputs span {
+            color: #999;
+            font-weight: 500;
+        }
+        
+        /* Filter Checkbox */
+        .filter-checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .filter-checkbox-label:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+        
+        .filter-checkbox-label input[type="checkbox"] {
+            display: none;
+        }
+        
+        .filter-checkbox-label .checkmark {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .filter-checkbox-label input:checked ~ .checkmark {
+            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+            border-color: var(--gold);
+        }
+        
+        .filter-checkbox-label input:checked ~ .checkmark::after {
+            content: '✓';
+            color: #1a1a1a;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .filter-checkbox-label input:checked ~ span:last-child {
+            color: var(--gold);
+            font-weight: 600;
+        }
+        
+        /* Sort Select */
+        .filter-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4af37' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        
+        .filter-select option {
+            background: #1a1a1a;
+            color: white;
+        }
+        
+        /* Mobile Filter Toggle Button */
+        .mobile-filter-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: var(--gold);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+        }
+        
+        .mobile-filter-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+            border-color: var(--gold);
+        }
+        
+        .mobile-filter-toggle:active {
+            transform: translateY(0);
+        }
+        
+        .mobile-filter-toggle.active {
+            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+            color: #1a1a1a;
+        }
+        
+        /* Apply Button */
+        .apply-filters-btn {
+            width: calc(100% - 50px);
+            margin: 0 25px 25px 25px;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        
+        .apply-filters-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .filter-sidebar {
+                width: 100%;
+                max-width: 400px;
+                right: -100%;
+            }
+            
+            .filter-header {
+                padding: 20px;
+            }
+            
+            .filter-header h3 {
+                font-size: 18px;
+            }
+            
+            .filter-content {
+                padding: 20px;
+            }
+            
+            .filter-group {
+                padding: 16px;
+            }
+            
+            .filter-group h4 {
+                font-size: 15px;
+            }
+        }
     `;
     document.head.appendChild(style);
-    
-    const animatedElements = document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card');
-    
-    if ('IntersectionObserver' in window) {
-        // More sensitive observer with lower threshold
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.01, rootMargin: '0px 0px -100px 0px' });
-        
-        animatedElements.forEach((card, index) => {
-            card.classList.add('scroll-animate');
-            card.classList.add(`stagger-${(index % 6) + 1}`);
-            
-            // Check if element is already in viewport and animate it immediately
-            const rect = card.getBoundingClientRect();
-            const isInViewport = rect.top >= 0 && rect.top <= window.innerHeight + 100;
-            
-            if (isInViewport) {
-                // Element is already visible, add animated class with delay
-                setTimeout(() => {
-                    card.classList.add('animated');
-                }, index * 50);
-            } else {
-                observer.observe(card);
-            }
-        });
-    } else {
-        // Fallback for browsers without IntersectionObserver
-        animatedElements.forEach((card, index) => {
-            card.classList.add('scroll-animate');
-            card.classList.add(`stagger-${(index % 6) + 1}`);
-            setTimeout(() => {
-                card.classList.add('animated');
-            }, index * 100);
-        });
-    }
 }
 
-// Export functions for external use
+// Make functions globally accessible
 window.getProducts = getProducts;
 window.getProduct = getProduct;
 window.getProductReviews = getProductReviews;
@@ -2571,3 +2393,43 @@ window.closeMobileFilters = closeMobileFilters;
 window.resetFilters = resetFilters;
 window.applyFilters = applyFilters;
 window.getSelectedFilters = getSelectedFilters;
+
+// Search products function
+async function searchProducts(query) {
+    if (!query || query.length < 2) return [];
+    
+    // Try Firebase API first
+    if (window.ProductAPI && typeof ProductAPI.search === 'function') {
+        try {
+            return await ProductAPI.search(query);
+        } catch (error) {
+            console.error('Error searching products:', error);
+        }
+    }
+    
+    // Fallback to localStorage
+    const allProducts = JSON.parse(localStorage.getItem('luxury_products') || '[]');
+    const searchLower = query.toLowerCase();
+    return allProducts.filter(product => 
+        product.visible &&
+        (product.name?.toLowerCase().includes(searchLower) ||
+         product.description?.toLowerCase().includes(searchLower) ||
+         product.category?.toLowerCase().includes(searchLower))
+    ).slice(0, 10);
+}
+
+// Get products by category (legacy function for compatibility)
+async function getProductsByCategory(category) {
+    return await getProducts({ category, pageSize: 100 });
+}
+
+// Contact via WhatsApp
+function contactWhatsApp(productName, productId) {
+    const phoneNumber = '+212708826826';
+    const message = productName 
+        ? `Bonjour, je suis intéressé par le produit: ${productName} (ID: ${productId})`
+        : 'Bonjour, je voudrais plus d\'informations sur vos produits';
+    
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
