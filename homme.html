@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 <body>
+
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -117,6 +119,22 @@
         </div>
     </section>
 
+    <!-- Filter Section -->
+    <div class="filter-section" id="filterSection">
+        <div class="filter-overlay" onclick="toggleMobileFilters()"></div>
+        <div class="filter-sidebar">
+            <div class="filter-header">
+                <h3><i class="fas fa-filter"></i> Filtres</h3>
+                <button class="close-filter" onclick="toggleMobileFilters()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="filter-content">
+                <!-- Filter content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- Products Section -->
     <section class="products-section">
         <div class="container">
@@ -162,59 +180,91 @@
         </div>
     </footer>
 
-    <script type="module" src="js/firebase-config.js?v=2"></script>
-    <script src="js/main.js?v=2" defer></script>
-    
-    <script>
-        // Initialize Firebase and load products after page loads
-        async function initPage() {
-            // Skip if products are already being loaded
-            if (window.isProductsLoading || window.initialProductsLoaded) {
-                return;
-            }
-            
-            window.isProductsLoading = true;
-            
-            // Wait for Firebase to be ready
-            if (typeof initFirebase === 'function') {
-                await initFirebase();
-            }
-            
-            // Initialize UI components
-            if (typeof initCart === 'function') initCart();
-            if (typeof initUI === 'function') initUI();
-            
-            // Initialize filter sidebar and load products
-            if (typeof initFilterSidebar === 'function') initFilterSidebar();
-            
-            // Wait for loadCategoryProducts to be available (up to 3 seconds)
-            let waitCount = 0;
-            while (typeof loadCategoryProducts !== 'function' && waitCount < 60) {
-                await new Promise(r => setTimeout(r, 50));
-                waitCount++;
-            }
-            
-            // Load products
-            if (typeof loadCategoryProducts === 'function') {
-                await loadCategoryProducts('homme');
-            } else if (typeof window.loadCategoryProducts === 'function') {
-                await window.loadCategoryProducts('homme');
-            } else {
-                console.error('loadCategoryProducts not available!');
-            }
-            
-            if (typeof initInfiniteScroll === 'function') initInfiniteScroll();
-            
-            window.isProductsLoading = false;
-            window.initialProductsLoaded = true;
-        }
+    <!-- Load Firebase first as module -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
 
-        // Call the initialization function when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPage);
-        } else {
-            initPage();
+    <!-- Initialize category page after Firebase is ready -->
+    <script type="module">
+        // Note: initFirebase is available as window.initFirebase (global function)
+        
+        async function waitForFunction(funcName, timeout = 15000) {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                if (typeof window[funcName] === 'function') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return false;
         }
+        
+        async function initCategoryPage() {
+            try {
+                console.log('Category page: Starting initialization...');
+                
+                // Wait for main.js functions to be available (up to 15 seconds)
+                console.log('Waiting for loadCategoryProducts...');
+                await waitForFunction('loadCategoryProducts');
+                console.log('main.js functions ready');
+                
+                // Wait for Firebase to be available
+                console.log('Waiting for initFirebase...');
+                await waitForFunction('initFirebase');
+                console.log('Firebase ready');
+                
+                // Initialize Firebase if not already done
+                if (typeof initFirebase === 'function') {
+                    await initFirebase();
+                    console.log('Firebase initialized');
+                }
+                
+                // Small delay to ensure Firebase is fully initialized
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                // Initialize UI
+                console.log('Initializing filter sidebar...');
+                if (typeof initFilterSidebar === 'function') {
+                    initFilterSidebar();
+                }
+                
+                // Add mobile filter button
+                const productsSection = document.querySelector('.products-section, #productsSection');
+                if (productsSection) {
+                    const existingToggle = document.querySelector('.mobile-filter-toggle');
+                    if (!existingToggle) {
+                        const mobileToggle = document.createElement('button');
+                        mobileToggle.className = 'mobile-filter-toggle';
+                        mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
+                        mobileToggle.onclick = window.toggleMobileFilters;
+                        productsSection.insertBefore(mobileToggle, productsSection.firstChild);
+                    }
+                }
+                
+                // Load products for this category
+                console.log('Loading category products...');
+                if (typeof loadCategoryProducts === 'function') {
+                    await loadCategoryProducts('homme');
+                }
+                
+                // Initialize infinite scroll if available
+                if (typeof initInfiniteScroll === 'function') {
+                    initInfiniteScroll();
+                }
+                
+                console.log('Category page: Initialization complete');
+            } catch (error) {
+                console.error('Category page error:', error);
+                // Try to load products anyway as fallback
+                if (typeof loadCategoryProducts === 'function') {
+                    console.log('Attempting fallback product load...');
+                    loadCategoryProducts('homme');
+                }
+            }
+        }
+        
+        // Start initialization after a small delay to ensure scripts are loaded
+        setTimeout(initCategoryPage, 100);
     </script>
 </body>
 </html>
