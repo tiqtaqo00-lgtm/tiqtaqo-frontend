@@ -2036,353 +2036,353 @@ function addOrderModalStyles() {
 //             z-index: 9999;
 //         }
         
-        .filter-section.active {
-            display: block;
-        }
-        
-        .filter-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-        }
-        
-        .filter-sidebar {
-            position: absolute;
-            top: 0;
-            right: -320px;
-            width: 320px;
-            height: 100%;
-            background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
-            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
-            transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .filter-section.active .filter-sidebar {
-            right: 0;
-        }
-        
-        .filter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 25px;
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-            border-bottom: 2px solid var(--gold);
-            position: relative;
-        }
-        
-        .filter-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
-            animation: pulse 3s ease-in-out infinite;
-        }
-        
-        .filter-header h3 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--gold);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .filter-header h3 i {
-            font-size: 22px;
-        }
-        
-        .close-filter {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            color: var(--gold);
-            font-size: 18px;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .close-filter:hover {
-            background: var(--gold);
-            color: var(--black);
-            transform: rotate(90deg) scale(1.1);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
-        }
-        
-        .filter-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 25px;
-        }
-        
-        .filter-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .filter-content::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-        }
-        
-        .filter-content::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, var(--gold) 0%, rgba(212, 175, 55, 0.5) 100%);
-            border-radius: 10px;
-        }
-        
-        /* Filter Groups */
-        .filter-group {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.1);
-        }
-        
-        .filter-group h4 {
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .filter-group h4 i {
-            color: var(--gold);
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(212, 175, 55, 0.15);
-            border-radius: 10px;
-        }
-        
-        .filter-hint {
-            color: #999;
-            font-size: 12px;
-            margin: 10px 0 0 0;
-        }
-        
-        .price-inputs {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .price-inputs input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-        
-        .price-inputs input:focus {
-            outline: none;
-            border-color: var(--gold);
-        }
-        
-        .price-inputs input::placeholder {
-            color: #666;
-        }
-        
-        .price-inputs span {
-            color: #999;
-            font-weight: 500;
-        }
-        
-        /* Filter Checkbox */
-        .filter-checkbox-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .filter-checkbox-label:hover {
-            background: rgba(212, 175, 55, 0.1);
-            border-color: rgba(212, 175, 55, 0.3);
-        }
-        
-        .filter-checkbox-label input[type="checkbox"] {
-            display: none;
-        }
-        
-        .filter-checkbox-label .checkmark {
-            width: 24px;
-            height: 24px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            margin-right: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-        
-        .filter-checkbox-label input:checked ~ .checkmark {
-            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
-            border-color: var(--gold);
-        }
-        
-        .filter-checkbox-label input:checked ~ .checkmark::after {
-            content: '✓';
-            color: #1a1a1a;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .filter-checkbox-label input:checked ~ span:last-child {
-            color: var(--gold);
-            font-weight: 600;
-        }
-        
-        /* Sort Select */
-        .filter-select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4af37' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            padding-right: 40px;
-        }
-        
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--gold);
-        }
-        
-        .filter-select option {
-            background: #1a1a1a;
-            color: white;
-        }
-        
-        /* Mobile Filter Toggle Button */
-        .mobile-filter-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: var(--gold);
-            border: 2px solid rgba(212, 175, 55, 0.3);
-            border-radius: 14px;
-            cursor: pointer;
-            font-size: 20px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
-        }
-        
-        .mobile-filter-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-            border-color: var(--gold);
-        }
-        
-        .mobile-filter-toggle:active {
-            transform: translateY(0);
-        }
-        
-        .mobile-filter-toggle.active {
-            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
-            color: #1a1a1a;
-        }
-        
-        /* Apply Button */
-        .apply-filters-btn {
-            width: calc(100% - 50px);
-            margin: 0 25px 25px 25px;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
-            color: #1a1a1a;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        }
-        
-        .apply-filters-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-        }
-        
-        @media (max-width: 768px) {
-            .filter-sidebar {
-                width: 100%;
-                max-width: 400px;
-                right: -100%;
-            }
-            
-            .filter-header {
-                padding: 20px;
-            }
-            
-            .filter-header h3 {
-                font-size: 18px;
-            }
-            
-            .filter-content {
-                padding: 20px;
-            }
-            
-            .filter-group {
-                padding: 16px;
-            }
-            
-            .filter-group h4 {
-                font-size: 15px;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-// }
+//         .filter-section.active {
+//             display: block;
+//         }
+//         
+//         .filter-overlay {
+//             position: absolute;
+//             top: 0;
+//             left: 0;
+//             width: 100%;
+//             height: 100%;
+//             background: rgba(0, 0, 0, 0.6);
+//             backdrop-filter: blur(4px);
+//         }
+//         
+//         .filter-sidebar {
+//             position: absolute;
+//             top: 0;
+//             right: -320px;
+//             width: 320px;
+//             height: 100%;
+//             background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
+//             box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+//             transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+//             display: flex;
+//             flex-direction: column;
+//         }
+//         
+//         .filter-section.active .filter-sidebar {
+//             right: 0;
+//         }
+//         
+//         .filter-header {
+//             display: flex;
+//             justify-content: space-between;
+//             align-items: center;
+//             padding: 25px;
+//             background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+//             border-bottom: 2px solid var(--gold);
+//             position: relative;
+//         }
+//         
+//         .filter-header::before {
+//             content: '';
+//             position: absolute;
+//             top: -50%;
+//             left: -50%;
+//             width: 200%;
+//             height: 200%;
+//             background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+//             animation: pulse 3s ease-in-out infinite;
+//         }
+//         
+//         .filter-header h3 {
+//             margin: 0;
+//             font-size: 20px;
+//             font-weight: 700;
+//             color: var(--gold);
+//             display: flex;
+//             align-items: center;
+//             gap: 12px;
+//             position: relative;
+//             z-index: 1;
+//         }
+//         
+//         .filter-header h3 i {
+//             font-size: 22px;
+//         }
+//         
+//         .close-filter {
+//             background: rgba(212, 175, 55, 0.1);
+//             border: 1px solid rgba(212, 175, 55, 0.3);
+//             color: var(--gold);
+//             font-size: 18px;
+//             cursor: pointer;
+//             width: 40px;
+//             height: 40px;
+//             border-radius: 50%;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             transition: all 0.3s ease;
+//             position: relative;
+//             z-index: 1;
+//         }
+//         
+//         .close-filter:hover {
+//             background: var(--gold);
+//             color: var(--black);
+//             transform: rotate(90deg) scale(1.1);
+//             box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+//         }
+//         
+//         .filter-content {
+//             flex: 1;
+//             overflow-y: auto;
+//             padding: 25px;
+//         }
+//         
+//         .filter-content::-webkit-scrollbar {
+//             width: 6px;
+//         }
+//         
+//         .filter-content::-webkit-scrollbar-track {
+//             background: rgba(0, 0, 0, 0.2);
+//         }
+//         
+//         .filter-content::-webkit-scrollbar-thumb {
+//             background: linear-gradient(180deg, var(--gold) 0%, rgba(212, 175, 55, 0.5) 100%);
+//             border-radius: 10px;
+//         }
+//         
+//         /* Filter Groups */
+//         .filter-group {
+//             background: rgba(255, 255, 255, 0.05);
+//             border-radius: 15px;
+//             padding: 20px;
+//             margin-bottom: 20px;
+//             border: 1px solid rgba(212, 175, 55, 0.1);
+//         }
+//         
+//         .filter-group h4 {
+//             color: white;
+//             font-size: 16px;
+//             font-weight: 600;
+//             margin: 0 0 15px 0;
+//             display: flex;
+//             align-items: center;
+//             gap: 10px;
+//         }
+//         
+//         .filter-group h4 i {
+//             color: var(--gold);
+//             width: 32px;
+//             height: 32px;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             background: rgba(212, 175, 55, 0.15);
+//             border-radius: 10px;
+//         }
+//         
+//         .filter-hint {
+//             color: #999;
+//             font-size: 12px;
+//             margin: 10px 0 0 0;
+//         }
+//         
+//         .price-inputs {
+//             display: flex;
+//             align-items: center;
+//             gap: 12px;
+//         }
+//         
+//         .price-inputs input {
+//             flex: 1;
+//             padding: 12px 16px;
+//             border: 2px solid rgba(255, 255, 255, 0.1);
+//             border-radius: 12px;
+//             font-size: 15px;
+//             font-family: 'Poppins', sans-serif;
+//             transition: all 0.3s ease;
+//             background: rgba(255, 255, 255, 0.05);
+//             color: white;
+//         }
+//         
+//         .price-inputs input:focus {
+//             outline: none;
+//             border-color: var(--gold);
+//         }
+//         
+//         .price-inputs input::placeholder {
+//             color: #666;
+//         }
+//         
+//         .price-inputs span {
+//             color: #999;
+//             font-weight: 500;
+//         }
+//         
+//         /* Filter Checkbox */
+//         .filter-checkbox-label {
+//             display: flex;
+//             align-items: center;
+//             cursor: pointer;
+//             padding: 12px 16px;
+//             background: rgba(255, 255, 255, 0.05);
+//             border-radius: 12px;
+//             margin-bottom: 10px;
+//             transition: all 0.3s ease;
+//             border: 2px solid transparent;
+//         }
+//         
+//         .filter-checkbox-label:hover {
+//             background: rgba(212, 175, 55, 0.1);
+//             border-color: rgba(212, 175, 55, 0.3);
+//         }
+//         
+//         .filter-checkbox-label input[type="checkbox"] {
+//             display: none;
+//         }
+//         
+//         .filter-checkbox-label .checkmark {
+//             width: 24px;
+//             height: 24px;
+//             border: 2px solid rgba(255, 255, 255, 0.2);
+//             border-radius: 8px;
+//             margin-right: 14px;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             transition: all 0.3s ease;
+//             flex-shrink: 0;
+//         }
+//         
+//         .filter-checkbox-label input:checked ~ .checkmark {
+//             background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+//             border-color: var(--gold);
+//         }
+//         
+//         .filter-checkbox-label input:checked ~ .checkmark::after {
+//             content: '✓';
+//             color: #1a1a1a;
+//             font-size: 14px;
+//             font-weight: bold;
+//         }
+//         
+//         .filter-checkbox-label input:checked ~ span:last-child {
+//             color: var(--gold);
+//             font-weight: 600;
+//         }
+//         
+//         /* Sort Select */
+//         .filter-select {
+//             width: 100%;
+//             padding: 12px 16px;
+//             border: 2px solid rgba(255, 255, 255, 0.1);
+//             border-radius: 12px;
+//             font-size: 15px;
+//             font-family: 'Poppins', sans-serif;
+//             transition: all 0.3s ease;
+//             background: rgba(255, 255, 255, 0.05);
+//             color: white;
+//             cursor: pointer;
+//             appearance: none;
+//             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4af37' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+//             background-repeat: no-repeat;
+//             background-position: right 16px center;
+//             padding-right: 40px;
+//         }
+//         
+//         .filter-select:focus {
+//             outline: none;
+//             border-color: var(--gold);
+//         }
+//         
+//         .filter-select option {
+//             background: #1a1a1a;
+//             color: white;
+//         }
+//         
+//         /* Mobile Filter Toggle Button */
+//         .mobile-filter-toggle {
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             width: 48px;
+//             height: 48px;
+//             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+//             color: var(--gold);
+//             border: 2px solid rgba(212, 175, 55, 0.3);
+//             border-radius: 14px;
+//             cursor: pointer;
+//             font-size: 20px;
+//             transition: all 0.3s ease;
+//             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+//         }
+//         
+//         .mobile-filter-toggle:hover {
+//             transform: translateY(-2px);
+//             box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+//             border-color: var(--gold);
+//         }
+//         
+//         .mobile-filter-toggle:active {
+//             transform: translateY(0);
+//         }
+//         
+//         .mobile-filter-toggle.active {
+//             background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+//             color: #1a1a1a;
+//         }
+//         
+//         /* Apply Button */
+//         .apply-filters-btn {
+//             width: calc(100% - 50px);
+//             margin: 0 25px 25px 25px;
+//             padding: 16px;
+//             background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+//             color: #1a1a1a;
+//             border: none;
+//             border-radius: 12px;
+//             cursor: pointer;
+//             font-size: 16px;
+//             font-weight: 600;
+//             transition: all 0.3s ease;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             gap: 10px;
+//             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+//         }
+//         
+//         .apply-filters-btn:hover {
+//             transform: translateY(-2px);
+//             box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+//         }
+//         
+//         @media (max-width: 768px) {
+//             .filter-sidebar {
+//                 width: 100%;
+//                 max-width: 400px;
+//                 right: -100%;
+//             }
+//             
+//             .filter-header {
+//                 padding: 20px;
+//             }
+//             
+//             .filter-header h3 {
+//                 font-size: 18px;
+//             }
+//             
+//             .filter-content {
+//                 padding: 20px;
+//             }
+//             
+//             .filter-group {
+//                 padding: 16px;
+//             }
+//             
+//             .filter-group h4 {
+//                 font-size: 15px;
+//             }
+//         }
+//     `;
+//     document.head.appendChild(style);
+// // }
 
 // Make functions globally accessible
 window.getProducts = getProducts;
