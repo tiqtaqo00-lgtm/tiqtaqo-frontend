@@ -11,25 +11,29 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Wait for Firebase to be initialized
     if (typeof window.initFirebase === 'function') {
         initFirebase();
+        
+        // Initialize UI after Firebase is ready
+        setTimeout(() => {
+            if (typeof initUI === 'function') {
+                initUI();
+            }
+        }, 100);
     } else {
         // Wait up to 3 seconds for Firebase to initialize
         for (let i = 0; i < 30; i++) {
             await new Promise(resolve => setTimeout(resolve, 100));
             if (typeof window.initFirebase === 'function') {
                 initFirebase();
+                
+                // Initialize UI after Firebase is ready
+                setTimeout(() => {
+                    if (typeof initUI === 'function') {
+                        initUI();
+                    }
+                }, 100);
                 break;
             }
         }
-    }
-    
-    // Load best sellers if grid exists
-    if (document.getElementById('bestSellersGrid')) {
-        loadBestSellers();
-    }
-    
-    // Load collections if grid exists
-    if (document.getElementById('collectionsGrid')) {
-        loadCollections();
     }
 });
 
@@ -442,12 +446,9 @@ function renderProductsGrid(productsGrid, products, append = false) {
     if (products.length === 0 && !append) {
         productsGrid.innerHTML = `
             <div class="no-products" style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
-                <i class="fas fa-search" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
+                <i class="fas fa-box-open" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
                 <h3 style="color: #666; margin-bottom: 10px;">Aucun produit trouvé</h3>
-                <p style="color: #999; margin-bottom: 20px;">Essayez de modifier vos filtres</p>
-                <button class="btn-primary" onclick="resetFilters()">
-                    <i class="fas fa-redo"></i> Réinitialiser les filtres
-                </button>
+                <p style="color: #999; margin-bottom: 20px;">Aucun produit disponible dans cette catégorie</p>
             </div>
         `;
         return;
