@@ -719,7 +719,7 @@ function initFilterSidebar() {
         </div>
     `;
     
-    addFilterStyles();
+    // addFilterStyles();
 }
 
 // Apply filters and reload products
@@ -2018,23 +2018,23 @@ function addOrderModalStyles() {
     document.head.appendChild(styles);
 }
 
-// ===== Filter Styles =====
-function addFilterStyles() {
-    if (document.getElementById('filter-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'filter-styles';
-    style.textContent = `
-        /* ===== Filter Section Styles ===== */
-        .filter-section {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 9999;
-        }
+// ===== Filter Styles (Removed) =====
+// function addFilterStyles() {
+//     if (document.getElementById('filter-styles')) return;
+//     
+//     const style = document.createElement('style');
+//     style.id = 'filter-styles';
+//     style.textContent = `
+//         /* ===== Filter Section Styles ===== */
+//         .filter-section {
+//             display: none;
+//             position: fixed;
+//             top: 0;
+//             left: 0;
+//             width: 100%;
+//             height: 100%;
+//             z-index: 9999;
+//         }
         
         .filter-section.active {
             display: block;
@@ -2382,7 +2382,7 @@ function addFilterStyles() {
         }
     `;
     document.head.appendChild(style);
-}
+// }
 
 // Make functions globally accessible
 window.getProducts = getProducts;
