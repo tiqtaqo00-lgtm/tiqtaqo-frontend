@@ -16,10 +16,11 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: var(--white);
-    color: var(--black);
+    background-color: var(--black);
+    color: var(--white);
     line-height: 1.6;
     overflow-x: hidden;
+    padding-top: 115px;
 }
 
 .container {
@@ -771,7 +772,7 @@ body {
 
 /* ===== Product Grid ===== */
 .products-section {
-    padding: 135px 0 80px;
+    padding: 60px 0 80px;
     background-color: var(--light-gray);
     min-height: 100vh;
 }
@@ -989,7 +990,7 @@ body {
 /* ===== Category Page Header Enhancement ===== */
 .page-header {
     background: linear-gradient(135deg, var(--black) 0%, var(--dark-gray) 100%);
-    padding: 150px 0 80px;
+    padding: 60px 0 80px;
     text-align: center;
     color: var(--white);
     position: relative;
@@ -3938,4 +3939,66 @@ body {
         transform: translateY(-3px);
         box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
     }
+}
+
+/* ===== Fix White Gap Between Navbar and Sections ===== */
+/* This ensures no white space appears between the fixed navbar and the following sections */
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure first section after navbar has no margin-top */
+.hero,
+.page-header,
+.gender-selection-page,
+.products-section,
+.products-section + .features {
+    margin-top: 0 !important;
+}
+
+/* Ensure dark background sections start immediately after navbar */
+.hero::before,
+.page-header::before,
+.gender-selection-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    z-index: -1;
+}
+
+/* Cover any potential gap behind the fixed navbar */
+.navbar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--black);
+}
+
+/* Ensure sections immediately after navbar have dark backgrounds touching it */
+.hero,
+.page-header,
+.gender-selection-page {
+    position: relative;
+    padding-top: 100px; /* Account for navbar height */
+    margin-top: 0;
+}
+
+/* Products section - ensure it starts right after header */
+.products-section {
+    margin-top: 0 !important;
+    padding-top: 80px;
 }
