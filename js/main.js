@@ -723,8 +723,15 @@ let productsState = {
 
 // Load filtered and sorted products for category page with pagination
 async function loadFilteredCategoryProducts(category, append = false) {
+    updateDiagnostic('loadFilteredCategoryProducts: category=' + category + ', append=' + append, 'info');
+    
     const productsGrid = document.getElementById('productsGrid');
-    if (!productsGrid) return;
+    if (!productsGrid) {
+        updateDiagnostic('❌ productsGrid element NOT FOUND!', 'error');
+        return;
+    }
+    
+    updateDiagnostic('✅ productsGrid found', 'success');
     
     // Show loading
     if (!append) {
@@ -755,6 +762,7 @@ async function loadFilteredCategoryProducts(category, append = false) {
     
     try {
         // Fetch from Firebase with pagination
+        updateDiagnostic('⏳ Fetching products from Firebase...', 'info');
         const result = await getProducts({
             category,
             gender: filters.genders.length > 0 ? filters.genders[0] : null,
@@ -764,6 +772,8 @@ async function loadFilteredCategoryProducts(category, append = false) {
             lastDoc: append ? productsState.lastDoc : null,
             sortBy: sortBy === 'newest' ? 'created_at' : sortBy
         });
+        
+        updateDiagnostic('✅ getProducts returned ' + (result.products?.length || 0) + ' products', 'success');
         
         let products = result.products || [];
         
@@ -787,11 +797,14 @@ async function loadFilteredCategoryProducts(category, append = false) {
         productsState.lastDoc = result.lastDoc;
         productsState.hasMore = result.hasMore;
         
+        updateDiagnostic('📦 Rendering ' + productsState.products.length + ' products', 'info');
+        
         // Render products
         renderProductsGrid(productsGrid, productsState.products, append);
         
     } catch (error) {
         console.error('Error loading products:', error);
+        updateDiagnostic('❌ Error loading products: ' + error.message, 'error');
         if (!append) {
             productsGrid.innerHTML = `
                 <div class="error-loading" style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
@@ -811,11 +824,14 @@ async function loadFilteredCategoryProducts(category, append = false) {
 
 // Render products grid
 function renderProductsGrid(productsGrid, products, append = false) {
+    updateDiagnostic('renderProductsGrid called with ' + products.length + ' products', 'info');
+    
     if (!append) {
         productsGrid.innerHTML = '';
     }
     
     if (products.length === 0 && !append) {
+        updateDiagnostic('⚠️ No products found!', 'warning');
         productsGrid.innerHTML = `
             <div class="no-products" style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
                 <i class="fas fa-search" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
@@ -828,6 +844,8 @@ function renderProductsGrid(productsGrid, products, append = false) {
         `;
         return;
     }
+    
+    updateDiagnostic('✅ Rendering ' + products.length + ' products', 'success');
     
     const html = products.map((product, index) => {
         const hasPromotion = product.promotion && product.promotion > 0;
@@ -1008,7 +1026,10 @@ function getCurrentCategory() {
 
 // Load products for specific category (legacy function)
 async function loadCategoryProducts(category) {
+    updateDiagnostic('loadCategoryProducts called with category: ' + category, 'info');
+    updateDiagnostic('productsGrid exists: ' + (!!document.getElementById('productsGrid')), 'info');
     await loadFilteredCategoryProducts(category);
+    updateDiagnostic('loadCategoryProducts completed', 'success');
 }
 
 // Initialize filter sidebar
