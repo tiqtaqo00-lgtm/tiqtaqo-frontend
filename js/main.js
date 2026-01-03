@@ -572,7 +572,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
+                        <button class="btn-secondary" style="padding: 12px;" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/'/g, "\\'")})" title="Ajouter au panier">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -914,7 +914,7 @@ async function loadBestSellers() {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
+                        <button class="btn-secondary" style="padding: 12px;" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/'/g, "\\'")})" title="Ajouter au panier">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -923,7 +923,6 @@ async function loadBestSellers() {
         `;
     }).join('');
     
-    // Initialize add to cart event listeners
     initScrollAnimations();
 }
 
@@ -997,8 +996,47 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCollections();
     }
     
-    // NOTE: Category product loading is now handled by initPage() in each HTML file
-    // This avoids race conditions between DOMContentLoaded and Firebase initialization
+    // Load products on category pages (wait for Firebase first)
+    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+    if (['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'].includes(currentPage)) {
+        // Wait for Firebase to be initialized before loading products
+        const waitForFirebase = async () => {
+            // Skip if products are already being loaded by another handler
+            if (isProductsLoading || initialProductsLoaded) {
+                return;
+            }
+            
+            isProductsLoading = true;
+            
+            // Wait up to 3 seconds for Firebase to initialize
+            for (let i = 0; i < 30; i++) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (typeof window.ProductAPI !== 'undefined') {
+                    break;
+                }
+            }
+            
+            // Now load products
+            initFilterSidebar();
+            
+            const productsSection = document.querySelector('.products-section, #productsSection');
+            if (productsSection) {
+                const mobileToggle = document.createElement('button');
+                mobileToggle.className = 'mobile-filter-toggle';
+                mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
+                mobileToggle.onclick = toggleMobileFilters;
+                productsSection.insertBefore(mobileToggle, productsSection.firstChild);
+            }
+            
+            loadCategoryProducts(currentPage);
+            initInfiniteScroll();
+            
+            isProductsLoading = false;
+            initialProductsLoaded = true;
+        };
+        
+        waitForFirebase();
+    }
 });
 
 // Smooth scroll
@@ -1282,7 +1320,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Only initialize UI features here (Firebase loading is handled separately)
     initEnhancedSidebar();
     initCart();
-    initAddToCartButtons();
     
     initScrollToTop();
     initScrollAnimations();
@@ -1557,81 +1594,6 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Initialize add to cart buttons using event delegation (only once)
-let addToCartInitialized = false;
-let addToCartInProgress = false;
-
-function initAddToCartButtons() {
-    // Prevent multiple initializations
-    if (addToCartInitialized) {
-        return;
-    }
-    addToCartInitialized = true;
-    
-    // Use event delegation for dynamically added buttons
-    document.addEventListener('click', function(e) {
-        const addToCartBtn = e.target.closest('.add-to-cart-btn');
-        if (addToCartBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Prevent double clicks
-            if (addToCartInProgress) {
-                console.log('Add to cart already in progress, ignoring click');
-                return;
-            }
-            
-            const productId = addToCartBtn.dataset.productId;
-            if (productId) {
-                console.log('Adding product to cart:', productId);
-                
-                // Get product data and add to cart
-                getProduct(productId).then(product => {
-                    if (product) {
-                        addToCartInProgress = true;
-                        console.log('Product found, adding to cart:', product.name);
-                        addToCart(product);
-                        // Reset after a short delay
-                        setTimeout(() => { addToCartInProgress = false; }, 500);
-                    } else {
-                        showNotification('Produit non trouvé!', 'warning');
-                    }
-                }).catch(error => {
-                    addToCartInProgress = false;
-                    console.error('Error adding to cart:', error);
-                });
-            }
-        }
-    });
-}
-
-// Handle add to cart button click directly (for inline onclick)
-async function handleAddToCart(productId) {
-    console.log('handleAddToCart called with productId:', productId);
-    
-    if (addToCartInProgress) {
-        console.log('Add to cart already in progress, ignoring click');
-        return;
-    }
-    
-    if (productId) {
-        console.log('Adding product to cart:', productId);
-        
-        // Get product data and add to cart
-        const product = await getProduct(productId);
-        if (product) {
-            addToCartInProgress = true;
-            console.log('Product found, adding to cart:', product.name);
-            addToCart(product);
-            // Reset after a short delay
-            setTimeout(() => { addToCartInProgress = false; }, 500);
-        } else {
-            showNotification('Produit non trouvé!', 'warning');
-            addToCartInProgress = false;
-        }
-    }
-}
-
 // Make functions globally accessible
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
@@ -1643,7 +1605,6 @@ window.resetFilters = resetFilters;
 window.applyFilters = applyFilters;
 window.toggleMobileFilters = toggleMobileFilters;
 window.closeMobileFilters = closeMobileFilters;
-window.handleAddToCart = handleAddToCart;
 
 // ===== Order Modal =====
 function getOrderModalHTML() {
@@ -2162,17 +2123,10 @@ function initScrollAnimations() {
     `;
     document.head.appendChild(style);
     
-    const cards = document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card');
-    
-    if (cards.length === 0) return;
-    
-    // Add scroll-animate class to all cards
-    cards.forEach((card, index) => {
-        card.classList.add('scroll-animate');
-        card.classList.add(`stagger-${(index % 6) + 1}`);
-    });
+    const animatedElements = document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card');
     
     if ('IntersectionObserver' in window) {
+        // More sensitive observer with lower threshold
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -2180,26 +2134,33 @@ function initScrollAnimations() {
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.01, rootMargin: '0px 0px -50px 0px' });
+        }, { threshold: 0.01, rootMargin: '0px 0px -100px 0px' });
         
-        cards.forEach(card => {
-            observer.observe(card);
-        });
-        
-        // Also check immediately for elements already in viewport
-        setTimeout(() => {
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
-                if (isInViewport && !card.classList.contains('animated')) {
+        animatedElements.forEach((card, index) => {
+            card.classList.add('scroll-animate');
+            card.classList.add(`stagger-${(index % 6) + 1}`);
+            
+            // Check if element is already in viewport and animate it immediately
+            const rect = card.getBoundingClientRect();
+            const isInViewport = rect.top >= 0 && rect.top <= window.innerHeight + 100;
+            
+            if (isInViewport) {
+                // Element is already visible, add animated class with delay
+                setTimeout(() => {
                     card.classList.add('animated');
-                }
-            });
-        }, 100);
+                }, index * 50);
+            } else {
+                observer.observe(card);
+            }
+        });
     } else {
         // Fallback for browsers without IntersectionObserver
-        cards.forEach(card => {
-            card.classList.add('animated');
+        animatedElements.forEach((card, index) => {
+            card.classList.add('scroll-animate');
+            card.classList.add(`stagger-${(index % 6) + 1}`);
+            setTimeout(() => {
+                card.classList.add('animated');
+            }, index * 100);
         });
     }
 }
@@ -2215,45 +2176,18 @@ window.filterProducts = filterProducts;
 window.sortProducts = sortProducts;
 window.searchProducts = searchProducts;
 window.loadMoreProducts = loadMoreProducts;
-window.initAddToCartButtons = initAddToCartButtons;
-
-// Initialize add to cart buttons with MutationObserver for dynamically added elements
-(function() {
-    // Initialize immediately
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAddToCartButtonsWithObserver);
-    } else {
-        initAddToCartButtonsWithObserver();
-    }
-    
-    function initAddToCartButtonsWithObserver() {
-        // Initialize the event delegation
-        initAddToCartButtons();
-        
-        // Also set up a MutationObserver to re-check for add-to-cart buttons
-        // This ensures buttons added dynamically work correctly
-        if (typeof MutationObserver !== 'undefined') {
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1) { // Element node
-                            // Check if the added node or its children have add-to-cart buttons
-                            const buttons = node.querySelectorAll ? node.querySelectorAll('.add-to-cart-btn') : [];
-                            if (node.classList && node.classList.contains('add-to-cart-btn')) {
-                                buttons.push(node);
-                            }
-                            if (buttons.length > 0) {
-                                console.log('MutationObserver detected', buttons.length, 'new add-to-cart buttons');
-                            }
-                        }
-                    });
-                });
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        }
-    }
-})();
+window.getCategories = getCategories;
+window.contactWhatsApp = contactWhatsApp;
+window.addToCart = addToCart;
+window.initCart = initCart;
+window.initUI = initUI;
+window.initFilterSidebar = initFilterSidebar;
+window.loadCategoryProducts = loadCategoryProducts;
+window.initInfiniteScroll = initInfiniteScroll;
+window.getProductsByCategory = getProductsByCategory;
+window.getCurrentCategory = getCurrentCategory;
+window.toggleMobileFilters = toggleMobileFilters;
+window.closeMobileFilters = closeMobileFilters;
+window.resetFilters = resetFilters;
+window.applyFilters = applyFilters;
+window.getSelectedFilters = getSelectedFilters;

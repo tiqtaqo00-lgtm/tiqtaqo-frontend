@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 </head>
 <body>
-
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -170,48 +168,12 @@
         </div>
     </footer>
 
-    <!-- Load Firebase first as module -->
-    <script type="module" src="js/firebase-config.js"></script>
-
-    <!-- Load main.js for cart and UI functions -->
-    <script src="js/main.js" defer></script>
-
-    <script type="module">
-        // Note: initFirebase is available as window.initFirebase (global function)
-        
-        async function initPage() {
-            try {
-                console.log('wallets-femme.html: Starting initialization...');
-                
-                // Initialize Firebase if not already done
-                if (typeof window.initFirebase === 'function') {
-                    await window.initFirebase();
-                    console.log('wallets-femme.html: Firebase initialized');
-                }
-                
-                // Call cart and UI functions if they exist
-                if (typeof window.initCart === 'function') {
-                    window.initCart();
-                    console.log('wallets-femme.html: initCart called');
-                }
-                if (typeof window.initUI === 'function') {
-                    window.initUI();
-                    console.log('wallets-femme.html: initUI called');
-                }
-                
-                // Load products
-                await window.loadCategoryProducts('wallets', 'femme');
-                console.log('wallets-femme.html: Products loaded');
-            } catch (error) {
-                console.error('wallets-femme.html: Error:', error);
-            }
-        }
-        
-        // Wait a moment for scripts to load, then initialize
-        setTimeout(initPage, 100);
-
+    <script type="module" src="js/firebase-config.js?v=2"></script>
+    <script src="js/main.js?v=2" defer></script>
+    
+    <script>
         async function loadCategoryProducts(category, gender) {
-            const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
+            const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
             
@@ -265,6 +227,34 @@
                 `;
             }).join('');
         }
+
+        // Initialize Firebase and load products after initialization
+        async function initPage() {
+            // Skip if products are already being loaded
+            if (window.isProductsLoading || window.initialProductsLoaded) {
+                return;
+            }
+            
+            window.isProductsLoading = true;
+            
+            // Wait for Firebase to be ready
+            if (typeof initFirebase === 'function') {
+                await initFirebase();
+            }
+            
+            // Initialize UI components
+            initCart();
+            initUI();
+            
+            // Load products
+            await loadCategoryProducts('wallets', 'femme');
+            
+            window.isProductsLoading = false;
+            window.initialProductsLoaded = true;
+        }
+
+        // Call the initialization function
+        initPage();
     </script>
 </body>
 </html>

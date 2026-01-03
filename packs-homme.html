@@ -53,7 +53,6 @@
     </style>
 </head>
 <body>
-
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -213,48 +212,21 @@
         </div>
     </footer>
 
-    <!-- Load Firebase first as module -->
-    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/firebase-config.js?v=2"></script>
+    <script src="js/main.js?v=2" defer></script>
+    
+    <script>
+        // Initialize Firebase first
+        initFirebase();
 
-    <!-- Load main.js for cart and UI functions -->
-    <script src="js/main.js" defer></script>
+        // Load products immediately (don't wait for DOMContentLoaded)
+        loadCategoryProducts('packs', 'homme');
+        initCart();
+        initUI();
 
-    <script type="module">
-        // Note: initFirebase is available as window.initFirebase (global function)
-        
-        async function initPage() {
-            try {
-                console.log('packs-homme.html: Starting initialization...');
-                
-                // Initialize Firebase if not already done
-                if (typeof window.initFirebase === 'function') {
-                    await window.initFirebase();
-                    console.log('packs-homme.html: Firebase initialized');
-                }
-                
-                // Call cart and UI functions if they exist
-                if (typeof window.initCart === 'function') {
-                    window.initCart();
-                    console.log('packs-homme.html: initCart called');
-                }
-                if (typeof window.initUI === 'function') {
-                    window.initUI();
-                    console.log('packs-homme.html: initUI called');
-                }
-                
-                // Load products
-                await window.loadCategoryProducts('packs', 'homme');
-                console.log('packs-homme.html: Products loaded');
-            } catch (error) {
-                console.error('packs-homme.html: Error:', error);
-            }
-        }
-        
-        // Wait a moment for scripts to load, then initialize
-        setTimeout(initPage, 100);
-
+        // Function to load products
         async function loadCategoryProducts(category, gender) {
-            const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
+            const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
 
