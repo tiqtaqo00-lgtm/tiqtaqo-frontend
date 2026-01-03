@@ -365,7 +365,7 @@ async function loadFilteredCategoryProducts(category, append = false) {
         minPrice: parseFloat(document.getElementById('filterMinPrice')?.value) || 0,
         maxPrice: parseFloat(document.getElementById('filterMaxPrice')?.value) || 100000,
         categories: [category],
-        genders: getSelectedFilters('filterGender'),
+        genders: [], // Filter system removed
         visibleOnly: true
     };
     
@@ -381,7 +381,7 @@ async function loadFilteredCategoryProducts(category, append = false) {
         // Fetch from Firebase with pagination
         const result = await getProducts({
             category,
-            gender: filters.genders.length > 0 ? filters.genders[0] : null,
+            gender: null, // Filter system removed
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
             pageSize: 24,
@@ -590,6 +590,8 @@ function getSelectedFilters(name) {
 }
 
 // Reset all filters
+// ===== Filter functions removed =====
+/*
 async function resetFilters() {
     // Reset price inputs
     const minPriceInput = document.getElementById('filterMinPrice');
@@ -645,7 +647,11 @@ async function loadCategoryProducts(category) {
 }
 
 // Initialize filter sidebar
-async function initFilterSidebar() {
+async }
+
+// ===== Filter UI Setup Removed =====
+/*
+function initFilterSidebar() {
     const filterSection = document.getElementById('filterSection');
     if (!filterSection) return;
     
@@ -717,6 +723,10 @@ async function initFilterSidebar() {
 }
 
 // Apply filters and reload products
+}
+
+// ===== Mobile Filter Functions Removed =====
+/*
 async function applyFilters() {
     productsState.lastDoc = null;
     productsState.hasMore = true;
@@ -728,6 +738,10 @@ async function applyFilters() {
 }
 
 // Close mobile filters
+}
+
+// ===== Mobile Filter Functions Removed =====
+/*
 function closeMobileFilters() {
     const filterSidebar = document.getElementById('filterSection');
     const mobileToggle = document.querySelector('.mobile-filter-toggle');
@@ -741,6 +755,10 @@ function closeMobileFilters() {
 }
 
 // Toggle mobile filters
+}
+
+// ===== Mobile Filter Functions Removed =====
+/*
 function toggleMobileFilters() {
     const filterSidebar = document.getElementById('filterSection');
     const mobileToggle = document.querySelector('.mobile-filter-toggle');
@@ -849,23 +867,22 @@ function initUI() {
         setTimeout(() => loadCollections(), 100);
     }
     
-    // Initialize mobile filter toggle with improved design
+    // Initialize mobile filter toggle (removed)
     const mobileToggle = document.querySelector('.mobile-filter-toggle');
     if (mobileToggle) {
-        mobileToggle.className = 'mobile-filter-toggle';
-        mobileToggle.innerHTML = '<i class="fas fa-sliders-h"></i>';
-        mobileToggle.onclick = toggleMobileFilters;
+        mobileToggle.style.display = 'none';
     }
     
-    // Add filter styles for sidebar
-    addFilterStyles();
+    // Add filter styles for sidebar (removed)
+    // addFilterStyles();
     
-    // Setup mobile filter overlay
-    setupMobileFilterOverlay();
+    // Setup mobile filter overlay (removed)
+    // setupMobileFilterOverlay();
     
     // Initialize filter sidebar and load products
+    // initFilterSidebar() removed
     if (document.getElementById('filterSection')) {
-        initFilterSidebar();
+        document.getElementById('filterSection').style.display = 'none';
     }
     
     // Load products for category pages
@@ -1498,10 +1515,10 @@ window.updateCartQuantity = updateCartQuantity;
 window.closeCartPanel = closeCartPanel;
 window.openOrderModal = openOrderModal;
 window.selectOrderColor = selectOrderColor;
-window.resetFilters = resetFilters;
-window.applyFilters = applyFilters;
-window.toggleMobileFilters = toggleMobileFilters;
-window.closeMobileFilters = closeMobileFilters;
+window.resetFilters = null;
+window.applyFilters = null;
+window.toggleMobileFilters = null;
+window.closeMobileFilters = null;
 
 // ===== Order Modal =====
 function getOrderModalHTML() {
@@ -2383,16 +2400,16 @@ window.contactWhatsApp = contactWhatsApp;
 window.addToCart = addToCart;
 window.initCart = initCart;
 window.initUI = initUI;
-window.initFilterSidebar = initFilterSidebar;
+window.initFilterSidebar = null;
 window.loadCategoryProducts = loadCategoryProducts;
 window.initInfiniteScroll = initInfiniteScroll;
 window.getProductsByCategory = getProductsByCategory;
 window.getCurrentCategory = getCurrentCategory;
-window.toggleMobileFilters = toggleMobileFilters;
-window.closeMobileFilters = closeMobileFilters;
-window.resetFilters = resetFilters;
-window.applyFilters = applyFilters;
-window.getSelectedFilters = getSelectedFilters;
+window.toggleMobileFilters = null;
+window.closeMobileFilters = null;
+window.resetFilters = null;
+window.applyFilters = null;
+window.getSelectedFilters = null;
 
 // Search products function
 async function searchProducts(query) {

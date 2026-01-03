@@ -1306,7 +1306,7 @@ body {
     font-weight: 500;
 }
 
-/* ===== Filter Section Styles ===== */
+/* ===== Filter Section Styles (Removed) =====
 .filter-section {
     display: none;
     position: fixed;
@@ -1331,7 +1331,7 @@ body {
     backdrop-filter: blur(4px);
 }
 
-.filter-sidebar {
+/* .filter-sidebar { (Removed) */
     position: fixed;
     top: 0;
     right: -350px;
@@ -1625,8 +1625,8 @@ body {
     box-shadow: 0 10px 35px rgba(212, 175, 55, 0.5);
 }
 
-/* Mobile Filter Toggle Button */
-.mobile-filter-toggle {
+/* Mobile Filter Toggle Button (Removed) */
+/* .mobile-filter-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1685,8 +1685,8 @@ body {
     box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive (Filter Styles Removed) */
+/* @media (max-width: 768px) { */
     .filter-sidebar {
         width: 100%;
         max-width: 400px;
@@ -1721,7 +1721,7 @@ body {
         padding: 20px;
         border-radius: 15px;
     }
-}
+} */
 
 /* ===== Responsive Design ===== */
 @media (max-width: 768px) {
@@ -1861,7 +1861,7 @@ body {
 .whatsapp-float:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6);
-}
+} */
 
 /* ===== Responsive Design ===== */
 @media (max-width: 768px) {
