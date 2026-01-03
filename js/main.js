@@ -2,28 +2,325 @@
  * Tiqtaqo E-commerce - Main JavaScript
  * Refactored for Firebase Backend with Pagination Support
  * Supports 100,000+ products with smooth performance
- * Version: 4 (with screen diagnostic panel)
+ * Version: 5 (with enhanced diagnostic panel)
  */
 
-// Screen diagnostic function
+// ===== Enhanced Diagnostic Panel =====
+function createDiagnosticPanel() {
+    // Check if already exists
+    if (document.getElementById('diagnostic-panel')) return;
+    
+    const panel = document.createElement('div');
+    panel.id = 'diagnostic-panel';
+    panel.innerHTML = `
+        <div class="diagnostic-header" onclick="toggleDiagnosticPanel()">
+            <span><i class="fas fa-stethoscope"></i> 🔧 Diagnostic Panel</span>
+            <button class="diagnostic-close" onclick="event.stopPropagation(); closeDiagnosticPanel()">×</button>
+        </div>
+        <div class="diagnostic-summary" id="diagnostic-summary"></div>
+        <div class="diagnostic-content" id="diagnostic-content"></div>
+        <div class="diagnostic-footer">
+            <button onclick="clearDiagnosticLog()"><i class="fas fa-trash"></i> Clear</button>
+            <button onclick="reloadPageDiagnostic()"><i class="fas fa-sync"></i> Reload</button>
+        </div>
+    `;
+    
+    // Add styles
+    const style = document.createElement('style');
+    style.textContent = `
+        #diagnostic-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 380px;
+            max-height: 450px;
+            background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+            z-index: 99999;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            overflow: hidden;
+            animation: slideInUp 0.5s ease;
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(50px); }
+        }
+        .diagnostic-header {
+            background: linear-gradient(135deg, #d4af37 0%, #c9a227 100%);
+            color: #1a1a1a;
+            padding: 12px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .diagnostic-header:hover {
+            background: linear-gradient(135deg, #e5c14a 0%, #dab32f 100%);
+        }
+        .diagnostic-close {
+            background: rgba(0,0,0,0.2);
+            border: none;
+            color: #1a1a1a;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .diagnostic-close:hover {
+            background: rgba(0,0,0,0.4);
+            color: white;
+        }
+        .diagnostic-summary {
+            background: rgba(212, 175, 55, 0.15);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 12px;
+        }
+        .diagnostic-summary h4 {
+            margin: 0 0 8px 0;
+            color: #d4af37;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .summary-item {
+            background: rgba(0,0,0,0.3);
+            padding: 6px 8px;
+            border-radius: 4px;
+        }
+        .summary-item label {
+            color: #888;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+        .summary-item span {
+            display: block;
+            color: #fff;
+            font-weight: 600;
+            margin-top: 2px;
+            font-size: 11px;
+        }
+        .summary-item span.ready { color: #4caf50; }
+        .summary-item span.error { color: #f44336; }
+        .summary-item span.pending { color: #ffc107; }
+        .diagnostic-content {
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+        .diagnostic-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .diagnostic-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+        .diagnostic-content::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 3px;
+        }
+        .status-item {
+            padding: 6px 10px;
+            margin: 3px 0;
+            border-radius: 6px;
+            font-size: 11px;
+            animation: fadeIn 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .status-item.info {
+            background: rgba(33, 150, 243, 0.15);
+            border-left: 3px solid #2196f3;
+            color: #64b5f6;
+        }
+        .status-item.success {
+            background: rgba(76, 175, 80, 0.15);
+            border-left: 3px solid #4caf50;
+            color: #81c784;
+        }
+        .status-item.warning {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 3px solid #ffc107;
+            color: #ffd54f;
+        }
+        .status-item.error {
+            background: rgba(244, 67, 54, 0.15);
+            border-left: 3px solid #f44336;
+            color: #e57373;
+        }
+        .status-time {
+            opacity: 0.6;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        .diagnostic-footer {
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .diagnostic-footer button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .diagnostic-footer button:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(panel);
+    updateDiagnosticSummary();
+}
+
 function updateDiagnostic(message, type = 'info') {
+    // Create panel if not exists
+    if (!document.getElementById('diagnostic-panel')) {
+        createDiagnosticPanel();
+    }
+    
     const panel = document.getElementById('diagnostic-content');
     if (!panel) return;
     
     const div = document.createElement('div');
     div.className = 'status-item ' + type;
-    div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
+    
+    const time = new Date().toLocaleTimeString('fr-FR', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+    });
+    
+    // Add icon based on type
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    else if (type === 'warning') icon = '⚠️';
+    else if (type === 'error') icon = '❌';
+    
+    div.innerHTML = `
+        <span class="status-time">${time}</span>
+        <span>${icon} ${message}</span>
+    `;
+    
     panel.appendChild(div);
     panel.scrollTop = panel.scrollHeight;
     
     // Also log to console
-    console.log(message);
+    console.log(`[DIAGNOSTIC ${type.toUpperCase()}] ${message}`);
+    
+    // Update summary
+    updateDiagnosticSummary();
 }
 
-console.log('main.js loaded - version 4');
-updateDiagnostic('main.js loaded', 'success');
-updateDiagnostic('window.ProductAPI: ' + (window.ProductAPI !== undefined ? 'available' : 'undefined'), 
-    window.ProductAPI !== undefined ? 'success' : 'warning');
+function updateDiagnosticSummary() {
+    const summary = document.getElementById('diagnostic-summary');
+    if (!summary) return;
+    
+    const pageName = window.location.pathname.split('/').pop() || 'index.html';
+    const hasFirebase = typeof initFirebase === 'function';
+    const hasProductAPI = window.ProductAPI !== undefined;
+    const firebaseReady = window.firebaseInitialized === true;
+    
+    summary.innerHTML = `
+        <h4><i class="fas fa-chart-bar"></i> Summary: ${pageName}</h4>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <label>Firebase SDK</label>
+                <span class="${hasFirebase ? 'ready' : 'error'}">${hasFirebase ? '✅ Loaded' : '❌ Missing'}</span>
+            </div>
+            <div class="summary-item">
+                <label>Firebase Ready</label>
+                <span class="${firebaseReady ? 'ready' : 'pending'}">${firebaseReady ? '✅ Ready' : '⏳ Loading...'}</span>
+            </div>
+            <div class="summary-item">
+                <label>ProductAPI</label>
+                <span class="${hasProductAPI ? 'ready' : 'pending'}">${hasProductAPI ? '✅ Available' : '⏳ Waiting...'}</span>
+            </div>
+            <div class="summary-item">
+                <label>Page Status</label>
+                <span class="ready">📄 ${pageName}</span>
+            </div>
+        </div>
+    `;
+}
+
+function toggleDiagnosticPanel() {
+    const panel = document.getElementById('diagnostic-panel');
+    const content = document.getElementById('diagnostic-content');
+    const summary = document.getElementById('diagnostic-summary');
+    if (panel) {
+        if (panel.style.height === '60px') {
+            panel.style.height = 'auto';
+            panel.style.maxHeight = '450px';
+            content.style.display = 'block';
+            summary.style.display = 'block';
+        } else {
+            panel.style.height = '60px';
+            panel.style.maxHeight = '60px';
+            content.style.display = 'none';
+            summary.style.display = 'none';
+        }
+    }
+}
+
+function closeDiagnosticPanel() {
+    const panel = document.getElementById('diagnostic-panel');
+    if (panel) {
+        panel.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => panel.remove(), 300);
+    }
+}
+
+function clearDiagnosticLog() {
+    const content = document.getElementById('diagnostic-content');
+    if (content) {
+        content.innerHTML = '';
+        updateDiagnostic('Log cleared', 'info');
+    }
+}
+
+function reloadPageDiagnostic() {
+    updateDiagnostic('Reloading page...', 'warning');
+    setTimeout(() => window.location.reload(), 500);
+}
+
+console.log('main.js loaded - version 5');
+if (typeof updateDiagnostic === 'function') {
+    updateDiagnostic('main.js loaded - version 5', 'success');
+}
 
 // Initialize Firebase on page load - but wait for firebase-config to load
 document.addEventListener('DOMContentLoaded', async function() {

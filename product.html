@@ -2018,5 +2018,24 @@
         window.loadReviews = loadReviews;
         window.updateRatingDisplay = updateRatingDisplay;
     </script>
+    
+    <!-- Initialize Diagnostic Panel -->
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (typeof createDiagnosticPanel === 'function') {
+                    createDiagnosticPanel();
+                    updateDiagnostic('🔧 Diagnostic Panel Ready', 'success');
+                    updateDiagnostic('Page: product.html', 'info');
+                }
+            }, 500);
+        });
+        
+        window.addEventListener('firebase-loaded', function() {
+            if (typeof updateDiagnostic === 'function') {
+                updateDiagnostic('Firebase modules loaded', 'success');
+            }
+        });
+    </script>
 </body>
 </html>

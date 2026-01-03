@@ -239,6 +239,23 @@
 
         // Call the initialization function
         initPage();
+        
+        // Initialize Diagnostic Panel
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (typeof createDiagnosticPanel === 'function') {
+                    createDiagnosticPanel();
+                    updateDiagnostic('🔧 Diagnostic Panel Ready', 'success');
+                    updateDiagnostic('Category: belts', 'info');
+                }
+            }, 500);
+        });
+        
+        window.addEventListener('firebase-loaded', function() {
+            if (typeof updateDiagnostic === 'function') {
+                updateDiagnostic('Firebase modules loaded', 'success');
+            }
+        });
     </script>
 </body>
 </html>

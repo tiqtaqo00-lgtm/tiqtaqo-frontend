@@ -474,3 +474,6 @@ window.AdminAuth = {
 
 // Export initialization
 console.log('Firebase API loaded. Call initFirebase() to initialize.');
+
+// Notify that Firebase is ready (for diagnostic panel)
+window.dispatchEvent(new Event('firebase-loaded'));
