@@ -168,59 +168,85 @@
     <script>
         // Initialize Firebase and load products after initialization
         async function initPage() {
-            // Skip if products are already being loaded
-            if (window.isProductsLoading || window.initialProductsLoaded) {
-                updateDiagnostic('⚠️ Products already loading or loaded, skipping', 'warning');
-                return;
-            }
-            
-            window.isProductsLoading = true;
-            updateDiagnostic('🚀 Starting page initialization...', 'info');
-            
-            // Wait for Firebase to be ready
-            if (typeof initFirebase === 'function') {
-                updateDiagnostic('⏳ Waiting for Firebase init...', 'info');
-                await initFirebase();
-                updateDiagnostic('✅ Firebase initialized', 'success');
-            } else {
-                updateDiagnostic('❌ initFirebase not found!', 'error');
-            }
-            
-            // Initialize UI components
-            updateDiagnostic('⏳ Initializing cart and UI...', 'info');
-            initCart();
-            initUI();
-            
-            // Initialize filter sidebar and load products
-            updateDiagnostic('⏳ Initializing filter sidebar...', 'info');
-            initFilterSidebar();
-            
-            // Wait for loadCategoryProducts to be available
-            updateDiagnostic('⏳ Waiting for loadCategoryProducts...', 'info');
-            for (let i = 0; i < 50; i++) {
-                if (typeof loadCategoryProducts === 'function') {
-                    updateDiagnostic('✅ loadCategoryProducts is available', 'success');
-                    break;
+            try {
+                updateDiagnostic('🔧 initPage() started', 'info');
+                
+                // Skip if products are already being loaded
+                if (window.isProductsLoading || window.initialProductsLoaded) {
+                    updateDiagnostic('⚠️ Products already loading or loaded, skipping', 'warning');
+                    return;
                 }
-                await new Promise(r => setTimeout(r, 50));
-                if (i === 49) {
-                    updateDiagnostic('❌ loadCategoryProducts still not available after 2.5s!', 'error');
+                
+                window.isProductsLoading = true;
+                updateDiagnostic('🚀 Starting page initialization...', 'info');
+                
+                // Wait for Firebase to be ready
+                if (typeof initFirebase === 'function') {
+                    updateDiagnostic('⏳ Waiting for Firebase init...', 'info');
+                    await initFirebase();
+                    updateDiagnostic('✅ Firebase initialized', 'success');
+                } else {
+                    updateDiagnostic('❌ initFirebase not found!', 'error');
+                    // Try to load it manually
+                    updateDiagnostic('⏳ Trying to load firebase-config.js manually...', 'info');
+                    await new Promise(r => setTimeout(r, 1000));
+                    if (typeof initFirebase !== 'function') {
+                        updateDiagnostic('❌ Manual load failed too!', 'error');
+                    }
                 }
+                
+                // Initialize UI components
+                updateDiagnostic('⏳ Initializing cart and UI...', 'info');
+                initCart();
+                initUI();
+                
+                // Initialize filter sidebar and load products
+                updateDiagnostic('⏳ Initializing filter sidebar...', 'info');
+                initFilterSidebar();
+                
+                // Wait for loadCategoryProducts to be available
+                updateDiagnostic('⏳ Waiting for loadCategoryProducts...', 'info');
+                for (let i = 0; i < 100; i++) {
+                    if (typeof loadCategoryProducts === 'function') {
+                        updateDiagnostic('✅ loadCategoryProducts is available', 'success');
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 50));
+                    if (i === 49) {
+                        updateDiagnostic('⚠️ Still waiting... (2.5s)', 'warning');
+                    }
+                    if (i === 99) {
+                        updateDiagnostic('❌ loadCategoryProducts NOT available after 5s!', 'error');
+                        updateDiagnostic('💡 Trying to call window.loadCategoryProducts...', 'info');
+                        if (typeof window.loadCategoryProducts === 'function') {
+                            updateDiagnostic('✅ Found on window.loadCategoryProducts!', 'success');
+                        } else {
+                            updateDiagnostic('❌ Also not on window!', 'error');
+                        }
+                    }
+                }
+                
+                // Load products
+                updateDiagnostic('⏳ Loading products for femme category...', 'info');
+                const loadFn = typeof loadCategoryProducts === 'function' ? loadCategoryProducts : window.loadCategoryProducts;
+                await loadFn('femme');
+                updateDiagnostic('✅ Products loaded', 'success');
+                
+                initInfiniteScroll();
+                
+                window.isProductsLoading = false;
+                window.initialProductsLoaded = true;
+                updateDiagnostic('✅ Page initialization complete', 'success');
+                
+            } catch (error) {
+                updateDiagnostic('❌ ERROR in initPage: ' + error.message, 'error');
+                updateDiagnostic('Stack: ' + error.stack, 'error');
+                console.error('initPage error:', error);
             }
-            
-            // Load products
-            updateDiagnostic('⏳ Loading products for femme category...', 'info');
-            await loadCategoryProducts('femme');
-            updateDiagnostic('✅ Products loaded', 'success');
-            
-            initInfiniteScroll();
-            
-            window.isProductsLoading = false;
-            window.initialProductsLoaded = true;
-            updateDiagnostic('✅ Page initialization complete', 'success');
         }
 
-        // Call the initialization function
+        // Call the initialization function IMMEDIATELY
+        updateDiagnostic('📍 Calling initPage() now...', 'info');
         initPage();
         
         // Initialize Diagnostic Panel
@@ -231,7 +257,7 @@
                     updateDiagnostic('🔧 Diagnostic Panel Ready', 'success');
                     updateDiagnostic('Category: femme', 'info');
                 }
-            }, 500);
+            }, 100);
         });
         
         window.addEventListener('firebase-loaded', function() {

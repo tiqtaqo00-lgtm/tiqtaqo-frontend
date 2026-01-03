@@ -822,6 +822,52 @@ async function loadFilteredCategoryProducts(category, append = false) {
     productsState.loading = false;
 }
 
+console.log('[DIAGNOSTIC] All main functions are now globally available:');
+console.log('- loadCategoryProducts');
+console.log('- loadFilteredCategoryProducts');
+console.log('- getProducts');
+console.log('- renderProductsGrid');
+
+// Add manual test button to diagnostic panel
+function addManualTestButton() {
+    const footer = document.querySelector('.diagnostic-footer');
+    if (footer) {
+        const testBtn = document.createElement('button');
+        testBtn.innerHTML = '<i class="fas fa-vial"></i> Test';
+        testBtn.style.flex = '1';
+        testBtn.style.background = 'rgba(33, 150, 243, 0.3)';
+        testBtn.onclick = async function() {
+            updateDiagnostic('🧪 Manual test started...', 'info');
+            
+            // Check if functions are available
+            updateDiagnostic('loadCategoryProducts: ' + (typeof loadCategoryProducts), 'info');
+            updateDiagnostic('loadFilteredCategoryProducts: ' + (typeof loadFilteredCategoryProducts), 'info');
+            updateDiagnostic('getProducts: ' + (typeof getProducts), 'info');
+            
+            // Try to load products
+            if (typeof loadCategoryProducts === 'function') {
+                updateDiagnostic('⏳ Calling loadCategoryProducts("femme")...', 'info');
+                try {
+                    await loadCategoryProducts('femme');
+                    updateDiagnostic('✅ Test completed!', 'success');
+                } catch (e) {
+                    updateDiagnostic('❌ Test failed: ' + e.message, 'error');
+                }
+            } else {
+                updateDiagnostic('❌ loadCategoryProducts not available!', 'error');
+            }
+        };
+        footer.insertBefore(testBtn, footer.firstChild);
+    }
+}
+
+// Add test button when panel is created
+const originalCreateDiagnosticPanel = createDiagnosticPanel;
+createDiagnosticPanel = function() {
+    originalCreateDiagnosticPanel();
+    setTimeout(addManualTestButton, 100);
+};
+
 // Render products grid
 function renderProductsGrid(productsGrid, products, append = false) {
     updateDiagnostic('renderProductsGrid called with ' + products.length + ' products', 'info');
@@ -1026,11 +1072,27 @@ function getCurrentCategory() {
 
 // Load products for specific category (legacy function)
 async function loadCategoryProducts(category) {
-    updateDiagnostic('loadCategoryProducts called with category: ' + category, 'info');
-    updateDiagnostic('productsGrid exists: ' + (!!document.getElementById('productsGrid')), 'info');
-    await loadFilteredCategoryProducts(category);
-    updateDiagnostic('loadCategoryProducts completed', 'success');
+    updateDiagnostic('🎯 loadCategoryProducts("' + category + '") CALLED', 'info');
+    updateDiagnostic('📍 productsGrid exists: ' + (!!document.getElementById('productsGrid')), 'info');
+    
+    // Make sure it's available globally
+    window.loadCategoryProducts = loadCategoryProducts;
+    
+    try {
+        const result = await loadFilteredCategoryProducts(category);
+        updateDiagnostic('✅ loadCategoryProducts completed successfully', 'success');
+        return result;
+    } catch (error) {
+        updateDiagnostic('❌ loadCategoryProducts error: ' + error.message, 'error');
+        throw error;
+    }
 }
+
+// Make it global immediately
+window.loadCategoryProducts = loadCategoryProducts;
+window.loadFilteredCategoryProducts = loadFilteredCategoryProducts;
+window.getProducts = getProducts;
+window.renderProductsGrid = renderProductsGrid;
 
 // Initialize filter sidebar
 async function initFilterSidebar() {
