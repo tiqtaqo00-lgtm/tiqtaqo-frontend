@@ -779,7 +779,7 @@ body {
     overflow: hidden;
 }
 
-/* Geometric background elements */
+/* Accessory-themed background elements */
 .products-section::before {
     content: '';
     position: absolute;
@@ -788,19 +788,26 @@ body {
     right: 0;
     bottom: 0;
     background-image: 
-        radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.06) 0%, transparent 35%),
-        radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.04) 0%, transparent 50%),
-        radial-gradient(circle at 15% 80%, rgba(0, 0, 0, 0.03) 0%, transparent 30%),
-        radial-gradient(circle at 85% 20%, rgba(0, 0, 0, 0.03) 0%, transparent 30%),
-        linear-gradient(135deg, transparent 40%, rgba(212, 175, 55, 0.02) 50%, transparent 60%),
-        linear-gradient(45deg, transparent 30%, rgba(212, 175, 55, 0.015) 50%, transparent 70%);
+        /* Wallet-inspired rectangles */
+        radial-gradient(ellipse at 15% 25%, rgba(212, 175, 55, 0.06) 0%, transparent 35%),
+        radial-gradient(ellipse at 85% 75%, rgba(212, 175, 55, 0.05) 0%, transparent 30%),
+        /* Glasses-inspired double circles */
+        radial-gradient(circle at 30% 20%, rgba(212, 175, 55, 0.04) 0%, transparent 20%),
+        radial-gradient(circle at 35% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 15%),
+        radial-gradient(circle at 70% 80%, rgba(212, 175, 55, 0.04) 0%, transparent 20%),
+        radial-gradient(circle at 75% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 15%),
+        /* Accessory chain/strip patterns */
+        linear-gradient(90deg, transparent 48%, rgba(212, 175, 55, 0.015) 50%, transparent 52%),
+        linear-gradient(0deg, transparent 48%, rgba(212, 175, 55, 0.01) 50%, transparent 52%),
+        /* Subtle corner accents */
+        radial-gradient(circle at 5% 5%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 95% 95%, rgba(212, 175, 55, 0.03) 0%, transparent 40%);
     background-size: 100% 100%;
     pointer-events: none;
     z-index: 0;
 }
 
-/* Floating geometric shapes */
+/* Floating accessory-related shapes */
 .products-section::after {
     content: '';
     position: absolute;
@@ -809,13 +816,21 @@ body {
     right: 0;
     bottom: 0;
     background-image: 
-        radial-gradient(ellipse at 25% 25%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-        radial-gradient(ellipse at 75% 75%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 70% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 25%),
-        radial-gradient(circle at 30% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 25%);
-    background-size: 400px 400px, 500px 500px, 300px 300px, 350px 350px;
-    background-position: 0 0, 100% 100%, 70% 20%, 30% 80%;
-    animation: floatShapes 20s ease-in-out infinite;
+        /* Wallet rectangle shapes */
+        radial-gradient(ellipse at 20% 70%, rgba(212, 175, 55, 0.04) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 30%, rgba(212, 175, 55, 0.04) 0%, transparent 35%),
+        /* Glasses bridge shape (small connection) */
+        radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.025) 0%, transparent 15%),
+        /* Accessory dots/beads pattern */
+        radial-gradient(circle at 25% 40%, rgba(212, 175, 55, 0.02) 0%, transparent 8%),
+        radial-gradient(circle at 75% 60%, rgba(212, 175, 55, 0.02) 0%, transparent 8%),
+        radial-gradient(circle at 40% 85%, rgba(212, 175, 55, 0.02) 0%, transparent 6%),
+        radial-gradient(circle at 60% 15%, rgba(212, 175, 55, 0.02) 0%, transparent 6%);
+    background-size: 400px 400px, 450px 450px, 200px 200px, 
+                    800px 800px, 800px 800px, 700px 700px, 700px 700px;
+    background-position: 0 0, 100% 100%, 50% 50%, 
+                        25% 40%, 75% 60%, 40% 85%, 60% 15%;
+    animation: floatShapes 25s ease-in-out infinite;
     pointer-events: none;
     z-index: 0;
 }
@@ -824,8 +839,14 @@ body {
     0%, 100% {
         transform: translateY(0) rotate(0deg);
     }
+    25% {
+        transform: translateY(-10px) rotate(1deg);
+    }
     50% {
-        transform: translateY(-20px) rotate(2deg);
+        transform: translateY(-15px) rotate(-0.5deg);
+    }
+    75% {
+        transform: translateY(-8px) rotate(0.5deg);
     }
 }
 
