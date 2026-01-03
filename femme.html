@@ -166,7 +166,7 @@
     <script src="js/main.js?v=2" defer></script>
     
     <script>
-        // Initialize Firebase and load products after initialization
+        // Initialize Firebase and load products after page loads
         async function initPage() {
             // Skip if products are already being loaded
             if (window.isProductsLoading || window.initialProductsLoaded) {
@@ -181,32 +181,40 @@
             }
             
             // Initialize UI components
-            initCart();
-            initUI();
+            if (typeof initCart === 'function') initCart();
+            if (typeof initUI === 'function') initUI();
             
             // Initialize filter sidebar and load products
-            initFilterSidebar();
+            if (typeof initFilterSidebar === 'function') initFilterSidebar();
             
-            // Wait for loadCategoryProducts to be available
-            for (let i = 0; i < 100; i++) {
-                if (typeof loadCategoryProducts === 'function') {
-                    break;
-                }
+            // Wait for loadCategoryProducts to be available (up to 3 seconds)
+            let waitCount = 0;
+            while (typeof loadCategoryProducts !== 'function' && waitCount < 60) {
                 await new Promise(r => setTimeout(r, 50));
+                waitCount++;
             }
             
             // Load products
-            const loadFn = typeof loadCategoryProducts === 'function' ? loadCategoryProducts : window.loadCategoryProducts;
-            await loadFn('femme');
+            if (typeof loadCategoryProducts === 'function') {
+                await loadCategoryProducts('femme');
+            } else if (typeof window.loadCategoryProducts === 'function') {
+                await window.loadCategoryProducts('femme');
+            } else {
+                console.error('loadCategoryProducts not available!');
+            }
             
-            initInfiniteScroll();
+            if (typeof initInfiniteScroll === 'function') initInfiniteScroll();
             
             window.isProductsLoading = false;
             window.initialProductsLoaded = true;
         }
 
-        // Call the initialization function IMMEDIATELY
-        initPage();
+        // Call the initialization function when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else {
+            initPage();
+        }
     </script>
 </body>
 </html>

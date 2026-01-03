@@ -299,8 +299,8 @@ function filterProducts(products, filters) {
             }
         }
         
-        // Visibility filter
-        if (filters.visibleOnly !== false && !product.visible) {
+        // Visibility filter - only hide products that explicitly have visible: false
+        if (filters.visibleOnly !== false && product.visible === false) {
             return false;
         }
         
