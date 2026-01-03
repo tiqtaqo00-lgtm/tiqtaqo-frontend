@@ -2123,7 +2123,10 @@ function initScrollAnimations() {
     `;
     document.head.appendChild(style);
     
+    const animatedElements = document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card');
+    
     if ('IntersectionObserver' in window) {
+        // More sensitive observer with lower threshold
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -2131,16 +2134,33 @@ function initScrollAnimations() {
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+        }, { threshold: 0.01, rootMargin: '0px 0px -100px 0px' });
         
-        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card').forEach((card, index) => {
+        animatedElements.forEach((card, index) => {
             card.classList.add('scroll-animate');
             card.classList.add(`stagger-${(index % 6) + 1}`);
-            observer.observe(card);
+            
+            // Check if element is already in viewport and animate it immediately
+            const rect = card.getBoundingClientRect();
+            const isInViewport = rect.top >= 0 && rect.top <= window.innerHeight + 100;
+            
+            if (isInViewport) {
+                // Element is already visible, add animated class with delay
+                setTimeout(() => {
+                    card.classList.add('animated');
+                }, index * 50);
+            } else {
+                observer.observe(card);
+            }
         });
     } else {
-        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card').forEach(card => {
-            card.classList.add('animated');
+        // Fallback for browsers without IntersectionObserver
+        animatedElements.forEach((card, index) => {
+            card.classList.add('scroll-animate');
+            card.classList.add(`stagger-${(index % 6) + 1}`);
+            setTimeout(() => {
+                card.classList.add('animated');
+            }, index * 100);
         });
     }
 }
