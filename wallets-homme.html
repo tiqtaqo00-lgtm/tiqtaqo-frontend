@@ -139,6 +139,9 @@
         </div>
     </section>
 
+    <!-- Filter Sidebar (initialized dynamically) -->
+    <div id="filterSection" class="filter-section"></div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -226,6 +229,12 @@
                 if (typeof window.initUI === 'function') {
                     window.initUI();
                     console.log('wallets-homme.html: initUI called');
+                }
+                
+                // Initialize filter sidebar
+                if (typeof window.initFilterSidebar === 'function') {
+                    await window.initFilterSidebar();
+                    console.log('wallets-homme.html: Filter sidebar initialized');
                 }
                 
                 // Load products
