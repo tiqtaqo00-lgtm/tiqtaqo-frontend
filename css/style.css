@@ -1891,24 +1891,24 @@ body {
 
     .gender-cards {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: 1.5rem;
     }
 
     .gender-card {
-        padding: 3rem 2rem;
+        padding: 2rem 1.5rem;
     }
 
     .gender-icon {
-        width: 100px;
-        height: 100px;
+        width: 70px;
+        height: 70px;
     }
 
     .gender-icon i {
-        font-size: 2.5rem;
+        font-size: 1.8rem;
     }
 
     .gender-card-title {
-        font-size: 1.6rem;
+        font-size: 1.3rem;
     }
 
     .back-button {
