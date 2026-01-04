@@ -307,6 +307,8 @@ function showAddProductModal() {
     document.getElementById('productId').value = '';
     document.getElementById('imagePreviewContainer').innerHTML = '';
     document.getElementById('imagePreviewContainer').style.display = 'none';
+    document.getElementById('productImageUrl').value = ''; // Clear URL input
+    document.getElementById('imageCount').textContent = '';
     document.getElementById('colorsContainer').innerHTML = '';
     document.getElementById('productModal').style.display = 'flex';
     loadCategoryOptions();
@@ -541,6 +543,52 @@ function handleImageUpload(event) {
     }
 }
 
+// Update image count display
+function updateImageCount() {
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const imageCount = document.getElementById('imageCount');
+    const count = previewContainer.children.length;
+    
+    if (count > 0) {
+        imageCount.textContent = `${count} image(s) sélectionnée(s)`;
+    } else {
+        imageCount.textContent = '';
+    }
+}
+
+// Add image from URL
+function addImageFromUrl() {
+    const urlInput = document.getElementById('productImageUrl');
+    const url = urlInput.value.trim();
+    
+    if (url) {
+        // Validate URL
+        try {
+            new URL(url);
+        } catch (e) {
+            alert('Veuillez entrer une URL valide!');
+            return;
+        }
+        
+        // Check if it's an image URL
+        if (!url.match(/\.(jpeg|jpg|gif|png|webp)$/i) && !url.includes('imgbb') && !url.includes('postimages') && !url.includes('ibb')) {
+            const confirmAdd = confirm('Cette URL ne semble pas être une image. Voulez-vous quand même l\'ajouter?');
+            if (!confirmAdd) return;
+        }
+        
+        addImageToPreview(url);
+        urlInput.value = ''; // Clear input
+        
+        // Show confirmation
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        if (previewContainer.children.length > 0) {
+            previewContainer.style.display = 'grid';
+        }
+    } else {
+        alert('Veuillez entrer une URL d\'image!');
+    }
+}
+
 // Add image to preview container
 function addImageToPreview(imageData) {
     const previewContainer = document.getElementById('imagePreviewContainer');
@@ -557,6 +605,9 @@ function addImageToPreview(imageData) {
     `;
     
     previewContainer.appendChild(imgDiv);
+    
+    // Update count
+    updateImageCount();
 }
 
 // Remove preview image
@@ -568,6 +619,9 @@ function removePreviewImage(btn) {
     if (previewContainer.children.length === 0) {
         previewContainer.style.display = 'none';
     }
+    
+    // Update count
+    updateImageCount();
 }
 
 // Remove existing image (during edit)
@@ -779,7 +833,9 @@ window.addNewColor = addNewColor;
 window.getProductColors = getProductColors;
 window.editCategory = editCategory;
 window.handleImageUpload = handleImageUpload;
+window.addImageFromUrl = addImageFromUrl;
 window.addImageToPreview = addImageToPreview;
+window.updateImageCount = updateImageCount;
 window.removePreviewImage = removePreviewImage;
 window.removeExistingImage = removeExistingImage;
 window.saveProduct = saveProduct;

@@ -753,10 +753,30 @@
                     <label>Images du Produit (Plusieurs images possibles)</label>
                     <div class="image-upload-area" onclick="document.getElementById('productImage').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Cliquez pour télécharger des images</p>
+                        <p>Cliquez pour télécharger des images depuis votre ordinateur</p>
                         <small>Formats acceptés: JPG, PNG, GIF. Vous pouvez sélectionner plusieurs fichiers.</small>
                     </div>
                     <input type="file" id="productImage" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(event)">
+                    
+                    <!-- URL Image Upload Option -->
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--black);">
+                            <i class="fas fa-link" style="color: var(--gold); margin-right: 8px;"></i>
+                            Ou ajoutez une image par lien (URL)
+                        </label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="url" id="productImageUrl" placeholder="https://i.ibb.co/xyz/image.jpg" 
+                                   style="flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
+                            <button type="button" onclick="addImageFromUrl()" 
+                                    style="padding: 10px 20px; background: var(--gold); color: var(--black); border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                        <small style="color: #666; display: block; margin-top: 8px;">
+                            Collez le lien de l'image depuis imgbb, PostImages, ou autre service.
+                        </small>
+                    </div>
+                    
                     <div id="imagePreviewContainer" class="image-preview-container"></div>
                     <p class="image-count" id="imageCount"></p>
                 </div>
