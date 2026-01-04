@@ -1897,11 +1897,18 @@ body {
         align-items: center;
         justify-content: flex-start;
         min-height: auto;
-        transform: translateY(-30px);
+        transform: translateY(-60px);
     }
     
     .gender-selection-page {
         padding: 0 20px 40px;
+    }
+    
+    .back-button {
+        top: 60px;
+        left: 15px;
+        padding: 12px 20px;
+        font-size: 0.9rem;
     }
 
     .gender-cards {
@@ -1931,13 +1938,6 @@ body {
     .gender-card p {
         font-size: 0.75rem;
         margin-bottom: 0;
-    }
-
-    .back-button {
-        top: 70px;
-        left: 15px;
-        padding: 12px 20px;
-        font-size: 0.9rem;
     }
 }
 
