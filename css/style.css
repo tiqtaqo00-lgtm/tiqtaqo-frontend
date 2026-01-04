@@ -3675,16 +3675,17 @@ body {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
         border-radius: 50%;
         color: var(--gold);
+        border: 2px solid rgba(212, 175, 55, 0.3);
     }
     
     .collection-card h3 {
         font-size: 26px;
         font-weight: 700;
         margin-bottom: 4px;
-        color: var(--black);
+        color: var(--white);
         text-align: center;
         letter-spacing: 0.5px;
         line-height: 1.2;
@@ -3699,6 +3700,7 @@ body {
         text-align: center;
         line-height: 1.4;
         margin-top: 8px;
+        color: rgba(255, 255, 255, 0.7);
     }
     
     /* Best sellers mobile */
