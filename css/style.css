@@ -1227,6 +1227,68 @@ body {
     transform: translateX(-5px);
 }
 
+/* ===== Elegant Gold Divider for Branch Pages ===== */
+.branch-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 25px 0;
+    background-color: #0F0F0F;
+    position: relative;
+    z-index: 5;
+}
+
+.branch-divider::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+}
+
+.branch-divider .divider-center {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.branch-divider .divider-line-short {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    position: relative;
+}
+
+.branch-divider .divider-diamond {
+    width: 12px;
+    height: 12px;
+    background-color: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.8),
+                0 0 30px rgba(212, 175, 55, 0.4);
+    animation: diamondPulse 2s ease-in-out infinite;
+}
+
+@keyframes diamondPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.6),
+                    0 0 20px rgba(212, 175, 55, 0.3);
+        transform: rotate(45deg) scale(1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(212, 175, 55, 1),
+                    0 0 40px rgba(212, 175, 55, 0.6),
+                    0 0 60px rgba(212, 175, 55, 0.3);
+        transform: rotate(45deg) scale(1.1);
+    }
+}
+
+.branch-divider .divider-line-short:last-child {
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
 /* ===== Gender Selection Page Enhancement ===== */
 .gender-selection-page {
     min-height: 100vh;
