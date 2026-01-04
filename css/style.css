@@ -1897,11 +1897,12 @@ body {
         align-items: center;
         justify-content: flex-start;
         min-height: auto;
-        transform: translateY(-10px);
+        transform: translateY(-60px);
     }
     
     .gender-selection-page {
         padding: 0 20px 40px;
+        margin-top: -10px;
     }
     
     .back-button {
