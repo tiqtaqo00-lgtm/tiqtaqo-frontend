@@ -3253,7 +3253,7 @@ body {
     .navbar {
         position: relative;
         top: 0;
-        height: 40px;
+        height: 35px;
         padding: 0 10px;
         margin: 0;
         display: flex;
@@ -3261,6 +3261,19 @@ body {
         justify-content: space-between;
         border-bottom: 1px solid rgba(212, 175, 55, 0.15);
         overflow: hidden;
+    }
+    
+    /* Eliminate gap between navbar and hero */
+    .hero {
+        min-height: auto;
+        height: auto !important;
+        padding: 0;
+        margin-top: -1px !important;
+        margin-bottom: 0 !important;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
     }
     
     .nav-container {
