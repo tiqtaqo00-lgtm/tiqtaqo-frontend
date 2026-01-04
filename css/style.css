@@ -577,6 +577,72 @@ body {
     }
 }
 
+/* ===== Elegant Gold Divider ===== */
+.elegant-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 0;
+    background-color: #0F0F0F;
+    position: relative;
+    z-index: 10;
+}
+
+.elegant-divider .divider-line {
+    flex: 1;
+    max-width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    position: relative;
+}
+
+.elegant-divider .divider-line::before,
+.elegant-divider .divider-line::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: var(--gold);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--gold), 0 0 20px var(--gold);
+}
+
+.elegant-divider .divider-line::before {
+    left: 0;
+}
+
+.elegant-divider .divider-line:last-child::after {
+    right: 0;
+    left: auto;
+}
+
+.elegant-divider .divider-icon {
+    margin: 0 30px;
+    position: relative;
+}
+
+.elegant-divider .divider-icon i {
+    font-size: 24px;
+    color: var(--gold);
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.8),
+                 0 0 30px rgba(212, 175, 55, 0.4);
+    animation: gemGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes gemGlow {
+    0% {
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.6),
+                     0 0 20px rgba(212, 175, 55, 0.3);
+    }
+    100% {
+        text-shadow: 0 0 20px rgba(212, 175, 55, 1),
+                     0 0 40px rgba(212, 175, 55, 0.6),
+                     0 0 60px rgba(212, 175, 55, 0.3);
+    }
+}
+
 /* ===== Buttons ===== */
 .btn-primary {
     display: inline-block;
@@ -1895,6 +1961,22 @@ body {
 
     .section-title {
         font-size: 32px;
+    }
+
+    .elegant-divider {
+        padding: 20px 0;
+    }
+
+    .elegant-divider .divider-line {
+        max-width: 80px;
+    }
+
+    .elegant-divider .divider-icon {
+        margin: 0 15px;
+    }
+
+    .elegant-divider .divider-icon i {
+        font-size: 18px;
     }
 
     .collections-grid {
