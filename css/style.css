@@ -1897,10 +1897,11 @@ body {
         align-items: center;
         justify-content: flex-start;
         min-height: auto;
+        transform: translateY(-80px);
     }
     
     .gender-selection-page {
-        padding: 5px 20px 40px;
+        padding: 0 20px 40px;
     }
 
     .gender-cards {
