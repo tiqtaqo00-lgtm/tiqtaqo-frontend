@@ -3270,7 +3270,6 @@ body {
         padding: 0;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
-        transform: translateY(-50px);
         display: block;
     }
     
@@ -3512,6 +3511,7 @@ body {
         line-height: 1.2;
         margin: 0 0 5px 0;
         font-weight: 700;
+        transform: translateY(-40px);
     }
     
     .hero-content p {
