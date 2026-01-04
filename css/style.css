@@ -1897,7 +1897,7 @@ body {
         align-items: center;
         justify-content: flex-start;
         min-height: auto;
-        transform: translateY(-80px);
+        transform: translateY(-30px);
     }
     
     .gender-selection-page {
