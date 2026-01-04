@@ -2026,7 +2026,7 @@ body {
     }
 
     .elegant-divider {
-        padding: 20px 0;
+        padding: 5px 0;
     }
 
     .elegant-divider .divider-line {
@@ -3487,7 +3487,7 @@ body {
     .hero {
         min-height: auto;
         height: auto !important;
-        padding: 2px 0 15px;
+        padding: 2px 0 5px;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
         display: flex;
