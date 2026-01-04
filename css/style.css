@@ -1895,12 +1895,12 @@ body {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        min-height: calc(100vh - 80px);
+        justify-content: flex-start;
+        min-height: auto;
     }
     
     .gender-selection-page {
-        padding: 40px 20px 40px;
+        padding: 20px 20px 40px;
     }
 
     .gender-cards {
