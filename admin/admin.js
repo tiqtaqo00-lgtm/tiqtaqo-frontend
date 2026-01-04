@@ -559,23 +559,32 @@ function updateImageCount() {
 // Add image from URL
 function addImageFromUrl() {
     const urlInput = document.getElementById('productImageUrl');
-    const url = urlInput.value.trim();
+    let url = urlInput.value.trim();
     
     if (url) {
+        // Clean up the URL - remove any extra parameters that might break it
+        if (url.includes('?')) {
+            url = url.split('?')[0];
+        }
+        
         // Validate URL
         try {
             new URL(url);
         } catch (e) {
-            alert('Veuillez entrer une URL valide!');
+            alert('Veuillez entrer une URL valide!\nExemple: https://i.ibb.co/abc123/image.jpg');
             return;
         }
         
-        // Check if it's an image URL
-        if (!url.match(/\.(jpeg|jpg|gif|png|webp)$/i) && !url.includes('imgbb') && !url.includes('postimages') && !url.includes('ibb')) {
-            const confirmAdd = confirm('Cette URL ne semble pas être une image. Voulez-vous quand même l\'ajouter?');
+        // Check if it looks like an image URL
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        const isImageUrl = validExtensions.some(ext => url.toLowerCase().includes(ext));
+        
+        if (!isImageUrl) {
+            const confirmAdd = confirm('Cette URL ne semble pas être une image. Voulez-vous quand même l\'ajouter?\n\nURL: ' + url);
             if (!confirmAdd) return;
         }
         
+        // Add the image to preview
         addImageToPreview(url);
         urlInput.value = ''; // Clear input
         
@@ -584,8 +593,10 @@ function addImageFromUrl() {
         if (previewContainer.children.length > 0) {
             previewContainer.style.display = 'grid';
         }
+        
+        console.log('Image URL added:', url);
     } else {
-        alert('Veuillez entrer une URL d\'image!');
+        alert('Veuillez entrer une URL d\'image!\n\nExemple: https://i.ibb.co/abc123/image.jpg');
     }
 }
 
@@ -594,11 +605,14 @@ function addImageToPreview(imageData) {
     const previewContainer = document.getElementById('imagePreviewContainer');
     previewContainer.style.display = 'grid';
     
+    // Log for debugging
+    console.log('Adding image:', imageData.substring(0, 50) + (imageData.length > 50 ? '...' : ''));
+    
     const imgDiv = document.createElement('div');
     imgDiv.className = 'preview-image';
     imgDiv.dataset.image = imageData;
     imgDiv.innerHTML = `
-        <img src="${imageData}" alt="Aperçu">
+        <img src="${imageData}" alt="Aperçu" onerror="this.parentElement.innerHTML='<div style=\'padding:20px;text-align:center;color:#666;\'><i class=\'fas fa-image\' style=\'font-size:40px;color:#ddd;\'></i><p style=\'margin:10px 0 0;\'>Image non chargée</p><small>${imageData.substring(0,30)}...</small></div>'">
         <button type="button" class="remove-image-btn" onclick="removePreviewImage(this)">
             <i class="fas fa-times"></i>
         </button>
