@@ -1905,10 +1905,10 @@ body {
     }
     
     .back-button {
-        top: 60px;
+        top: 10px;
         left: 15px;
-        padding: 12px 20px;
-        font-size: 0.9rem;
+        padding: 10px 18px;
+        font-size: 0.85rem;
     }
 
     .gender-cards {
