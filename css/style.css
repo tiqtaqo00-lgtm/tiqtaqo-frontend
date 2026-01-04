@@ -3518,6 +3518,7 @@ body {
         font-size: 0.8rem;
         margin: 0 0 8px 0;
         opacity: 0.9;
+        transform: translateY(-40px);
     }
     
     .hero-buttons {
@@ -3526,6 +3527,7 @@ body {
         width: 100%;
         padding: 0 10px;
         margin: 0;
+        transform: translateY(-40px);
     }
     
     .btn-primary,
