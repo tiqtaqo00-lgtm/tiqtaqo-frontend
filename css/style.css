@@ -3487,7 +3487,7 @@ body {
     .hero {
         min-height: auto;
         height: auto !important;
-        padding: 2px 0 5px;
+        padding: 0;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
         display: flex;
