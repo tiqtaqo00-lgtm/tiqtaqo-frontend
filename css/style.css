@@ -2041,6 +2041,23 @@ body {
         font-size: 18px;
     }
 
+    .branch-divider {
+        padding: 20px 0;
+    }
+
+    .branch-divider .divider-center {
+        gap: 15px;
+    }
+
+    .branch-divider .divider-line-short {
+        width: 40px;
+    }
+
+    .branch-divider .divider-diamond {
+        width: 10px;
+        height: 10px;
+    }
+
     .collections-grid {
         grid-template-columns: 1fr;
     }
