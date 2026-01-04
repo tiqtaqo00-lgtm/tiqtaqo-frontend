@@ -9,46 +9,90 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 135px 0 80px;
+            background: linear-gradient(135deg, #0F0F0F 0%, #1a1a1a 100%);
+            padding: 60px 0 80px;
             text-align: center;
             color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="2" fill="%23d4af37" opacity="0.1"/></svg>');
+            background-size: 60px 60px;
+            animation: moveBackground 30s linear infinite;
+        }
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
         }
         .page-header h1 {
             font-size: 42px;
             margin-bottom: 15px;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
         }
         .page-header p {
             font-size: 18px;
             opacity: 0.9;
             margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
         }
         .back-link {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             color: white;
             text-decoration: none;
-            padding: 10px 20px;
-            border: 2px solid rgba(255,255,255,0.5);
+            padding: 12px 25px;
+            border: 2px solid rgba(212, 175, 55, 0.5);
             border-radius: 30px;
+            font-weight: 600;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
         .back-link:hover {
-            background: white;
-            color: #667eea;
+            background: #d4af37;
+            color: #0F0F0F;
+            border-color: #d4af37;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
         }
         .no-products {
             grid-column: 1 / -1;
             text-align: center;
             padding: 4rem 2rem;
-            color: #666;
+            background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         .no-products i {
             font-size: 4rem;
-            color: #ddd;
+            color: rgba(255, 255, 255, 0.2);
             margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .no-products:hover i {
+            color: #d4af37;
+            transform: scale(1.1);
         }
         .no-products p {
             font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
         }
     </style>
 </head>
