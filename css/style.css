@@ -4146,6 +4146,15 @@ body {
         margin-left: 8px;
     }
     
+    /* Move filter toggle next to cart icon on mobile */
+    .filter-toggle {
+        position: absolute;
+        right: 50px;
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
     .menu-toggle {
         font-size: 18px;
     }
