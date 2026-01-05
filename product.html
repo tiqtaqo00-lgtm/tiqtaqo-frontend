@@ -146,7 +146,7 @@
                 <!-- Write Review Form -->
                 <div class="write-review-form" id="writeReviewForm">
                     <h3><i class="fas fa-pen"></i> Ajouter un Avis</h3>
-                    <form id="reviewForm" onsubmit="return submitReview(event)">
+                    <form id="reviewForm">
                         <div class="star-rating-input">
                             <label>Votre note:</label>
                             <div class="star-input-container" id="starInputContainer">
@@ -229,60 +229,186 @@
     <script>
         // Get product ID from URL FIRST
         const urlParams = new URLSearchParams(window.location.search);
-        let productId = urlParams.get('id');
+        const productId = urlParams.get('id');
 
-        // Store productId globally so it's available to all scripts
+        // Store productId globally
         window.currentProductId = productId;
+        console.log('Product ID from URL:', productId);
 
-        // Console log for debugging - EXPANDED VERSION
-        console.log('╔════════════════════════════════════════════════════════════╗');
-        console.log('║              PRODUCT PAGE DEBUG INFO                        ║');
-        console.log('╠════════════════════════════════════════════════════════════╣');
-        console.log('║ Full URL:', window.location.href);
-        console.log('║ URL Search Params:', window.location.search);
-        console.log('║ Product ID from URL:', productId);
-        console.log('║ All URL Parameters:');
-        urlParams.forEach((value, key) => {
-            console.log('║   - ' + key + ' = ' + value);
-        });
-        console.log('╚════════════════════════════════════════════════════════════╝');
+        // Global variables for selected color (used by module script)
+        window.selectedProductColor = null;
+        window.selectedProductColorHex = null;
+        window.selectedProductColorImage = null;
         
-        // CRITICAL: If no product ID, log this immediately and show diagnostic
-        if (!productId) {
-            console.error('╔════════════════════════════════════════════════════════════╗');
-            console.error('║         CRITICAL ERROR: NO PRODUCT ID FOUND!               ║');
-            console.error('╚════════════════════════════════════════════════════════════╝');
-            console.error('This means the URL does not contain ?id=... parameter');
-            console.error('Please check the link you clicked to get to this page');
-        }
+        // Global product storage
+        window.loadedProduct = null;
+        window.loadedProductColors = [];
+        window.loadedProductImages = [];
     </script>
     <script type="module">
         // Proper Firebase v9 imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const productId = window.currentProductId;
+        console.log('Module script starting with productId:', productId);
 
-        console.log('[FIREBASE MODULE] Starting with productId:', productId);
-
-        // Debug object for troubleshooting
-        window.PRODUCT_DEBUG = {
-            productId: productId,
-            loaded: false,
-            timestamp: new Date().toISOString(),
-            logs: [],
-            log: function(msg, data) {
-                console.log('[PRODUCT DEBUG]', msg, data || '');
-                this.logs.push({time: new Date().toISOString(), msg: msg, data: data});
+        // Order API functions
+        window.OrderAPI = {
+            async createOrder(orderData) {
+                try {
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+                        authDomain: "tiqtaqo-store.firebaseapp.com",
+                        projectId: "tiqtaqo-store",
+                        storageBucket: "tiqtaqo-store.firebasestorage.app",
+                        messagingSenderId: "747111253966",
+                        appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+                    };
+                    const app = initializeApp(firebaseConfig);
+                    const db = getFirestore(app);
+                    
+                    const orderRef = await addDoc(collection(db, 'orders'), {
+                        ...orderData,
+                        createdAt: serverTimestamp(),
+                        status: 'pending'
+                    });
+                    
+                    return orderRef.id;
+                } catch (error) {
+                    console.error('Error creating order:', error);
+                    throw error;
+                }
             }
+        };
+
+        // Global function to open order modal - WORKS IMMEDIATELY
+        window.openOrderModalDirect = async function(productId) {
+            console.log('=== openOrderModalDirect called ===');
+            console.log('productId:', productId);
+            console.log('window.loadedProduct:', window.loadedProduct);
+            
+            const product = window.loadedProduct;
+            
+            if (!product) {
+                console.error('Product not loaded! Showing error.');
+                alert('Erreur: Le produit n\'est pas chargé. Veuillez attendre le chargement de la page.');
+                return;
+            }
+            
+            console.log('Opening order modal for product:', product.name);
+            
+            const hasPromotion = product.promotion && product.promotion > 0;
+            const finalPrice = hasPromotion
+                ? product.price - (product.price * product.promotion / 100)
+                : product.price;
+
+            // Determine which image to show
+            let productImage = product.image || '';
+            const selectedColor = window.selectedProductColor;
+            if (selectedColor && product.colors) {
+                const colorObj = product.colors.find(c => c.name === selectedColor);
+                if (colorObj && colorObj.image) {
+                    productImage = colorObj.image;
+                }
+            } else if (product.images && product.images.length > 0) {
+                productImage = product.images[0];
+            }
+
+            // Build color selection HTML
+            let colorSelectionHTML = '';
+            if (product.colors && product.colors.length > 0) {
+                colorSelectionHTML = `
+                    <div class="order-product-colors" style="margin-top: 10px;">
+                        <span style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;">Couleur:</span>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            ${product.colors.map(color => `
+                                <button type="button"
+                                        class="order-color-btn ${selectedColor === color.name ? 'selected' : ''}"
+                                        data-color="${color.name}"
+                                        data-hex="${color.hex}"
+                                        data-image="${color.image || ''}"
+                                        style="
+                                            width: 32px;
+                                            height: 32px;
+                                            border-radius: 50%;
+                                            border: 3px solid ${selectedColor === color.name ? color.hex : '#ddd'};
+                                            background: ${color.hex};
+                                            cursor: pointer;
+                                            transition: all 0.3s ease;
+                                            padding: 0;
+                                        "
+                                        onclick="selectOrderColorDirect(this, '${color.name}', '${color.hex}', '${color.image || ''}')">
+                                    ${color.image ? `<img src="${color.image}" alt="${color.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : ''}
+                                </button>
+                            `).join('')}
+                        </div>
+                        ${selectedColor ? `<span id="selectedColorName" style="font-size: 13px; color: #333; margin-top: 5px; display: block;">${selectedColor}</span>` : ''}
+                    </div>
+                `;
+            }
+
+            // Show product summary
+            document.getElementById('orderProductSummary').innerHTML = `
+                <div class="order-product-image">
+                    ${productImage ? `<img src="${productImage}" alt="${product.name}" onerror="this.innerHTML='<i class=\\'fas fa-box\\'></i>'">` : '<i class="fas fa-box"></i>'}
+                </div>
+                <div class="order-product-info">
+                    <h4>${product.name}</h4>
+                    <span class="price">${Math.round(finalPrice)} DH</span>
+                    ${colorSelectionHTML}
+                </div>
+            `;
+
+            // Populate hidden fields
+            document.getElementById('orderProductId').value = product.id;
+            document.getElementById('orderProductName').value = product.name;
+            document.getElementById('orderProductPrice').value = Math.round(finalPrice);
+
+            // Show modal
+            document.getElementById('orderModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+
+        // Select color in order modal
+        window.selectOrderColorDirect = function(btn, colorName, colorHex, colorImage) {
+            const orderModal = document.getElementById('orderModal');
+            if (!orderModal) return;
+
+            const colorBtns = orderModal.querySelectorAll('.order-color-btn');
+            colorBtns.forEach(b => {
+                const hex = b.dataset.hex;
+                b.style.borderColor = '#ddd';
+                b.classList.remove('selected');
+            });
+            btn.style.borderColor = colorHex;
+            btn.classList.add('selected');
+
+            const colorNameSpan = orderModal.querySelector('#selectedColorName');
+            if (colorNameSpan) {
+                colorNameSpan.textContent = colorName;
+            } else {
+                const colorsContainer = orderModal.querySelector('.order-product-colors span');
+                if (colorsContainer) {
+                    colorsContainer.insertAdjacentHTML('afterend', `<span id="selectedColorName" style="font-size: 13px; color: #333; margin-top: 5px; display: block;">${colorName}</span>`);
+                }
+            }
+
+            if (colorImage) {
+                const productImg = orderModal.querySelector('.order-product-image img');
+                if (productImg) {
+                    productImg.src = colorImage;
+                }
+            }
+
+            window.selectedProductColor = colorName;
+            window.selectedProductColorHex = colorHex;
         };
 
         // Simple Firebase test and fetch
         async function loadProductSimple() {
             const container = document.getElementById('productDetail');
             if (!container) return;
-
-            window.PRODUCT_DEBUG.log('Starting product load', {productId: productId});
 
             // Show loading
             container.innerHTML = `
@@ -294,14 +420,12 @@
             `;
 
             if (!productId) {
-                window.PRODUCT_DEBUG.log('ERROR: No product ID in URL');
-                console.error('CRITICAL: No product ID in URL!');
+                console.error('No product ID in URL');
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
                         <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c;"></i>
                         <h2 style="color: var(--black); margin: 20px 0 15px;">Produit non trouvé</h2>
                         <p style="color: #666;">Aucun ID produit dans l'URL</p>
-                        <p style="color: #999; font-size: 12px; margin-top: 20px;">Vérifiez l'URL - elle doit contenir ?id=...</p>
                     </div>
                 `;
                 return;
@@ -322,38 +446,28 @@
                 const app = initializeApp(firebaseConfig);
                 const db = getFirestore(app);
 
-                window.PRODUCT_DEBUG.log('Fetching from Firebase', {productId: productId});
-                console.log('[FIREBASE] Fetching product with ID:', productId);
+                console.log('Fetching product:', productId);
 
                 const docRef = doc(db, 'products', productId);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const product = { id: docSnap.id, ...docSnap.data() };
-                    window.PRODUCT_DEBUG.log('Product fetched successfully', {name: product.name, id: product.id});
-                    console.log('[FIREBASE] Product found:', product.name);
+                    console.log('Product found:', product.name);
 
-                    // Store for use by other functions (both in module and regular scripts)
-                    window.currentProduct = product;
+                    // Store globally - THIS IS CRUCIAL
+                    window.loadedProduct = product;
+                    window.loadedProductColors = product.colors || [];
+                    window.loadedProductImages = product.images || [];
                     window.currentProductForCart = product;
-                    window.PRODUCT_DEBUG.loaded = true;
+                    window.currentProduct = product;
                     
-                    // Store in localStorage with multiple key formats for better compatibility
-                    const productJSON = JSON.stringify(product);
-                    localStorage.setItem('currentProduct_' + product.id, productJSON);
-                    localStorage.setItem('currentProductData', productJSON);
-                    localStorage.setItem('tempProductData', productJSON);
-                    
-                    window.PRODUCT_DEBUG.log('Product stored in multiple locations', {
-                        windowCurrentProduct: !!window.currentProduct,
-                        localStorageKeys: ['currentProduct_' + product.id, 'currentProductData', 'tempProductData']
-                    });
+                    console.log('Product stored in window.loadedProduct:', window.loadedProduct);
 
                     // Display the product
                     displayProduct(product, container);
                 } else {
-                    window.PRODUCT_DEBUG.log('ERROR: Product not found in Firebase', {productId: productId});
-                    console.error('[FIREBASE] Product not found in Firebase! ID:', productId);
+                    console.log('Product not found');
                     container.innerHTML = `
                         <div class="container" style="padding: 150px 20px; text-align: center;">
                             <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
@@ -365,17 +479,12 @@
                     `;
                 }
             } catch (error) {
-                window.PRODUCT_DEBUG.log('ERROR: Firebase error', {message: error.message, code: error.code});
-                console.error('[FIREBASE] Error:', error.message, error.code);
+                console.error('Error fetching product:', error);
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
                         <i class="fas fa-times-circle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
                         <h2 style="color: var(--black); margin-bottom: 15px;">Erreur de connexion</h2>
                         <p style="color: #666;">${error.message}</p>
-                        <p style="color: #999; font-size: 12px; margin-top: 20px;">Code: ${error.code || 'unknown'}</p>
-                        ${error.message.includes('permission') ? `
-                            <p style="color: #ffc107; margin-top: 15px;">⚠️ Vérifiez les règles Firebase!</p>
-                        ` : ''}
                     </div>
                 `;
             }
@@ -390,12 +499,10 @@
             const categoryName = product.category || 'Produit';
             const genderText = product.gender ? (product.gender === 'femme' ? 'Femme' : 'Homme') : '';
 
-            // Prepare images array
             const productImages = product.images && product.images.length > 0 
                 ? product.images 
                 : (product.image ? [product.image] : []);
             
-            // Prepare colors array
             const productColors = product.colors && product.colors.length > 0 
                 ? product.colors 
                 : [];
@@ -461,11 +568,11 @@
                             <p class="product-detail-description">${product.description || 'Aucune description disponible.'}</p>
 
                             <div class="product-detail-actions">
-                                <button class="btn-primary btn-large" onclick="openOrderModalFromProduct('${product.id}')">
+                                <button class="btn-primary btn-large" onclick="openOrderModalDirect('${product.id}')">
                                     <i class="fas fa-shopping-cart"></i> Commander maintenant
                                 </button>
                                 ${productColors.length > 0 || productImages.length > 0 ? `
-                                <button class="btn-secondary btn-large" style="margin-top: 10px;" onclick="addCurrentProductToCart('${product.id}')">
+                                <button class="btn-secondary btn-large" style="margin-top: 10px;" onclick="addCurrentProductToCartDirect('${product.id}')">
                                     <i class="fas fa-shopping-bag"></i> Ajouter au panier
                                 </button>
                                 ` : ''}
@@ -495,10 +602,13 @@
             window.currentProductColors = productColors;
             window.currentProductImages = productImages;
             
-            // Initialize reviews section
-            if (typeof initReviews === 'function') {
-                initReviews(productId);
+            // Initialize first color as selected
+            if (productColors.length > 0) {
+                window.selectedProductColor = productColors[0].name;
+                window.selectedProductColorHex = productColors[0].hex;
             }
+            
+            console.log('Product displayed, window.loadedProduct set:', window.loadedProduct);
         }
 
         // Change main image when thumbnail is clicked
@@ -512,7 +622,6 @@
                 }, 200);
             }
             
-            // Update active thumbnail
             document.querySelectorAll('.thumbnail').forEach(thumb => {
                 thumb.classList.remove('active');
                 thumb.style.borderColor = 'transparent';
@@ -532,26 +641,15 @@
             
             if (!mainImage || !imageContainer) return;
             
-            // Clear existing timeout
             if (imageZoomTimeout) clearTimeout(imageZoomTimeout);
-            
-            // Hide hint
             if (zoomHint) zoomHint.style.display = 'none';
             
-            // Get image dimensions
             const imgRect = mainImage.getBoundingClientRect();
-            const imgWidth = imgRect.width;
-            const imgHeight = imgRect.height;
-            
-            // Calculate mouse position relative to image
             const x = e.clientX - imgRect.left;
             const y = e.clientY - imgRect.top;
+            const xPercent = (x / imgRect.width) * 100;
+            const yPercent = (y / imgRect.height) * 100;
             
-            // Calculate percentage position for transform-origin
-            const xPercent = (x / imgWidth) * 100;
-            const yPercent = (y / imgHeight) * 100;
-            
-            // Apply zoom effect with transform-origin at mouse position
             mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
             mainImage.style.transform = 'scale(2.5)';
             mainImage.style.transition = 'transform 0.1s ease-out';
@@ -559,13 +657,11 @@
             imageContainer.style.overflow = 'hidden';
         }
         
-        // Hide zoom when mouse leaves
         function hideImageZoom() {
             const mainImage = document.getElementById('mainImage');
             const zoomHint = document.getElementById('zoomHint');
             const imageContainer = document.getElementById('mainImageContainer');
             
-            // Delay to allow mouse to re-enter
             imageZoomTimeout = setTimeout(() => {
                 if (mainImage) {
                     mainImage.style.transform = 'scale(1)';
@@ -577,17 +673,14 @@
             }, 200);
         }
 
-        // Keep zoom active when mouse moves within image
         document.addEventListener('mousemove', function(e) {
             const mainImage = document.getElementById('mainImage');
             const imageContainer = document.getElementById('mainImageContainer');
             
             if (imageContainer && imageContainer.contains(e.target)) {
-                // Clear timeout and update zoom position
                 if (imageZoomTimeout) clearTimeout(imageZoomTimeout);
                 
                 if (mainImage.style.transform === 'scale(2.5)') {
-                    // Just update transform-origin without transition for smooth movement
                     const imgRect = mainImage.getBoundingClientRect();
                     const x = e.clientX - imgRect.left;
                     const y = e.clientY - imgRect.top;
@@ -598,98 +691,58 @@
                     mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
                 }
             } else if (mainImage && mainImage.style.transform === 'scale(2.5)') {
-                // Mouse left image area
                 hideImageZoom();
             }
         });
 
         // Select product color
         function selectProductColor(btn, colorName, colorHex, colorImage) {
-            // Update color buttons
             document.querySelectorAll('.color-option').forEach(btn => {
                 btn.classList.remove('selected');
                 btn.style.borderColor = '#ddd';
                 btn.innerHTML = '';
             });
             btn.classList.add('selected');
-            // Show the actual selected color in the border
             btn.style.borderColor = colorHex || 'var(--gold)';
             btn.innerHTML = '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>';
 
-            // Update selected color display
             const colorDisplay = document.getElementById('selectedColorDisplay');
             if (colorDisplay) {
                 colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${colorName}`;
             }
 
-            // Update product image if color has specific image
             if (colorImage) {
                 changeImage(colorImage, null);
             }
 
-            // Store selected color
             window.selectedProductColor = colorName;
             window.selectedProductColorHex = colorHex;
             window.selectedProductColorImage = colorImage;
         }
 
-        // Open order modal from product page
-        // This function is called by the "Commander maintenant" button
-        async function openOrderModalFromProduct(productId) {
-            console.log('openOrderModalFromProduct called with productId:', productId);
-
-            // Ensure selected color is available
-            if (!window.selectedProductColor && window.currentProductColors && window.currentProductColors.length > 0) {
-                window.selectedProductColor = window.currentProductColors[0].name;
-                window.selectedProductColorHex = window.currentProductColors[0].hex;
-            }
-
-            // Use the local openOrderModal function (defined below in this script)
-            // This uses the product data already loaded on the page
-            if (typeof window.openOrderModalLocal === 'function') {
-                console.log('Using local openOrderModalLocal function');
-                window.openOrderModalLocal(productId);
-            }
-            // Fallback: try global openOrderModal
-            else if (typeof window.openOrderModal === 'function') {
-                console.log('Calling window.openOrderModal from main.js');
-                window.openOrderModal(productId, window.selectedProductColor, window.selectedProductColorHex);
-            } else {
-                console.error('openOrderModal function not found!');
-                showNotification('Erreur: Impossible d\'ouvrir la commande', 'error');
-            }
-        }
-
-        // Add current product to cart
-        function addCurrentProductToCart(productId) {
-            console.log('addCurrentProductToCart called with productId:', productId);
+        // Add to cart function
+        window.addCurrentProductToCartDirect = function(productId) {
+            console.log('addCurrentProductToCartDirect called');
             
-            // Ensure selected color is available
-            if (!window.selectedProductColor && window.currentProductColors && window.currentProductColors.length > 0) {
-                window.selectedProductColor = window.currentProductColors[0].name;
-                window.selectedProductColorHex = window.currentProductColors[0].hex;
+            const product = window.loadedProduct || window.currentProductForCart;
+            
+            if (!product) {
+                console.error('Product not loaded');
+                return;
             }
             
             if (typeof window.addToCart === 'function') {
-                const product = window.currentProductForCart;
-                if (product) {
-                    console.log('Adding product to cart:', product.name);
-                    window.addToCart(product, window.selectedProductColor, window.selectedProductColorHex);
-                } else {
-                    console.error('currentProductForCart is not set');
-                    showNotification('Erreur: Produit non trouvé', 'warning');
-                }
+                window.addToCart(product, window.selectedProductColor, window.selectedProductColorHex);
             } else {
-                console.error('addToCart function not found!');
-                showNotification('Erreur: Fonction addToCart non disponible', 'warning');
+                console.error('addToCart function not found');
             }
-        }
+        };
 
-        // Make functions globally accessible for onclick handlers
+        // Make functions globally accessible
         window.changeImage = changeImage;
         window.selectProductColor = selectProductColor;
-        window.openOrderModalFromProduct = openOrderModalFromProduct;
-        window.addCurrentProductToCart = addCurrentProductToCart;
+        window.openOrderModalDirect = window.openOrderModalDirect;
+        window.addCurrentProductToCartDirect = window.addCurrentProductToCartDirect;
         window.handleImageZoom = handleImageZoom;
         window.hideImageZoom = hideImageZoom;
 
@@ -1409,226 +1462,10 @@
     </div>
 
     <script>
-        // Global variables for selected color
-        let selectedProductColor = null;
-        let selectedProductColorHex = null;
-
-        // Wait for Firebase and main.js to be ready
-        async function waitForFirebase(timeout = 10000) {
-            return new Promise((resolve, reject) => {
-                const startTime = Date.now();
-
-                const checkReady = () => {
-                    if (typeof window.getProduct === 'function' &&
-                        typeof window.ProductAPI !== 'undefined' &&
-                        typeof window.ProductAPI.getProduct === 'function') {
-                        resolve(true);
-                        return;
-                    }
-
-                    if (Date.now() - startTime > timeout) {
-                        console.log('Timeout waiting for Firebase, will use localStorage fallback');
-                        resolve(false);
-                        return;
-                    }
-
-                    setTimeout(checkReady, 100);
-                };
-
-                checkReady();
-            });
-        }
-
-        // Open order modal with product info - LOCAL VERSION (uses page-loaded data)
-        async function openOrderModalLocal(productId) {
-            console.log('=== openOrderModalLocal called ===');
-            console.log('productId:', productId);
-            console.log('window.currentProduct:', window.currentProduct);
-            console.log('window.currentProductForCart:', window.currentProductForCart);
-
-            // Try to get product from different sources (in order of preference)
-            let product = null;
-
-            // Option 1: Use window.currentProduct (already loaded by page's inline script)
-            if (window.currentProduct && window.currentProduct.id === productId) {
-                console.log('✓ Using window.currentProduct from page load');
-                product = window.currentProduct;
-            }
-            // Option 2: Use window.currentProductForCart (set by displayProduct)
-            else if (window.currentProductForCart && window.currentProductForCart.id === productId) {
-                console.log('✓ Using window.currentProductForCart');
-                product = window.currentProductForCart;
-            }
-            // Option 3: Try localStorage with different keys
-            else {
-                console.log('🔍 Trying localStorage for product...');
-                
-                // Try multiple localStorage keys
-                const keysToTry = [
-                    'currentProduct_' + productId,
-                    'currentProductData',
-                    'tempProductData'
-                ];
-                
-                for (const key of keysToTry) {
-                    const storedProduct = localStorage.getItem(key);
-                    if (storedProduct) {
-                        try {
-                            const parsedProduct = JSON.parse(storedProduct);
-                            if (parsedProduct && parsedProduct.id === productId) {
-                                product = parsedProduct;
-                                console.log('✓ Found product in localStorage key:', key, '- Name:', product.name);
-                                break;
-                            }
-                        } catch (e) {
-                            console.error('Error parsing product from localStorage key', key, ':', e);
-                        }
-                    }
-                }
-                
-                if (!product) {
-                    console.log('❌ Product not found in localStorage');
-                    // Log all localStorage keys for debugging
-                    console.log('📋 All localStorage keys:', Object.keys(localStorage).filter(k => k.includes('Product')));
-                }
-            }
-
-            // Option 4: Use window.getProduct from main.js as last resort
-            if (!product && typeof window.getProduct === 'function') {
-                console.log('🔄 Using window.getProduct from main.js as fallback');
-                try {
-                    product = await window.getProduct(productId);
-                    console.log('✓ Got product from main.js:', product ? product.name : 'null');
-                } catch (error) {
-                    console.error('Error fetching product from main.js:', error);
-                }
-            }
-
-            if (!product) {
-                console.error('❌❌❌ Product not found for ID:', productId);
-                showNotification('Produit non trouvé!', 'warning');
-                return;
-            }
-
-            console.log('✅ Product found:', product.name, '- Opening order modal...');
-
-            const hasPromotion = product.promotion && product.promotion > 0;
-            const finalPrice = hasPromotion
-                ? product.price - (product.price * product.promotion / 100)
-                : product.price;
-
-            // Populate product info
-            document.getElementById('orderProductId').value = product.id;
-            document.getElementById('orderProductName').value = product.name;
-            document.getElementById('orderProductPrice').value = Math.round(finalPrice);
-
-            // Determine which image to show
-            let productImage = product.image || '';
-            if (selectedProductColor && product.colors) {
-                const colorObj = product.colors.find(c => c.name === selectedProductColor);
-                if (colorObj && colorObj.image) {
-                    productImage = colorObj.image;
-                }
-            } else if (product.images && product.images.length > 0) {
-                productImage = product.images[0];
-            }
-
-            // Build color selection HTML if product has colors
-            let colorSelectionHTML = '';
-            if (product.colors && product.colors.length > 0) {
-                colorSelectionHTML = `
-                    <div class="order-product-colors" style="margin-top: 10px;">
-                        <span style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;">Couleur:</span>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            ${product.colors.map(color => `
-                                <button type="button"
-                                        class="order-color-btn ${selectedProductColor === color.name ? 'selected' : ''}"
-                                        data-color="${color.name}"
-                                        data-hex="${color.hex}"
-                                        data-image="${color.image || ''}"
-                                        style="
-                                            width: 32px;
-                                            height: 32px;
-                                            border-radius: 50%;
-                                            border: 3px solid ${selectedProductColor === color.name ? color.hex : '#ddd'};
-                                            background: ${color.hex};
-                                            cursor: pointer;
-                                            transition: all 0.3s ease;
-                                            padding: 0;
-                                        "
-                                        onclick="selectOrderColor(this, '${color.name}', '${color.hex}', '${color.image || ''}')">
-                                    ${color.image ? `<img src="${color.image}" alt="${color.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : ''}
-                                </button>
-                            `).join('')}
-                        </div>
-                        ${selectedProductColor ? `<span id="selectedColorName" style="font-size: 13px; color: #333; margin-top: 5px; display: block;">${selectedProductColor}</span>` : ''}
-                    </div>
-                `;
-            }
-
-            // Show product summary
-            document.getElementById('orderProductSummary').innerHTML = `
-                <div class="order-product-image">
-                    ${productImage ? `<img src="${productImage}" alt="${product.name}" onerror="this.innerHTML='<i class=\\'fas fa-box\\'></i>'">` : '<i class="fas fa-box"></i>'}
-                </div>
-                <div class="order-product-info">
-                    <h4>${product.name}</h4>
-                    <span class="price">${Math.round(finalPrice)} DH</span>
-                    ${colorSelectionHTML}
-                </div>
-            `;
-
-            // Show modal
-            document.getElementById('orderModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Select color in order modal
-        function selectOrderColor(btn, colorName, colorHex, colorImage) {
-            const orderModal = document.getElementById('orderModal');
-            if (!orderModal) return;
-
-            // Update button styles
-            const colorBtns = orderModal.querySelectorAll('.order-color-btn');
-            colorBtns.forEach(b => {
-                const hex = b.dataset.hex;
-                b.style.borderColor = '#ddd';
-                b.classList.remove('selected');
-            });
-            btn.style.borderColor = colorHex;
-            btn.classList.add('selected');
-
-            // Update selected color info
-            const colorNameSpan = orderModal.querySelector('#selectedColorName');
-            if (colorNameSpan) {
-                colorNameSpan.textContent = colorName;
-            } else {
-                const colorsContainer = orderModal.querySelector('.order-product-colors span');
-                if (colorsContainer) {
-                    colorsContainer.insertAdjacentHTML('afterend', `<span id="selectedColorName" style="font-size: 13px; color: #333; margin-top: 5px; display: block;">${colorName}</span>`);
-                }
-            }
-
-            // Update product image if color has specific image
-            if (colorImage) {
-                const productImg = orderModal.querySelector('.order-product-image img');
-                if (productImg) {
-                    productImg.src = colorImage;
-                }
-            }
-
-            // Store selected color
-            selectedProductColor = colorName;
-            selectedProductColorHex = colorHex;
-        }
-
-        // Close order modal
+        // Close order modal function
         function closeOrderModal() {
             document.getElementById('orderModal').classList.remove('active');
             document.body.style.overflow = '';
-
-            // Reset form
-            document.getElementById('orderForm').reset();
             document.getElementById('orderForm').style.display = 'block';
             document.getElementById('orderSuccess').style.display = 'none';
         }
@@ -1647,6 +1484,72 @@
             document.getElementById('orderModal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeOrderModal();
+                }
+            });
+
+            // Order form submission
+            document.getElementById('orderForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const submitBtn = document.getElementById('submitOrderBtn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+                submitBtn.disabled = true;
+
+                const formData = {
+                    productId: document.getElementById('orderProductId').value,
+                    productName: document.getElementById('orderProductName').value,
+                    productPrice: document.getElementById('orderProductPrice').value,
+                    customerName: document.getElementById('customerName').value,
+                    customerPhone: document.getElementById('customerPhone').value,
+                    customerCity: document.getElementById('customerCity').value,
+                    customerAddress: document.getElementById('customerAddress').value,
+                    orderNotes: document.getElementById('orderNotes').value,
+                    selectedColor: window.selectedProductColor || 'Non spécifié'
+                };
+
+                console.log('Submitting order:', formData);
+
+                try {
+                    // Try Firebase first
+                    if (typeof window.OrderAPI !== 'undefined' && typeof window.OrderAPI.createOrder === 'function') {
+                        const orderId = await window.OrderAPI.createOrder(formData);
+                        console.log('Order created with ID:', orderId);
+                    }
+                    
+                    // Also save to localStorage as backup
+                    const orders = JSON.parse(localStorage.getItem('tiqtaqo_orders') || '[]');
+                    orders.push({
+                        ...formData,
+                        orderId: 'ORD-' + Date.now(),
+                        createdAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('tiqtaqo_orders', JSON.stringify(orders));
+                    
+                    // Show success
+                    document.getElementById('orderForm').style.display = 'none';
+                    document.getElementById('orderSuccess').style.display = 'block';
+                    
+                    // Reset form
+                    this.reset();
+                    
+                } catch (error) {
+                    console.error('Error submitting order:', error);
+                    
+                    // Fallback: save to localStorage
+                    const orders = JSON.parse(localStorage.getItem('tiqtaqo_orders') || '[]');
+                    orders.push({
+                        ...formData,
+                        orderId: 'ORD-' + Date.now(),
+                        createdAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('tiqtaqo_orders', JSON.stringify(orders));
+                    
+                    alert('Commande enregistrée! Nous vous contacterons bientôt.');
+                    closeOrderModal();
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 }
             });
         });
@@ -2297,7 +2200,6 @@
         window.initReviews = initReviews;
         window.loadReviews = loadReviews;
         window.updateRatingDisplay = updateRatingDisplay;
-        window.openOrderModalLocal = openOrderModalLocal;
     </script>
 </body>
 </html>
