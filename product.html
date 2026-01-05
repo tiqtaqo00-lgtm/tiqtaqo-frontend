@@ -295,7 +295,12 @@
 
                     // Store for use by other functions (both in module and regular scripts)
                     window.currentProduct = product;
+                    window.currentProductForCart = product;
+                    // Store in localStorage with multiple key formats for better compatibility
                     localStorage.setItem('currentProduct_' + product.id, JSON.stringify(product));
+                    localStorage.setItem('currentProductData', JSON.stringify(product));
+                    localStorage.setItem('tempProductData', JSON.stringify(product));
+                    console.log('Product stored in localStorage with keys:', 'currentProduct_' + product.id, 'currentProductData', 'tempProductData');
 
                     // Display the product
                     displayProduct(product, container);
@@ -1387,51 +1392,76 @@
 
         // Open order modal with product info - LOCAL VERSION (uses page-loaded data)
         async function openOrderModalLocal(productId) {
-            console.log('openOrderModalLocal called with productId:', productId);
+            console.log('=== openOrderModalLocal called ===');
+            console.log('productId:', productId);
+            console.log('window.currentProduct:', window.currentProduct);
+            console.log('window.currentProductForCart:', window.currentProductForCart);
 
             // Try to get product from different sources (in order of preference)
             let product = null;
 
             // Option 1: Use window.currentProduct (already loaded by page's inline script)
             if (window.currentProduct && window.currentProduct.id === productId) {
-                console.log('Using window.currentProduct from page load');
+                console.log('✓ Using window.currentProduct from page load');
                 product = window.currentProduct;
             }
             // Option 2: Use window.currentProductForCart (set by displayProduct)
             else if (window.currentProductForCart && window.currentProductForCart.id === productId) {
-                console.log('Using window.currentProductForCart');
+                console.log('✓ Using window.currentProductForCart');
                 product = window.currentProductForCart;
             }
-            // Option 3: Try localStorage (stored by the module script)
+            // Option 3: Try localStorage with different keys
             else {
-                console.log('Trying localStorage for product...');
-                const storedProduct = localStorage.getItem('currentProduct_' + productId);
-                if (storedProduct) {
-                    try {
-                        product = JSON.parse(storedProduct);
-                        console.log('Found product in localStorage:', product.name);
-                    } catch (e) {
-                        console.error('Error parsing product from localStorage:', e);
+                console.log('🔍 Trying localStorage for product...');
+                
+                // Try multiple localStorage keys
+                const keysToTry = [
+                    'currentProduct_' + productId,
+                    'currentProductData',
+                    'tempProductData'
+                ];
+                
+                for (const key of keysToTry) {
+                    const storedProduct = localStorage.getItem(key);
+                    if (storedProduct) {
+                        try {
+                            const parsedProduct = JSON.parse(storedProduct);
+                            if (parsedProduct && parsedProduct.id === productId) {
+                                product = parsedProduct;
+                                console.log('✓ Found product in localStorage key:', key, '- Name:', product.name);
+                                break;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing product from localStorage key', key, ':', e);
+                        }
                     }
                 }
+                
+                if (!product) {
+                    console.log('❌ Product not found in localStorage');
+                    // Log all localStorage keys for debugging
+                    console.log('📋 All localStorage keys:', Object.keys(localStorage).filter(k => k.includes('Product')));
+                }
             }
+
             // Option 4: Use window.getProduct from main.js as last resort
             if (!product && typeof window.getProduct === 'function') {
-                console.log('Using window.getProduct from main.js as fallback');
+                console.log('🔄 Using window.getProduct from main.js as fallback');
                 try {
                     product = await window.getProduct(productId);
+                    console.log('✓ Got product from main.js:', product ? product.name : 'null');
                 } catch (error) {
                     console.error('Error fetching product from main.js:', error);
                 }
             }
 
             if (!product) {
-                console.error('Product not found for ID:', productId);
+                console.error('❌❌❌ Product not found for ID:', productId);
                 showNotification('Produit non trouvé!', 'warning');
                 return;
             }
 
-            console.log('Product found:', product.name);
+            console.log('✅ Product found:', product.name, '- Opening order modal...');
 
             const hasPromotion = product.promotion && product.promotion > 0;
             const finalPrice = hasPromotion
