@@ -86,7 +86,7 @@ const initFirebase = () => {
 };
 
 // Export functions for use in other files
-export const initFirebase = () => {
+function initFirebaseFn() {
     if (firebaseInitialized) return { db, auth };
     
     try {
@@ -115,11 +115,19 @@ export const initFirebase = () => {
         console.error('Firebase initialization error:', error);
         return null;
     }
-};
+}
 
+// Export as ES6 module
+export const initFirebase = initFirebaseFn;
 export const isFirebaseReady = () => firebaseInitialized;
 export const getDb = () => db;
 export const getAuth = () => auth;
+
+// ALSO export to window for backward compatibility with non-module scripts
+window.initFirebase = initFirebaseFn;
+window.isFirebaseReady = () => firebaseInitialized;
+window.getDb = getDb;
+window.getAuth = getAuth;
 
 // Product API functions
 export const ProductAPI = {
@@ -497,19 +505,14 @@ export const AdminAuth = {
     }
 };
 
-// ALSO export to window for backward compatibility with non-module scripts
-// This ensures pages that load firebase-config.js as module can still work
-window.initFirebase = initFirebase;
-window.isFirebaseReady = isFirebaseReady;
-window.getDb = getDb;
-window.getAuth = getAuth;
+// Initialize Firebase immediately when module loads
+initFirebaseFn();
+
+// Export APIs to window for backward compatibility
 window.ProductAPI = ProductAPI;
 window.OrderAPI = OrderAPI;
 window.ReviewAPI = ReviewAPI;
 window.AdminAuth = AdminAuth;
-
-// Initialize Firebase immediately when module loads
-initFirebase();
 
 // Export initialization
 console.log('Firebase module loaded and initialized');
