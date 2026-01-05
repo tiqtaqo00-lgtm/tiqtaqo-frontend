@@ -87,9 +87,6 @@ function initFirebaseFn() {
         }
     });
 }
-        return null;
-    }
-}
 
 // Export as ES6 module
 export const initFirebase = initFirebaseFn;
