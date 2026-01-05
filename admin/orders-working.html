@@ -405,7 +405,7 @@
     };
 
     // Initialize Firebase
-    let app, db, auth;
+    let db, auth;
     let firebaseInitialized = false;
 
     async function initFirebase() {
@@ -414,14 +414,14 @@
         try {
             console.log('📦 Loading Firebase SDK...');
             
-            // Load Firebase SDK scripts dynamically
-            await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-            await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            // Load Firebase SDK scripts dynamically (use compat versions for non-module support)
+            await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+            await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js');
+            await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js');
             
             console.log('✅ Firebase SDK loaded');
             
-            app = firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             auth = firebase.auth();
             
@@ -440,7 +440,7 @@
             const script = document.createElement('script');
             script.src = url;
             script.onload = resolve;
-            script.onerror = reject;
+            script.onerror = () => reject(new Error(`Failed to load: ${url}`));
             document.head.appendChild(script);
         });
     }
