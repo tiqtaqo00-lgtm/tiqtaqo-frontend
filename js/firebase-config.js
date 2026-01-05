@@ -54,37 +54,6 @@ const isValidConfig = () => {
            firebaseConfig.apiKey !== undefined;
 };
 
-const initFirebase = () => {
-    if (firebaseInitialized) return { db, auth };
-    
-    try {
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-        
-        // Enable offline persistence (Critical for reducing reads)
-        enableIndexedDbPersistence(db).catch((err) => {
-            if (err.code === 'failed-precondition') {
-                console.warn('Multiple tabs - persistence in one tab only');
-            } else if (err.code === 'unimplemented') {
-                console.warn('Browser does not support persistence');
-            }
-        });
-        
-        firebaseInitialized = true;
-        
-        console.log('Firebase initialized successfully');
-        
-        // Dispatch event to notify other scripts
-        window.dispatchEvent(new Event('firebase-loaded'));
-        
-        return { db, auth };
-    } catch (error) {
-        console.error('Firebase initialization error:', error);
-        return null;
-    }
-};
-
 // Export functions for use in other files
 function initFirebaseFn() {
     if (firebaseInitialized) return { db, auth };
