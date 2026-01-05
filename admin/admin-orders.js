@@ -1,14 +1,13 @@
 // Admin Orders Management System - Firebase Edition
 // Orders are now stored in Firebase Firestore for permanent access from any device
 
-// Import Firebase functions directly since this is now a module
-import { initFirebase, OrderAPI } from '../js/firebase-config.js';
+// NOTE: OrderAPI is imported via window from firebase-config.js which is loaded as a module
+// The module exports OrderAPI to window object for compatibility
 
-// Debug: Log what was imported
-console.log('=== FIREBASE IMPORT DEBUG ===');
-console.log('initFirebase type:', typeof initFirebase);
-console.log('OrderAPI type:', typeof OrderAPI);
-console.log('OrderAPI.getOrders type:', typeof OrderAPI?.getOrders);
+// Debug: Check what was loaded
+console.log('=== FIREBASE ORDER API DEBUG ===');
+console.log('window.OrderAPI:', window.OrderAPI);
+console.log('window.OrderAPI?.getOrders:', typeof window.OrderAPI?.getOrders);
 
 // Global orders cache for real-time updates
 let ordersCache = [];
@@ -16,23 +15,39 @@ let ordersCacheValid = false;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
-    // Initialize Firebase first, then load orders
-    await initializeFirebaseAndLoadOrders();
+    // Wait for Firebase to be ready, then load orders
+    await waitForFirebaseAndLoadOrders();
 });
 
-// Initialize Firebase and load orders
-async function initializeFirebaseAndLoadOrders() {
+// Wait for Firebase and load orders
+async function waitForFirebaseAndLoadOrders() {
     try {
         // Show loading state
         showOrdersLoading();
 
-        // Initialize Firebase if not already done (for safety)
-        if (typeof initFirebase === 'function') {
-            initFirebase();
+        // Wait for Firebase to be available
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        while (!window.OrderAPI || typeof window.OrderAPI.getOrders !== 'function') {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+            
+            if (attempts >= maxAttempts) {
+                console.error('Firebase API not available after', maxAttempts, 'attempts');
+                throw new Error('Firebase API not available');
+            }
+        }
+
+        console.log('Firebase API available after', attempts, 'attempts');
+
+        // Initialize Firebase if needed
+        if (typeof window.initFirebase === 'function') {
+            window.initFirebase();
         }
 
         // Give Firebase a moment to initialize
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Load admin info and orders
         loadAdminInfo();
@@ -86,8 +101,10 @@ function loadAdminInfo() {
 async function loadOrders() {
     try {
         console.log('=== LOAD ORDERS DEBUG ===');
-        console.log('OrderAPI:', OrderAPI);
-        console.log('typeof OrderAPI:', typeof OrderAPI);
+        console.log('window.OrderAPI:', window.OrderAPI);
+        console.log('typeof window.OrderAPI:', typeof window.OrderAPI);
+        
+        const OrderAPI = window.OrderAPI;
         
         if (!OrderAPI) {
             console.error('OrderAPI is undefined!');
@@ -145,6 +162,8 @@ async function getOrders() {
         return ordersCache;
     }
 
+    const OrderAPI = window.OrderAPI;
+    
     // Try Firebase if cache is empty
     if (OrderAPI && typeof OrderAPI.getOrders === 'function') {
         try {
@@ -504,6 +523,8 @@ async function markOrderCompleted(orderId) {
     }
 
     try {
+        const OrderAPI = window.OrderAPI;
+        
         // Try Firebase first
         if (OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
             const success = await OrderAPI.updateOrderStatus(orderId, 'completed');
@@ -540,6 +561,8 @@ async function markOrderCancelled(orderId) {
     }
 
     try {
+        const OrderAPI = window.OrderAPI;
+        
         // Try Firebase first
         if (OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
             const success = await OrderAPI.updateOrderStatus(orderId, 'cancelled');
@@ -590,6 +613,8 @@ async function deleteOrder(orderId) {
     }
 
     try {
+        const OrderAPI = window.OrderAPI;
+        
         // Try Firebase first
         if (OrderAPI && typeof OrderAPI.deleteOrder === 'function') {
             const success = await OrderAPI.deleteOrder(orderId);
@@ -714,6 +739,8 @@ window.refreshOrders = async function() {
 // Sync local orders to Firebase (one-time migration)
 window.syncOrdersToFirebase = async function() {
     try {
+        const OrderAPI = window.OrderAPI;
+        
         const orders = JSON.parse(localStorage.getItem('tiqtaqo_orders') || '[]');
         if (orders.length === 0) {
             showNotification('لا توجد طلبات للمزامنة', 'warning');
