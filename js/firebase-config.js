@@ -474,14 +474,18 @@ export const AdminAuth = {
     }
 };
 
-// Initialize Firebase immediately when module loads
-initFirebaseFn();
-
-// Export APIs to window for backward compatibility
-window.ProductAPI = ProductAPI;
-window.OrderAPI = OrderAPI;
-window.ReviewAPI = ReviewAPI;
-window.AdminAuth = AdminAuth;
+// Initialize Firebase and export APIs after initialization
+initFirebaseFn().then(() => {
+    // Export APIs to window only AFTER Firebase is initialized
+    window.ProductAPI = ProductAPI;
+    window.OrderAPI = OrderAPI;
+    window.ReviewAPI = ReviewAPI;
+    window.AdminAuth = AdminAuth;
+    
+    console.log('Firebase APIs exported to window');
+}).catch(error => {
+    console.error('Failed to initialize Firebase:', error);
+});
 
 // Export initialization
 console.log('Firebase module loaded and initialized');
