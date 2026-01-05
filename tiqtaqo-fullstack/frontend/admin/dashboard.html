@@ -468,9 +468,9 @@
         
         .color-inputs {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto;
+            grid-template-columns: 2fr 1fr 1.5fr auto;
             gap: 15px;
-            align-items: end;
+            align-items: start;
         }
         
         .color-name-group,
@@ -511,10 +511,10 @@
         }
         
         .color-image-upload {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border: 2px dashed #ddd;
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -522,6 +522,7 @@
             transition: all 0.3s ease;
             background: #f8f9fa;
             overflow: hidden;
+            flex-shrink: 0;
         }
         
         .color-image-upload:hover {
@@ -530,7 +531,7 @@
         }
         
         .color-image-upload i {
-            font-size: 20px;
+            font-size: 18px;
             color: #999;
         }
         
@@ -538,6 +539,39 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        
+        /* Color URL Input Styles */
+        .color-url-input {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+            width: 100%;
+        }
+        
+        .color-url-input input {
+            flex: 1;
+            padding: 5px 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 11px;
+            min-width: 0;
+        }
+        
+        .color-url-input input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        
+        .color-url-input button {
+            padding: 5px 8px;
+            background: var(--gold);
+            color: var(--black);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            white-space: nowrap;
         }
         
         .remove-color-btn {
@@ -575,6 +609,24 @@
         @media (max-width: 768px) {
             .color-inputs {
                 grid-template-columns: 1fr 1fr;
+            }
+            
+            .color-image-group {
+                grid-column: 1 / -1;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            
+            .color-image-group label {
+                width: 100%;
+            }
+            
+            .color-url-input {
+                flex: 1;
+                min-width: 150px;
             }
         }
 
@@ -753,10 +805,30 @@
                     <label>Images du Produit (Plusieurs images possibles)</label>
                     <div class="image-upload-area" onclick="document.getElementById('productImage').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Cliquez pour télécharger des images</p>
+                        <p>Cliquez pour télécharger des images depuis votre ordinateur</p>
                         <small>Formats acceptés: JPG, PNG, GIF. Vous pouvez sélectionner plusieurs fichiers.</small>
                     </div>
                     <input type="file" id="productImage" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(event)">
+                    
+                    <!-- URL Image Upload Option -->
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--black);">
+                            <i class="fas fa-link" style="color: var(--gold); margin-right: 8px;"></i>
+                            Ou ajoutez une image par lien (URL)
+                        </label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="url" id="productImageUrl" placeholder="https://i.ibb.co/xyz/image.jpg" 
+                                   style="flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
+                            <button type="button" onclick="addImageFromUrl()" 
+                                    style="padding: 10px 20px; background: var(--gold); color: var(--black); border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                        <small style="color: #666; display: block; margin-top: 8px;">
+                            Collez le lien de l'image depuis imgbb, PostImages, ou autre service.
+                        </small>
+                    </div>
+                    
                     <div id="imagePreviewContainer" class="image-preview-container"></div>
                     <p class="image-count" id="imageCount"></p>
                 </div>

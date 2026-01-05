@@ -307,6 +307,8 @@ function showAddProductModal() {
     document.getElementById('productId').value = '';
     document.getElementById('imagePreviewContainer').innerHTML = '';
     document.getElementById('imagePreviewContainer').style.display = 'none';
+    document.getElementById('productImageUrl').value = ''; // Clear URL input
+    document.getElementById('imageCount').textContent = '';
     document.getElementById('colorsContainer').innerHTML = '';
     document.getElementById('productModal').style.display = 'flex';
     loadCategoryOptions();
@@ -437,6 +439,13 @@ function addColorRow(name = '', hex = '#000000', image = '', index = null) {
                     ${image ? `<img src="${image}" alt="Couleur">` : '<i class="fas fa-camera"></i>'}
                 </div>
                 <input type="file" id="colorImage-${rowId}" accept="image/*" style="display:none" onchange="handleColorImageUpload(this, '${rowId}')">
+                <div class="color-url-input">
+                    <input type="url" id="colorImageUrl-${rowId}" placeholder="https://i.ibb.co/..." 
+                           title="Ou collez un lien d'image">
+                    <button type="button" onclick="addColorImageFromUrl('${rowId}')" title="Ajouter">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
             <button type="button" class="remove-color-btn" onclick="removeColorRow('${rowId}')">
                 <i class="fas fa-times"></i>
@@ -466,6 +475,49 @@ function handleColorImageUpload(input, rowId) {
             colorImageUpload.dataset.image = e.target.result;
         };
         reader.readAsDataURL(file);
+    }
+}
+
+// Add color image from URL
+function addColorImageFromUrl(rowId) {
+    const urlInput = document.getElementById(`colorImageUrl-${rowId}`);
+    let url = urlInput.value.trim();
+    
+    if (url) {
+        // Clean up the URL
+        if (url.includes('?')) {
+            url = url.split('?')[0];
+        }
+        
+        // Validate URL
+        try {
+            new URL(url);
+        } catch (e) {
+            alert('Veuillez entrer une URL valide!\nExemple: https://i.ibb.co/abc123/image.jpg');
+            return;
+        }
+        
+        // Check if it looks like an image URL
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        const isImageUrl = validExtensions.some(ext => url.toLowerCase().includes(ext));
+        
+        if (!isImageUrl) {
+            const confirmAdd = confirm('Cette URL ne semble pas être une image. Voulez-vous quand même l\'ajouter?');
+            if (!confirmAdd) return;
+        }
+        
+        // Update the color image
+        const row = document.getElementById(rowId);
+        const colorImageUpload = row.querySelector('.color-image-upload');
+        colorImageUpload.innerHTML = `<img src="${url}" alt="Couleur" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i>'">`;
+        colorImageUpload.dataset.image = url;
+        
+        // Clear input
+        urlInput.value = '';
+        
+        console.log('Color image URL added:', url);
+    } else {
+        alert('Veuillez entrer une URL d\'image!\n\nExemple: https://i.ibb.co/abc123/image.jpg');
     }
 }
 
@@ -541,22 +593,85 @@ function handleImageUpload(event) {
     }
 }
 
+// Update image count display
+function updateImageCount() {
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const imageCount = document.getElementById('imageCount');
+    const count = previewContainer.children.length;
+    
+    if (count > 0) {
+        imageCount.textContent = `${count} image(s) sélectionnée(s)`;
+    } else {
+        imageCount.textContent = '';
+    }
+}
+
+// Add image from URL
+function addImageFromUrl() {
+    const urlInput = document.getElementById('productImageUrl');
+    let url = urlInput.value.trim();
+    
+    if (url) {
+        // Clean up the URL - remove any extra parameters that might break it
+        if (url.includes('?')) {
+            url = url.split('?')[0];
+        }
+        
+        // Validate URL
+        try {
+            new URL(url);
+        } catch (e) {
+            alert('Veuillez entrer une URL valide!\nExemple: https://i.ibb.co/abc123/image.jpg');
+            return;
+        }
+        
+        // Check if it looks like an image URL
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        const isImageUrl = validExtensions.some(ext => url.toLowerCase().includes(ext));
+        
+        if (!isImageUrl) {
+            const confirmAdd = confirm('Cette URL ne semble pas être une image. Voulez-vous quand même l\'ajouter?\n\nURL: ' + url);
+            if (!confirmAdd) return;
+        }
+        
+        // Add the image to preview
+        addImageToPreview(url);
+        urlInput.value = ''; // Clear input
+        
+        // Show confirmation
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        if (previewContainer.children.length > 0) {
+            previewContainer.style.display = 'grid';
+        }
+        
+        console.log('Image URL added:', url);
+    } else {
+        alert('Veuillez entrer une URL d\'image!\n\nExemple: https://i.ibb.co/abc123/image.jpg');
+    }
+}
+
 // Add image to preview container
 function addImageToPreview(imageData) {
     const previewContainer = document.getElementById('imagePreviewContainer');
     previewContainer.style.display = 'grid';
     
+    // Log for debugging
+    console.log('Adding image:', imageData.substring(0, 50) + (imageData.length > 50 ? '...' : ''));
+    
     const imgDiv = document.createElement('div');
     imgDiv.className = 'preview-image';
     imgDiv.dataset.image = imageData;
     imgDiv.innerHTML = `
-        <img src="${imageData}" alt="Aperçu">
+        <img src="${imageData}" alt="Aperçu" onerror="this.parentElement.innerHTML='<div style=\'padding:20px;text-align:center;color:#666;\'><i class=\'fas fa-image\' style=\'font-size:40px;color:#ddd;\'></i><p style=\'margin:10px 0 0;\'>Image non chargée</p><small>${imageData.substring(0,30)}...</small></div>'">
         <button type="button" class="remove-image-btn" onclick="removePreviewImage(this)">
             <i class="fas fa-times"></i>
         </button>
     `;
     
     previewContainer.appendChild(imgDiv);
+    
+    // Update count
+    updateImageCount();
 }
 
 // Remove preview image
@@ -568,6 +683,9 @@ function removePreviewImage(btn) {
     if (previewContainer.children.length === 0) {
         previewContainer.style.display = 'none';
     }
+    
+    // Update count
+    updateImageCount();
 }
 
 // Remove existing image (during edit)
@@ -774,12 +892,15 @@ window.loadProductColors = loadProductColors;
 window.addColorRow = addColorRow;
 window.updateColorPreview = updateColorPreview;
 window.handleColorImageUpload = handleColorImageUpload;
+window.addColorImageFromUrl = addColorImageFromUrl;
 window.removeColorRow = removeColorRow;
 window.addNewColor = addNewColor;
 window.getProductColors = getProductColors;
 window.editCategory = editCategory;
 window.handleImageUpload = handleImageUpload;
+window.addImageFromUrl = addImageFromUrl;
 window.addImageToPreview = addImageToPreview;
+window.updateImageCount = updateImageCount;
 window.removePreviewImage = removePreviewImage;
 window.removeExistingImage = removeExistingImage;
 window.saveProduct = saveProduct;

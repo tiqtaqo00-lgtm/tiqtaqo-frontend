@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 <body>
+
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -38,6 +40,11 @@
             <button class="cart-toggle" id="cartToggle">
                 <i class="fas fa-shopping-bag"></i>
                 <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Filter Button (only on category pages) -->
+            <button class="filter-toggle" id="filterToggle" onclick="toggleMobileFilters()">
+                <i class="fas fa-filter"></i>
             </button>
             
             <div class="nav-spacer"></div>
@@ -123,6 +130,15 @@
         </div>
     </section>
 
+    <!-- Elegant Gold Divider for Branch Pages -->
+    <div class="branch-divider">
+        <div class="divider-center">
+            <div class="divider-line-short"></div>
+            <div class="divider-diamond"></div>
+            <div class="divider-line-short"></div>
+        </div>
+    </div>
+
     <!-- Products Section -->
     <section class="products-section">
         <div class="container">
@@ -131,6 +147,9 @@
             </div>
         </div>
     </section>
+
+    <!-- Filter Sidebar (initialized dynamically) -->
+    <div id="filterSection" class="filter-section"></div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -168,20 +187,85 @@
         </div>
     </footer>
 
-    <script type="module" src="js/firebase-config.js?v=2"></script>
-    <script src="js/main.js?v=2" defer></script>
-    
-    <script>
-        // Initialize Firebase first
-        initFirebase();
+    <!-- Load Firebase first as module -->
+    <script type="module" src="js/firebase-config.js"></script>
 
-        // Load products immediately (don't wait for DOMContentLoaded)
-        loadCategoryProducts('glasses', 'homme');
-        initCart();
-        initUI();
+    <!-- Load main.js for cart and UI functions -->
+    <script src="js/main.js" defer></script>
+
+    <script type="module">
+        // Note: initFirebase is available as window.initFirebase (global function)
+        
+        async function waitForFunction(funcName, timeout = 15000) {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                if (typeof window[funcName] === 'function') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return false;
+        }
+        
+        async function initPage() {
+            try {
+                console.log('glasses-homme.html: Starting initialization...');
+                
+                // Wait for main.js functions to be available (up to 15 seconds)
+                console.log('Waiting for loadCategoryProducts...');
+                await waitForFunction('loadCategoryProducts');
+                console.log('main.js functions ready');
+                
+                // Wait for Firebase to be available
+                console.log('Waiting for initFirebase...');
+                await waitForFunction('initFirebase');
+                console.log('Firebase ready');
+                
+                // Initialize Firebase if not already done
+                if (typeof window.initFirebase === 'function') {
+                    await window.initFirebase();
+                    console.log('glasses-homme.html: Firebase initialized');
+                }
+                
+                // Small delay to ensure Firebase is fully initialized
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                // Call cart and UI functions if they exist
+                if (typeof window.initCart === 'function') {
+                    window.initCart();
+                    console.log('glasses-homme.html: initCart called');
+                }
+                if (typeof window.initUI === 'function') {
+                    window.initUI();
+                    console.log('glasses-homme.html: initUI called');
+                }
+                
+                // Initialize filter sidebar
+                if (typeof window.initFilterSidebar === 'function') {
+                    await window.initFilterSidebar();
+                    console.log('glasses-homme.html: Filter sidebar initialized');
+                }
+                
+                // Load products
+                if (typeof window.loadCategoryProducts === 'function') {
+                    await window.loadCategoryProducts('glasses', 'homme');
+                    console.log('glasses-homme.html: Products loaded');
+                }
+            } catch (error) {
+                console.error('glasses-homme.html: Error:', error);
+                // Try to load products anyway as fallback
+                if (typeof window.loadCategoryProducts === 'function') {
+                    console.log('Attempting fallback product load...');
+                    window.loadCategoryProducts('glasses', 'homme');
+                }
+            }
+        }
+        
+        // Start initialization after a small delay to ensure scripts are loaded
+        setTimeout(initPage, 100);
 
         async function loadCategoryProducts(category, gender) {
-            const result = await getProducts({ category, gender, pageSize: 50, forceRefresh: true });
+            const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
             

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À Propos - TiqtaQo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .about-hero {
+            margin-top: 105px;
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--black) 0%, var(--dark-gray) 100%);
+            text-align: center;
+            color: var(--white);
+        }
+        
+        .about-hero h1 {
+            font-size: 48px;
+            color: var(--gold);
+            margin-bottom: 20px;
+        }
+        
+        .about-content {
+            padding: 80px 0;
+        }
+        
+        .about-section {
+            margin-bottom: 60px;
+        }
+        
+        .about-section h2 {
+            font-size: 32px;
+            color: var(--black);
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .about-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background-color: var(--gold);
+        }
+        
+        .about-section p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .value-card {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .value-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        .value-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--black), var(--dark-gray));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--gold);
+        }
+        
+        .value-icon i {
+            font-size: 35px;
+            color: var(--gold);
+        }
+        
+        .value-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--black);
+        }
+        
+        .value-card p {
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Desktop Search Bar (hidden on mobile) -->
+            <div class="search-container desktop-search">
+                <input type="text" class="search-input" id="desktopSearchInput" placeholder="Rechercher un produit...">
+                <button class="search-icon-btn" id="desktopSearchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Search Button -->
+            <button class="search-icon-btn mobile-search-btn" id="mobileSearchBtn">
+                <i class="fas fa-search"></i>
+            </button>
+            
+            <a href="index.html" class="logo-link">
+                <i class="fas fa-crown"></i>
+                <span>TiqtaQo</span>
+            </a>
+            
+            <!-- Cart Button -->
+            <button class="cart-toggle" id="cartToggle">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <div class="nav-spacer"></div>
+        </div>
+    </nav>
+
+    <!-- Search Modal (Mobile) -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <input type="text" class="search-modal-input" id="searchModalInput" placeholder="Rechercher un produit...">
+                <button class="close-search-modal" id="closeSearchModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="search-modal-results" id="searchModalResults">
+                <div class="search-modal-placeholder">
+                    <i class="fas fa-search"></i>
+                    <p>Tapez pour rechercher</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
+            <li><a href="packs-select.html"><i class="fas fa-box"></i> Packs</a></li>
+            <li><a href="homme.html"><i class="fas fa-male"></i> Homme</a></li>
+            <li><a href="femme.html"><i class="fas fa-female"></i> Femme</a></li>
+            <li><a href="accessoires-select.html"><i class="fas fa-gem"></i> Accessoires</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> À propos</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+            <li class="admin-link"><a href="admin/login.html"><i class="fas fa-lock"></i> Admin</a></li>
+        </ul>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Cart Panel -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-bag"></i> سلة المشتريات (<span id="cartCount">0</span>)</h3>
+            <button class="close-cart" id="closeCart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be loaded dynamically -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>المجموع:</span>
+                <span id="cartTotal">0.00 MAD</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn">
+                <i class="fab fa-whatsapp"></i>
+                طلب عبر واتساب
+            </button>
+        </div>
+    </div>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <i class="fas fa-truck"></i>
+        LIVRAISON GRATUITE PARTOUT AU MAROC
+    </div>
+
+    <!-- About Hero -->
+    <section class="about-hero">
+        <div class="container">
+            <h1>À Propos de TiqtaQo</h1>
+            <p style="font-size: 20px; max-width: 800px; margin: 0 auto;">
+                Votre destination privilégiée pour l'excellence horlogère
+            </p>
+        </div>
+    </section>
+
+    <!-- About Content -->
+    <section class="about-content">
+        <div class="container">
+            <div class="about-section">
+                <h2>Notre Histoire</h2>
+                <p>
+                    TiqtaQo est née d'une passion pour l'horlogerie de luxe et le désir de rendre 
+                    l'excellence accessible. Depuis notre création, nous nous sommes engagés à offrir 
+                    à nos clients des montres et accessoires qui allient tradition, innovation et élégance 
+                    intemporelle.
+                </p>
+                <p>
+                    Chaque pièce de notre collection est soigneusement sélectionnée pour sa qualité 
+                    exceptionnelle, son design raffiné et sa précision horlogère. Nous croyons que 
+                    porter une montre de luxe n'est pas seulement une question de mesurer le temps, 
+                    mais une expression de votre personnalité et de votre style de vie.
+                </p>
+            </div>
+
+            <div class="about-section">
+                <h2>Notre Mission</h2>
+                <p>
+                    Notre mission est simple : offrir à nos clients une expérience d'achat exceptionnelle 
+                    et des produits de la plus haute qualité. Nous nous efforçons de maintenir les standards 
+                    les plus élevés dans tout ce que nous faisons, de la sélection de nos produits au service 
+                    client que nous fournissons.
+                </p>
+                <p>
+                    Nous croyons que chaque client mérite une attention personnalisée et des conseils d'experts 
+                    pour trouver la montre ou l'accessoire parfait qui correspond à son style unique et à ses besoins.
+                </p>
+            </div>
+
+            <div class="about-section">
+                <h2>Nos Valeurs</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <h3>Qualité Premium</h3>
+                        <p>Nous ne proposons que des produits de la plus haute qualité, testés et certifiés.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Authenticité</h3>
+                        <p>Tous nos produits sont 100% authentiques avec garantie de qualité.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>Service Client</h3>
+                        <p>Une équipe dédiée pour vous accompagner dans votre choix et après votre achat.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3>Excellence</h3>
+                        <p>Nous visons l'excellence dans chaque aspect de notre service.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h2>Pourquoi Nous Choisir ?</h2>
+                <p>
+                    <strong>Collection Exclusive :</strong> Nous proposons une sélection unique de montres 
+                    et accessoires de luxe que vous ne trouverez pas ailleurs.
+                </p>
+                <p>
+                    <strong>Expertise :</strong> Notre équipe possède une connaissance approfondie de 
+                    l'horlogerie et peut vous guider vers le choix parfait.
+                </p>
+                <p>
+                    <strong>Garantie de Satisfaction :</strong> Votre satisfaction est notre priorité. 
+                    Nous nous engageons à vous offrir une expérience d'achat exceptionnelle.
+                </p>
+                <p>
+                    <strong>Livraison Sécurisée :</strong> Tous nos produits sont livrés avec soin et 
+                    sécurité, dans un emballage premium.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TiqtaQo</h3>
+                    <p>L'excellence à votre poignet</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="index.html">Accueil</a></li>
+                        <li><a href="packs-select.html">Packs</a></li>
+                        <li><a href="homme.html">Homme</a></li>
+                        <li><a href="femme.html">Femme</a></li>
+                        <li><a href="accessoires-select.html">Accessoires</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Informations</h4>
+                    <ul>
+                        <li><a href="about.html">À propos</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Suivez-nous</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/tiqta_qo/" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TiqtaQo. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/212674743106" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script type="module">
+        // Initialize Firebase first
+        import('./js/firebase-config.js?v=2');
+    </script>
+    <script src="js/main.js"></script>
+</body>
+</html>

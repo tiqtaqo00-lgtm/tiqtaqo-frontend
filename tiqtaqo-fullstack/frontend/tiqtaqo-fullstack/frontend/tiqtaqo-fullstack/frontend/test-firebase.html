@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار Firebase - TiqTaQo</title>
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection,
+            getDocs,
+            getDoc,
+            doc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+            authDomain: "tiqtaqo-store.firebaseapp.com",
+            projectId: "tiqtaqo-store",
+            storageBucket: "tiqtaqo-store.firebasestorage.app",
+            messagingSenderId: "747111253966",
+            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Test function
+        window.testFirebase = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p style="color: #ffc107;">🔄 جاري التحقق...</p>';
+            
+            try {
+                // Test 1: Check if Firebase is connected
+                results.innerHTML += '<p>1️⃣ جاري الاتصال بـ Firebase...</p>';
+                
+                // Test 2: Try to read products collection
+                results.innerHTML += '<p>2️⃣ جاري قراءة مجموعة products...</p>';
+                
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                results.innerHTML += `<p>3️⃣ عدد المستندات: ${snapshot.size}</p>`;
+                
+                if (snapshot.size === 0) {
+                    results.innerHTML += `
+                        <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                            <h3 style="color: #856404;">⚠️ لا توجد منتجات في قاعدة البيانات!</h3>
+                            <p>المنتجات التي أضفتها لم تُحفظ في Firebase.</p>
+                            <p>يرجى إضافة منتج جديد من خلال:</p>
+                            <a href="add-product-direct.html" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+                                صفحة إضافة منتج
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    let productsHtml = '';
+                    
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        productsHtml += `
+                            <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 10px 0; border-right: 4px solid #28a745;">
+                                <h4 style="margin: 0 0 10px 0; color: #155724;">${data.name || 'بدون اسم'}</h4>
+                                <p style="margin: 5px 0;"><strong>السعر:</strong> ${data.price || 0} درهم</p>
+                                <p style="margin: 5px 0;"><strong>التصنيف:</strong> ${data.category || 'بدون تصنيف'}</p>
+                                <p style="margin: 5px 0;"><strong>المعرف:</strong> ${doc.id}</p>
+                                ${data.image ? `<p style="margin: 5px 0;"><strong>الصورة:</strong> ${data.image.substring(0, 50)}...</p>` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    results.innerHTML = `
+                        <div style="background: #d4edda; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                            <h3 style="color: #155724;">✅ تم العثور على ${snapshot.size} منتج!</h3>
+                            ${productsHtml}
+                        </div>
+                        <div style="margin-top: 20px; padding: 20px; background: #cce5ff; border-radius: 10px;">
+                            <h4 style="color: #004085;">🔗 الروابط المباشرة للمنتجات:</h4>
+                            <ul style="list-style: none; padding: 0;">
+                                ${snapshot.docs.map(doc => `
+                                    <li style="margin: 10px 0;">
+                                        <a href="product.html?id=${doc.id}" target="_blank" style="color: #007bff;">
+                                            📦 ${doc.data().name || doc.id}
+                                        </a>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                results.innerHTML = `
+                    <div style="background: #f8d7da; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h3 style="color: #721c24;">❌ خطأ!</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #666;">${error.stack}</p>
+                    </div>
+                `;
+                console.error('Firebase Error:', error);
+            }
+        };
+
+        // Run test on load
+        window.onload = testFirebase;
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+        h1 {
+            color: #d4af37;
+            text-align: center;
+        }
+        #results {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #fff;
+        }
+        .refresh-btn {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #d4af37;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 اختبار Firebase</h1>
+    
+    <button class="refresh-btn" onclick="testFirebase()">🔄 إعادة التحقق</button>
+    
+    <div id="results">
+        <p style="color: #ffc107;">جاري التحقق من قاعدة البيانات...</p>
+    </div>
+    
+    <a href="index.html" class="home-link">🏠 العودة للرئيسية</a>
+</body>
+</html>

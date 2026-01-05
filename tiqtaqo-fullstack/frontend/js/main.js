@@ -2,58 +2,71 @@
  * Tiqtaqo E-commerce - Main JavaScript
  * Refactored for Firebase Backend with Pagination Support
  * Supports 100,000+ products with smooth performance
- * Version: 4 (with screen diagnostic panel)
  */
 
-// Screen diagnostic function
+// Screen diagnostic function - only works on pages with diagnostic panel
 function updateDiagnostic(message, type = 'info') {
-    const panel = document.getElementById('diagnostic-content');
-    if (!panel) return;
-    
-    const div = document.createElement('div');
-    div.className = 'status-item ' + type;
-    div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
-    panel.appendChild(div);
-    panel.scrollTop = panel.scrollHeight;
-    
-    // Also log to console
-    console.log(message);
+    try {
+        const panel = document.getElementById('diagnostic-content');
+        if (!panel) return;
+        
+        const div = document.createElement('div');
+        div.className = 'status-item ' + type;
+        div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
+        panel.appendChild(div);
+        panel.scrollTop = panel.scrollHeight;
+        
+        // Also log to console
+        console.log(message);
+    } catch (e) {
+        // Silent fail if diagnostic panel doesn't exist
+        console.log(message);
+    }
 }
 
-console.log('main.js loaded - version 4');
-updateDiagnostic('main.js loaded', 'success');
-updateDiagnostic('window.ProductAPI: ' + (window.ProductAPI !== undefined ? 'available' : 'undefined'), 
-    window.ProductAPI !== undefined ? 'success' : 'warning');
+console.log('main.js loaded');
 
 // Initialize Firebase on page load - but wait for firebase-config to load
 document.addEventListener('DOMContentLoaded', async function() {
-    updateDiagnostic('DOMContentLoaded fired', 'info');
-    updateDiagnostic('window.initFirebase: ' + (typeof window.initFirebase), 
-        typeof window.initFirebase === 'function' ? 'success' : 'error');
+    // Check if this is a category page - category pages handle their own initialization
+    const isCategoryPage = document.getElementById('productsGrid') && !document.getElementById('bestSellersGrid');
     
-    // Wait for Firebase to be initialized
+    if (isCategoryPage) {
+        // Category pages have their own init logic in inline scripts
+        // Just wait for Firebase to be available for other functions
+        for (let i = 0; i < 50; i++) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            if (window.ProductAPI !== undefined) {
+                break;
+            }
+            if (i === 49) {
+                console.log('Warning: ProductAPI not available after 2.5s');
+            }
+        }
+        return;
+    }
+    
+    // For homepage and other pages, initialize normally
+    updateDiagnostic('DOMContentLoaded fired', 'info');
+    
+    // Wait for Firebase to be initialized (up to 5 seconds)
+    for (let i = 0; i < 50; i++) {
+        if (typeof window.initFirebase === 'function') {
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // Initialize Firebase if available
     if (typeof window.initFirebase === 'function') {
         updateDiagnostic('Calling initFirebase from main.js', 'success');
         initFirebase();
     } else {
-        updateDiagnostic('initFirebase not available, waiting...', 'warning');
-        // Wait up to 3 seconds for Firebase to initialize
-        for (let i = 0; i < 30; i++) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            if (typeof window.initFirebase === 'function') {
-                updateDiagnostic('Firebase initialized after ' + (i * 100) + 'ms delay', 'success');
-                initFirebase();
-                break;
-            }
-            if (i === 29) {
-                updateDiagnostic('ERROR: Firebase not initialized after 3 seconds!', 'error');
-                updateDiagnostic('This means firebase-config.js may not be loaded properly', 'error');
-            }
-        }
+        updateDiagnostic('ERROR: initFirebase not available!', 'error');
+        return;
     }
     
-    updateDiagnostic('After initFirebase - window.ProductAPI: ' + (window.ProductAPI !== undefined ? 'available' : 'undefined'),
-        window.ProductAPI !== undefined ? 'success' : 'error');
+    updateDiagnostic('Firebase initialized', 'success');
     
     // Now that Firebase is initialized, load products
     updateDiagnostic('Loading best sellers and collections...', 'info');
@@ -572,7 +585,7 @@ function renderProductsGrid(productsGrid, products, append = false) {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary" style="padding: 12px;" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/'/g, "\\'")})" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -801,11 +814,15 @@ async function applyFilters() {
 function closeMobileFilters() {
     const filterSidebar = document.getElementById('filterSection');
     const mobileToggle = document.querySelector('.mobile-filter-toggle');
+    const navFilterToggle = document.getElementById('filterToggle');
     if (filterSidebar) {
         filterSidebar.classList.remove('active');
     }
     if (mobileToggle) {
         mobileToggle.classList.remove('active');
+    }
+    if (navFilterToggle) {
+        navFilterToggle.classList.remove('active');
     }
     document.body.style.overflow = '';
 }
@@ -814,14 +831,17 @@ function closeMobileFilters() {
 function toggleMobileFilters() {
     const filterSidebar = document.getElementById('filterSection');
     const mobileToggle = document.querySelector('.mobile-filter-toggle');
+    const navFilterToggle = document.getElementById('filterToggle');
     if (filterSidebar) {
         filterSidebar.classList.toggle('active');
         if (filterSidebar.classList.contains('active')) {
             document.body.style.overflow = 'hidden';
             if (mobileToggle) mobileToggle.classList.add('active');
+            if (navFilterToggle) navFilterToggle.classList.add('active');
         } else {
             document.body.style.overflow = '';
             if (mobileToggle) mobileToggle.classList.remove('active');
+            if (navFilterToggle) navFilterToggle.classList.remove('active');
         }
     }
 }
@@ -914,7 +934,7 @@ async function loadBestSellers() {
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
-                        <button class="btn-secondary" style="padding: 12px;" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/'/g, "\\'")})" title="Ajouter au panier">
+                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
                             <i class="fas fa-shopping-bag"></i>
                         </button>
                     </div>
@@ -923,6 +943,7 @@ async function loadBestSellers() {
         `;
     }).join('');
     
+    // Initialize add to cart event listeners
     initScrollAnimations();
 }
 
@@ -996,47 +1017,8 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCollections();
     }
     
-    // Load products on category pages (wait for Firebase first)
-    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    if (['homme', 'femme', 'packs', 'accessoires', 'wallets', 'belts', 'glasses'].includes(currentPage)) {
-        // Wait for Firebase to be initialized before loading products
-        const waitForFirebase = async () => {
-            // Skip if products are already being loaded by another handler
-            if (isProductsLoading || initialProductsLoaded) {
-                return;
-            }
-            
-            isProductsLoading = true;
-            
-            // Wait up to 3 seconds for Firebase to initialize
-            for (let i = 0; i < 30; i++) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                if (typeof window.ProductAPI !== 'undefined') {
-                    break;
-                }
-            }
-            
-            // Now load products
-            initFilterSidebar();
-            
-            const productsSection = document.querySelector('.products-section, #productsSection');
-            if (productsSection) {
-                const mobileToggle = document.createElement('button');
-                mobileToggle.className = 'mobile-filter-toggle';
-                mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
-                mobileToggle.onclick = toggleMobileFilters;
-                productsSection.insertBefore(mobileToggle, productsSection.firstChild);
-            }
-            
-            loadCategoryProducts(currentPage);
-            initInfiniteScroll();
-            
-            isProductsLoading = false;
-            initialProductsLoaded = true;
-        };
-        
-        waitForFirebase();
-    }
+    // NOTE: Category product loading is now handled by initPage() in each HTML file
+    // This avoids race conditions between DOMContentLoaded and Firebase initialization
 });
 
 // Smooth scroll
@@ -1320,6 +1302,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Only initialize UI features here (Firebase loading is handled separately)
     initEnhancedSidebar();
     initCart();
+    initAddToCartButtons();
     
     initScrollToTop();
     initScrollAnimations();
@@ -1594,6 +1577,81 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
+// Initialize add to cart buttons using event delegation (only once)
+let addToCartInitialized = false;
+let addToCartInProgress = false;
+
+function initAddToCartButtons() {
+    // Prevent multiple initializations
+    if (addToCartInitialized) {
+        return;
+    }
+    addToCartInitialized = true;
+    
+    // Use event delegation for dynamically added buttons
+    document.addEventListener('click', function(e) {
+        const addToCartBtn = e.target.closest('.add-to-cart-btn');
+        if (addToCartBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Prevent double clicks
+            if (addToCartInProgress) {
+                console.log('Add to cart already in progress, ignoring click');
+                return;
+            }
+            
+            const productId = addToCartBtn.dataset.productId;
+            if (productId) {
+                console.log('Adding product to cart:', productId);
+                
+                // Get product data and add to cart
+                getProduct(productId).then(product => {
+                    if (product) {
+                        addToCartInProgress = true;
+                        console.log('Product found, adding to cart:', product.name);
+                        addToCart(product);
+                        // Reset after a short delay
+                        setTimeout(() => { addToCartInProgress = false; }, 500);
+                    } else {
+                        showNotification('Produit non trouvé!', 'warning');
+                    }
+                }).catch(error => {
+                    addToCartInProgress = false;
+                    console.error('Error adding to cart:', error);
+                });
+            }
+        }
+    });
+}
+
+// Handle add to cart button click directly (for inline onclick)
+async function handleAddToCart(productId) {
+    console.log('handleAddToCart called with productId:', productId);
+    
+    if (addToCartInProgress) {
+        console.log('Add to cart already in progress, ignoring click');
+        return;
+    }
+    
+    if (productId) {
+        console.log('Adding product to cart:', productId);
+        
+        // Get product data and add to cart
+        const product = await getProduct(productId);
+        if (product) {
+            addToCartInProgress = true;
+            console.log('Product found, adding to cart:', product.name);
+            addToCart(product);
+            // Reset after a short delay
+            setTimeout(() => { addToCartInProgress = false; }, 500);
+        } else {
+            showNotification('Produit non trouvé!', 'warning');
+            addToCartInProgress = false;
+        }
+    }
+}
+
 // Make functions globally accessible
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
@@ -1605,6 +1663,7 @@ window.resetFilters = resetFilters;
 window.applyFilters = applyFilters;
 window.toggleMobileFilters = toggleMobileFilters;
 window.closeMobileFilters = closeMobileFilters;
+window.handleAddToCart = handleAddToCart;
 
 // ===== Order Modal =====
 function getOrderModalHTML() {
@@ -2123,10 +2182,7 @@ function initScrollAnimations() {
     `;
     document.head.appendChild(style);
     
-    const animatedElements = document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card');
-    
     if ('IntersectionObserver' in window) {
-        // More sensitive observer with lower threshold
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -2134,33 +2190,16 @@ function initScrollAnimations() {
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.01, rootMargin: '0px 0px -100px 0px' });
+        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
         
-        animatedElements.forEach((card, index) => {
+        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card').forEach((card, index) => {
             card.classList.add('scroll-animate');
             card.classList.add(`stagger-${(index % 6) + 1}`);
-            
-            // Check if element is already in viewport and animate it immediately
-            const rect = card.getBoundingClientRect();
-            const isInViewport = rect.top >= 0 && rect.top <= window.innerHeight + 100;
-            
-            if (isInViewport) {
-                // Element is already visible, add animated class with delay
-                setTimeout(() => {
-                    card.classList.add('animated');
-                }, index * 50);
-            } else {
-                observer.observe(card);
-            }
+            observer.observe(card);
         });
     } else {
-        // Fallback for browsers without IntersectionObserver
-        animatedElements.forEach((card, index) => {
-            card.classList.add('scroll-animate');
-            card.classList.add(`stagger-${(index % 6) + 1}`);
-            setTimeout(() => {
-                card.classList.add('animated');
-            }, index * 100);
+        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card').forEach(card => {
+            card.classList.add('animated');
         });
     }
 }
@@ -2176,18 +2215,45 @@ window.filterProducts = filterProducts;
 window.sortProducts = sortProducts;
 window.searchProducts = searchProducts;
 window.loadMoreProducts = loadMoreProducts;
-window.getCategories = getCategories;
-window.contactWhatsApp = contactWhatsApp;
-window.addToCart = addToCart;
-window.initCart = initCart;
-window.initUI = initUI;
-window.initFilterSidebar = initFilterSidebar;
-window.loadCategoryProducts = loadCategoryProducts;
-window.initInfiniteScroll = initInfiniteScroll;
-window.getProductsByCategory = getProductsByCategory;
-window.getCurrentCategory = getCurrentCategory;
-window.toggleMobileFilters = toggleMobileFilters;
-window.closeMobileFilters = closeMobileFilters;
-window.resetFilters = resetFilters;
-window.applyFilters = applyFilters;
-window.getSelectedFilters = getSelectedFilters;
+window.initAddToCartButtons = initAddToCartButtons;
+
+// Initialize add to cart buttons with MutationObserver for dynamically added elements
+(function() {
+    // Initialize immediately
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAddToCartButtonsWithObserver);
+    } else {
+        initAddToCartButtonsWithObserver();
+    }
+    
+    function initAddToCartButtonsWithObserver() {
+        // Initialize the event delegation
+        initAddToCartButtons();
+        
+        // Also set up a MutationObserver to re-check for add-to-cart buttons
+        // This ensures buttons added dynamically work correctly
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // Element node
+                            // Check if the added node or its children have add-to-cart buttons
+                            const buttons = node.querySelectorAll ? node.querySelectorAll('.add-to-cart-btn') : [];
+                            if (node.classList && node.classList.contains('add-to-cart-btn')) {
+                                buttons.push(node);
+                            }
+                            if (buttons.length > 0) {
+                                console.log('MutationObserver detected', buttons.length, 'new add-to-cart buttons');
+                            }
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+    }
+})();
