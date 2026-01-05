@@ -343,12 +343,24 @@ window.OrderAPI = {
     
     async updateOrderStatus(orderId, status) {
         if (!db) return false;
-        
+
         try {
             await updateDoc(doc(db, 'orders', orderId), { status });
             return true;
         } catch (error) {
             console.error('Error updating order:', error);
+            return false;
+        }
+    },
+
+    async deleteOrder(orderId) {
+        if (!db) return false;
+
+        try {
+            await deleteDoc(doc(db, 'orders', orderId));
+            return true;
+        } catch (error) {
+            console.error('Error deleting order:', error);
             return false;
         }
     }

@@ -1,12 +1,100 @@
-// Admin Orders Management System
+// Admin Orders Management System - Firebase Edition
+// Orders are now stored in Firebase Firestore for permanent access from any device
+
+// Global orders cache for real-time updates
+let ordersCache = [];
+let ordersCacheValid = false;
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    loadAdminInfo();
-    loadOrders();
-    setupFilters();
-    setupEventListeners();
+document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize Firebase first, then load orders
+    await initializeFirebaseAndLoadOrders();
 });
+
+// Initialize Firebase and load orders
+async function initializeFirebaseAndLoadOrders() {
+    try {
+        // Show loading state
+        showOrdersLoading();
+
+        // Wait for Firebase to be available
+        await waitForFirebase(5000);
+
+        // Initialize Firebase if not already done
+        if (typeof window.initFirebase === 'function') {
+            initFirebase();
+        }
+
+        // Give Firebase a moment to initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Load admin info and orders
+        loadAdminInfo();
+        await loadOrders();
+        setupFilters();
+        setupEventListeners();
+
+    } catch (error) {
+        console.error('Error initializing orders system:', error);
+        showNotification('حدث خطأ في تحميل الطلبات', 'error');
+        // Fallback to localStorage if Firebase fails
+        loadAdminInfo();
+        loadOrdersFromLocalStorage();
+        setupFilters();
+        setupEventListeners();
+    }
+}
+
+// Wait for Firebase to be ready
+function waitForFirebase(timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        // Check if Firebase is already ready
+        if (window.isFirebaseReady && window.isFirebaseReady()) {
+            resolve();
+            return;
+        }
+
+        // Listen for Firebase loaded event
+        const handleFirebaseLoaded = () => {
+            window.removeEventListener('firebase-loaded', handleFirebaseLoaded);
+            resolve();
+        };
+
+        window.addEventListener('firebase-loaded', handleFirebaseLoaded);
+
+        // Timeout check
+        setTimeout(() => {
+            window.removeEventListener('firebase-loaded', handleFirebaseLoaded);
+            if (window.isFirebaseReady && window.isFirebaseReady()) {
+                resolve();
+            } else {
+                reject(new Error('Firebase initialization timeout'));
+            }
+        }, timeout);
+    });
+}
+
+// Show loading state for orders
+function showOrdersLoading() {
+    const tableBody = document.getElementById('ordersTableBody');
+    const emptyState = document.getElementById('emptyState');
+    const table = document.getElementById('ordersTable');
+
+    if (table) table.style.display = 'none';
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    if (tableBody) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #d4af37; margin-bottom: 15px;"></i>
+                    <p style="color: #666;">جاري تحميل الطلبات...</p>
+                </td>
+            </tr>
+        `;
+    }
+}
 
 // Load admin info from localStorage
 function loadAdminInfo() {
@@ -17,22 +105,67 @@ function loadAdminInfo() {
     }
 }
 
-// Load all orders from localStorage
-function loadOrders() {
-    const orders = getOrders();
-    updateStats(orders);
-    displayOrders(orders, 'all');
+// Load all orders from Firebase
+async function loadOrders() {
+    try {
+        // Check if OrderAPI is available
+        if (window.OrderAPI && typeof OrderAPI.getOrders === 'function') {
+            const orders = await OrderAPI.getOrders();
+            ordersCache = orders || [];
+            ordersCacheValid = true;
+            updateStats(ordersCache);
+            displayOrders(ordersCache, 'all');
+            return;
+        }
+
+        // Fallback if OrderAPI is not available
+        console.warn('OrderAPI not available, falling back to localStorage');
+        loadOrdersFromLocalStorage();
+
+    } catch (error) {
+        console.error('Error loading orders from Firebase:', error);
+        // Fallback to localStorage on error
+        loadOrdersFromLocalStorage();
+    }
 }
 
-// Get all orders from localStorage
-function getOrders() {
+// Load orders from localStorage (fallback)
+function loadOrdersFromLocalStorage() {
     try {
         const orders = localStorage.getItem('tiqtaqo_orders');
-        return orders ? JSON.parse(orders) : [];
+        ordersCache = orders ? JSON.parse(orders) : [];
+        ordersCacheValid = true;
+        updateStats(ordersCache);
+        displayOrders(ordersCache, 'all');
     } catch (e) {
-        console.error('Error loading orders:', e);
-        return [];
+        console.error('Error loading orders from localStorage:', e);
+        ordersCache = [];
+        updateStats([]);
+        displayOrders([], 'all');
     }
+}
+
+// Get all orders (from cache or Firebase)
+async function getOrders() {
+    // Return cached orders if valid
+    if (ordersCacheValid && ordersCache.length > 0) {
+        return ordersCache;
+    }
+
+    // Try Firebase if cache is empty
+    if (window.OrderAPI && typeof OrderAPI.getOrders === 'function') {
+        try {
+            const orders = await OrderAPI.getOrders();
+            ordersCache = orders || [];
+            ordersCacheValid = true;
+            return ordersCache;
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    }
+
+    // Fallback to localStorage
+    return loadOrdersFromLocalStorage() || [];
 }
 
 // Update statistics
@@ -40,16 +173,25 @@ function updateStats(orders) {
     const totalOrders = orders.length;
     const pendingOrders = orders.filter(o => o.status === 'pending').length;
     const completedOrders = orders.filter(o => o.status === 'completed').length;
-    
+    const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
+
     // Count today's orders
     const today = new Date().toDateString();
-    const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === today).length;
-    
+    const todayOrders = orders.filter(o => {
+        const orderDate = o.createdAt ? new Date(o.createdAt).toDateString() : '';
+        return orderDate === today;
+    }).length;
+
     // Update DOM
-    document.getElementById('totalOrders').textContent = totalOrders;
-    document.getElementById('pendingOrders').textContent = pendingOrders;
-    document.getElementById('completedOrders').textContent = completedOrders;
-    document.getElementById('todayOrders').textContent = todayOrders;
+    const totalOrdersEl = document.getElementById('totalOrders');
+    const pendingOrdersEl = document.getElementById('pendingOrders');
+    const completedOrdersEl = document.getElementById('completedOrders');
+    const todayOrdersEl = document.getElementById('todayOrders');
+
+    if (totalOrdersEl) totalOrdersEl.textContent = totalOrders;
+    if (pendingOrdersEl) pendingOrdersEl.textContent = pendingOrders;
+    if (completedOrdersEl) completedOrdersEl.textContent = completedOrders;
+    if (todayOrdersEl) todayOrdersEl.textContent = todayOrders;
 }
 
 // Display orders in table
@@ -57,43 +199,75 @@ function displayOrders(orders, filter = 'all') {
     const tableBody = document.getElementById('ordersTableBody');
     const emptyState = document.getElementById('emptyState');
     const table = document.getElementById('ordersTable');
-    
+
+    if (!tableBody) return;
+
     // Filter orders
     let filteredOrders = orders;
     if (filter !== 'all') {
         filteredOrders = orders.filter(o => o.status === filter);
     }
-    
-    // Sort by date (newest first)
-    filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
+    // Sort by date (newest first) - handle both Firebase server timestamps and regular dates
+    filteredOrders.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+    });
+
     if (filteredOrders.length === 0) {
-        table.style.display = 'none';
-        emptyState.style.display = 'block';
+        if (table) table.style.display = 'none';
+        if (emptyState) {
+            emptyState.style.display = 'block';
+            const emptyMessage = emptyState.querySelector('p');
+            if (emptyMessage) {
+                if (filter === 'all') {
+                    emptyMessage.textContent = 'لا توجد طلبات حالياً';
+                } else if (filter === 'pending') {
+                    emptyMessage.textContent = 'لا توجد طلبات معلقة';
+                } else if (filter === 'completed') {
+                    emptyMessage.textContent = 'لا توجد طلبات مكتملة';
+                } else if (filter === 'cancelled') {
+                    emptyMessage.textContent = 'لا توجد طلبات ملغاة';
+                }
+            }
+        }
         return;
     }
-    
-    table.style.display = 'table';
-    emptyState.style.display = 'none';
-    
+
+    if (table) table.style.display = 'table';
+    if (emptyState) emptyState.style.display = 'none';
+
     // Generate table rows
     tableBody.innerHTML = filteredOrders.map(order => {
-        const date = new Date(order.createdAt);
+        const date = order.createdAt ? new Date(order.createdAt) : new Date();
         const formattedDate = formatDate(date);
         const formattedTime = formatTime(date);
-        
-        const statusClass = order.status === 'completed' ? 'completed' : 
+
+        const statusClass = order.status === 'completed' ? 'completed' :
                            order.status === 'cancelled' ? 'cancelled' : 'pending';
-        
-        const statusText = order.status === 'pending' ? 'معلقة' : 
+
+        const statusText = order.status === 'pending' ? 'معلقة' :
                           order.status === 'completed' ? 'مكتملة' : 'ملغاة';
-        
+
+        // Get display ID (handle both Firebase IDs and custom IDs)
+        const displayId = order.id.substring(0, 8).toUpperCase();
+
+        // Get customer name safely
+        const customerName = order.customerName || order.name || 'عميل';
+
+        // Get product name safely
+        const productName = order.productName || order.product_name || 'منتج';
+
+        // Get city safely
+        const city = order.city || order.customerCity || 'غير محدد';
+
         return `
             <tr data-order-id="${order.id}">
-                <td class="order-id">#${order.id.substring(0, 8).toUpperCase()}</td>
-                <td class="customer-name">${escapeHtml(order.customerName)}</td>
-                <td>${escapeHtml(order.productName)}</td>
-                <td>${escapeHtml(order.city)}</td>
+                <td class="order-id">#${displayId}</td>
+                <td class="customer-name">${escapeHtml(customerName)}</td>
+                <td>${escapeHtml(productName)}</td>
+                <td>${escapeHtml(city)}</td>
                 <td>
                     <div>${formattedDate}</div>
                     <small style="color: #999;">${formattedTime}</small>
@@ -111,6 +285,9 @@ function displayOrders(orders, filter = 'all') {
                             <button class="btn-complete" onclick="markOrderCompleted('${order.id}')" title="إكمال الطلب">
                                 <i class="fas fa-check"></i>
                             </button>
+                            <button class="btn-cancel" onclick="markOrderCancelled('${order.id}')" title="إلغاء الطلب">
+                                <i class="fas fa-times"></i>
+                            </button>
                         ` : ''}
                         <button class="btn-delete" onclick="deleteOrder('${order.id}')" title="حذف">
                             <i class="fas fa-trash"></i>
@@ -126,12 +303,12 @@ function displayOrders(orders, filter = 'all') {
 function setupFilters() {
     const filterBtns = document.querySelectorAll('.filter-btn');
     filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             filterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            
+
             const filter = this.dataset.filter;
-            const orders = getOrders();
+            const orders = await getOrders();
             displayOrders(orders, filter);
         });
     });
@@ -140,38 +317,87 @@ function setupFilters() {
 // Setup event listeners
 function setupEventListeners() {
     // Close details modal
-    document.getElementById('closeDetails').addEventListener('click', function() {
-        document.getElementById('orderDetailsModal').classList.remove('active');
-    });
-    
+    const closeDetailsBtn = document.getElementById('closeDetails');
+    if (closeDetailsBtn) {
+        closeDetailsBtn.addEventListener('click', function() {
+            document.getElementById('orderDetailsModal').classList.remove('active');
+        });
+    }
+
     // Close modal when clicking outside
-    document.getElementById('orderDetailsModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.classList.remove('active');
-        }
-    });
+    const orderDetailsModal = document.getElementById('orderDetailsModal');
+    if (orderDetailsModal) {
+        orderDetailsModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    }
 }
 
 // View order details
-function viewOrderDetails(orderId) {
-    const orders = getOrders();
+async function viewOrderDetails(orderId) {
+    const orders = await getOrders();
     const order = orders.find(o => o.id === orderId);
-    
+
     if (!order) {
         alert('الطلب غير موجود');
         return;
     }
-    
-    const date = new Date(order.createdAt);
+
+    const date = order.createdAt ? new Date(order.createdAt) : new Date();
     const formattedDate = formatDate(date);
     const formattedTime = formatTime(date);
-    
-    const statusClass = order.status === 'completed' ? 'completed' : 
+
+    const statusClass = order.status === 'completed' ? 'completed' :
                        order.status === 'cancelled' ? 'cancelled' : 'pending';
-    
-    const statusText = order.status === 'pending' ? 'معلقة' : 
+
+    const statusText = order.status === 'pending' ? 'معلقة' :
                       order.status === 'completed' ? 'مكتملة' : 'ملغاة';
-    
+
+    // Safely get order data
+    const customerName = order.customerName || order.name || 'عميل';
+    const customerPhone = order.customerPhone || order.phone || '';
+    const city = order.city || order.customerCity || 'غير محدد';
+    const address = order.address || order.customerAddress || '';
+    const productName = order.productName || order.product_name || 'منتج';
+    const productPrice = order.productPrice || order.price || 0;
+    const notes = order.notes || order.customerNotes || '';
+    const selectedColor = order.selectedColor || order.color || '';
+
+    // Build cart items HTML if available
+    let cartItemsHTML = '';
+    if (order.cartItems && order.cartItems.length > 0) {
+        cartItemsHTML = order.cartItems.map(item => `
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                <span>${escapeHtml(item.name)} x${item.quantity}${item.color ? ` - ${item.color}` : ''}</span>
+                <span style="color: var(--gold); font-weight: 600;">${Math.round(item.price * item.quantity)} DH</span>
+            </div>
+        `).join('');
+
+        cartItemsHTML = `
+            <div style="margin-bottom: 15px;">
+                <span class="detail-label" style="display: block; margin-bottom: 10px;">المنتجات:</span>
+                ${cartItemsHTML}
+            </div>
+            <div class="detail-row" style="border-top: 2px solid var(--gold); padding-top: 10px; margin-top: 10px;">
+                <span class="detail-label" style="font-weight: 600;">المجموع الكلي</span>
+                <span class="detail-value" style="color: var(--gold); font-weight: 700; font-size: 18px;">${productPrice} DH</span>
+            </div>
+        `;
+    } else {
+        cartItemsHTML = `
+            <div class="detail-row">
+                <span class="detail-label">اسم المنتج</span>
+                <span class="detail-value">${escapeHtml(productName)}${selectedColor ? ` - ${selectedColor}` : ''}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">سعر المنتج</span>
+                <span class="detail-value" style="color: var(--gold); font-weight: 700;">${productPrice} DH</span>
+            </div>
+        `;
+    }
+
     const detailsHTML = `
         <div class="detail-section">
             <h4><i class="fas fa-box"></i> معلومات الطلب</h4>
@@ -188,209 +414,297 @@ function viewOrderDetails(orderId) {
                 <span class="detail-value">${formattedDate} - ${formattedTime}</span>
             </div>
         </div>
-        
+
         <div class="detail-section">
             <h4><i class="fas fa-user"></i> معلومات العميل</h4>
             <div class="detail-row">
                 <span class="detail-label">الاسم</span>
-                <span class="detail-value">${escapeHtml(order.customerName)}</span>
+                <span class="detail-value">${escapeHtml(customerName)}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">الهاتف</span>
                 <span class="detail-value">
-                    <a href="tel:${order.customerPhone}" style="color: var(--gold);">${order.customerPhone}</a>
+                    <a href="tel:${customerPhone}" style="color: var(--gold);">${customerPhone}</a>
                 </span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">المدينة</span>
-                <span class="detail-value">${escapeHtml(order.city)}</span>
+                <span class="detail-value">${escapeHtml(city)}</span>
             </div>
-            ${order.address ? `
+            ${address ? `
             <div class="detail-row">
                 <span class="detail-label">العنوان</span>
-                <span class="detail-value">${escapeHtml(order.address)}</span>
+                <span class="detail-value">${escapeHtml(address)}</span>
             </div>
             ` : ''}
         </div>
-        
+
         <div class="detail-section">
             <h4><i class="fas fa-shopping-bag"></i> تفاصيل الطلب</h4>
-            ${order.cartItems && order.cartItems.length > 0 ? `
-                <div style="margin-bottom: 15px;">
-                    <span class="detail-label" style="display: block; margin-bottom: 10px;">المنتجات:</span>
-                    ${order.cartItems.map(item => `
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-                            <span>${escapeHtml(item.name)} x${item.quantity}${item.color ? ` - ${item.color}` : ''}</span>
-                            <span style="color: var(--gold); font-weight: 600;">${Math.round(item.price * item.quantity)} DH</span>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="detail-row" style="border-top: 2px solid var(--gold); padding-top: 10px; margin-top: 10px;">
-                    <span class="detail-label" style="font-weight: 600;">المجموع الكلي</span>
-                    <span class="detail-value" style="color: var(--gold); font-weight: 700; font-size: 18px;">${order.productPrice} DH</span>
-                </div>
-            ` : `
-                <div class="detail-row">
-                    <span class="detail-label">اسم المنتج</span>
-                    <span class="detail-value">${escapeHtml(order.productName)}${order.selectedColor ? ` - ${order.selectedColor}` : ''}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">سعر المنتج</span>
-                    <span class="detail-value" style="color: var(--gold); font-weight: 700;">${order.productPrice} DH</span>
-                </div>
-                ${order.selectedColor ? `
-                <div class="detail-row">
-                    <span class="detail-label">اللون المختار</span>
-                    <span class="detail-value">
-                        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; background: #f0f0f0; border-radius: 20px;">
-                            <span style="width: 20px; height: 20px; border-radius: 50%; background: ${order.selectedColorHex || '#000'}; border: 2px solid #ddd;"></span>
-                            ${order.selectedColor}
-                        </span>
-                    </span>
-                </div>
-                ` : ''}
-            `}
+            ${cartItemsHTML}
         </div>
-        
-        ${order.notes ? `
+
+        ${notes ? `
         <div class="detail-section">
             <h4><i class="fas fa-comment-alt"></i> ملاحظات</h4>
             <div class="detail-row">
-                <span class="detail-value" style="background: var(--light-gray); padding: 15px; border-radius: 8px;">${escapeHtml(order.notes)}</span>
+                <span class="detail-value" style="background: var(--light-gray); padding: 15px; border-radius: 8px;">${escapeHtml(notes)}</span>
             </div>
         </div>
         ` : ''}
-        
+
         <div class="detail-actions">
             <button class="btn-whatsapp" onclick="contactCustomerWhatsApp('${order.id}')">
                 <i class="fab fa-whatsapp"></i>
                 مراسلة واتساب
             </button>
-            <a href="tel:${order.customerPhone}" class="btn-complete" style="flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, var(--info) 0%, #138496 100%); color: var(--white); text-decoration: none;">
+            <a href="tel:${customerPhone}" class="btn-complete" style="flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, var(--info) 0%, #138496 100%); color: var(--white); text-decoration: none;">
                 <i class="fas fa-phone"></i>
                 اتصال هاتفي
             </a>
         </div>
     `;
-    
-    document.getElementById('orderDetailsBody').innerHTML = detailsHTML;
-    document.getElementById('orderDetailsModal').classList.add('active');
+
+    const orderDetailsBody = document.getElementById('orderDetailsBody');
+    if (orderDetailsBody) {
+        orderDetailsBody.innerHTML = detailsHTML;
+    }
+    const orderDetailsModal = document.getElementById('orderDetailsModal');
+    if (orderDetailsModal) {
+        orderDetailsModal.classList.add('active');
+    }
 }
 
 // Contact customer via WhatsApp
-function contactCustomerWhatsApp(orderId) {
-    const orders = getOrders();
+async function contactCustomerWhatsApp(orderId) {
+    const orders = await getOrders();
     const order = orders.find(o => o.id === orderId);
-    
+
     if (!order) {
         alert('الطلب غير موجود');
         return;
     }
-    
-    const phone = order.customerPhone.replace(/[^0-9]/g, '');
-    const message = `مرحباً ${order.customerName}،\n\nشكراً لطلبكم من TiqtaQo!\n\nطلبكم: ${order.productName}\nالسعر: ${order.productPrice} DH\n\nنحن نراجع طلبكم الآن وسنتواصل معكم قريباً.`;
-    
+
+    const customerPhone = order.customerPhone || order.phone || '';
+    const phone = customerPhone.replace(/[^0-9]/g, '');
+    const customerName = order.customerName || order.name || 'عميل';
+    const productName = order.productName || order.product_name || 'منتج';
+    const productPrice = order.productPrice || order.price || 0;
+
+    const message = `مرحباً ${customerName}،
+
+شكراً لطلبكم من TiqtaQo!
+
+طلبكم: ${productName}
+السعر: ${productPrice} DH
+
+نحن نراجع طلبكم الآن وسنتواصل معكم قريباً.`;
+
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 }
 
 // Mark order as completed
-function markOrderCompleted(orderId) {
+async function markOrderCompleted(orderId) {
     if (!confirm('هل أنت متأكد من إكمال هذا الطلب؟')) {
         return;
     }
-    
-    const orders = getOrders();
-    const orderIndex = orders.findIndex(o => o.id === orderId);
-    
-    if (orderIndex === -1) {
-        alert('الطلب غير موجود');
+
+    try {
+        // Try Firebase first
+        if (window.OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
+            const success = await OrderAPI.updateOrderStatus(orderId, 'completed');
+            if (success) {
+                // Update local cache
+                const orderIndex = ordersCache.findIndex(o => o.id === orderId);
+                if (orderIndex !== -1) {
+                    ordersCache[orderIndex].status = 'completed';
+                    ordersCache[orderIndex].completedAt = new Date().toISOString();
+                }
+
+                updateStats(ordersCache);
+                displayOrders(ordersCache, getCurrentFilter());
+                showNotification('تم إكمال الطلب بنجاح');
+                return;
+            }
+        }
+
+        // Fallback to localStorage
+        updateOrderInLocalStorage(orderId, { status: 'completed', completedAt: new Date().toISOString() });
+        await loadOrders();
+        showNotification('تم إكمال الطلب بنجاح');
+
+    } catch (error) {
+        console.error('Error completing order:', error);
+        showNotification('حدث خطأ أثناء إكمال الطلب', 'error');
+    }
+}
+
+// Mark order as cancelled
+async function markOrderCancelled(orderId) {
+    if (!confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
         return;
     }
-    
-    orders[orderIndex].status = 'completed';
-    orders[orderIndex].completedAt = new Date().toISOString();
-    
-    saveOrders(orders);
-    loadOrders();
-    
-    // Show notification
-    showNotification('تم إكمال الطلب بنجاح');
+
+    try {
+        // Try Firebase first
+        if (window.OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
+            const success = await OrderAPI.updateOrderStatus(orderId, 'cancelled');
+            if (success) {
+                // Update local cache
+                const orderIndex = ordersCache.findIndex(o => o.id === orderId);
+                if (orderIndex !== -1) {
+                    ordersCache[orderIndex].status = 'cancelled';
+                    ordersCache[orderIndex].cancelledAt = new Date().toISOString();
+                }
+
+                updateStats(ordersCache);
+                displayOrders(ordersCache, getCurrentFilter());
+                showNotification('تم إلغاء الطلب');
+                return;
+            }
+        }
+
+        // Fallback to localStorage
+        updateOrderInLocalStorage(orderId, { status: 'cancelled', cancelledAt: new Date().toISOString() });
+        await loadOrders();
+        showNotification('تم إلغاء الطلب');
+
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        showNotification('حدث خطأ أثناء إلغاء الطلب', 'error');
+    }
+}
+
+// Update order in localStorage (fallback)
+function updateOrderInLocalStorage(orderId, updates) {
+    try {
+        const orders = JSON.parse(localStorage.getItem('tiqtaqo_orders') || '[]');
+        const orderIndex = orders.findIndex(o => o.id === orderId);
+        if (orderIndex !== -1) {
+            orders[orderIndex] = { ...orders[orderIndex], ...updates };
+            localStorage.setItem('tiqtaqo_orders', JSON.stringify(orders));
+        }
+    } catch (error) {
+        console.error('Error updating order in localStorage:', error);
+    }
 }
 
 // Delete order
-function deleteOrder(orderId) {
+async function deleteOrder(orderId) {
     if (!confirm('هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.')) {
         return;
     }
-    
-    const orders = getOrders();
-    const filteredOrders = orders.filter(o => o.id !== orderId);
-    
-    saveOrders(filteredOrders);
-    loadOrders();
-    
-    // Show notification
-    showNotification('تم حذف الطلب بنجاح');
-}
 
-// Save orders to localStorage
-function saveOrders(orders) {
     try {
-        localStorage.setItem('tiqtaqo_orders', JSON.stringify(orders));
-    } catch (e) {
-        console.error('Error saving orders:', e);
-        alert('حدث خطأ أثناء حفظ الطلب');
+        // Try Firebase first
+        if (window.OrderAPI && typeof OrderAPI.deleteOrder === 'function') {
+            const success = await OrderAPI.deleteOrder(orderId);
+            if (success) {
+                // Update local cache
+                ordersCache = ordersCache.filter(o => o.id !== orderId);
+
+                updateStats(ordersCache);
+                displayOrders(ordersCache, getCurrentFilter());
+                showNotification('تم حذف الطلب بنجاح');
+                return;
+            }
+        }
+
+        // Fallback to localStorage
+        deleteOrderFromLocalStorage(orderId);
+        await loadOrders();
+        showNotification('تم حذف الطلب بنجاح');
+
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        showNotification('حدث خطأ أثناء حذف الطلب', 'error');
     }
 }
 
+// Delete order from localStorage (fallback)
+function deleteOrderFromLocalStorage(orderId) {
+    try {
+        const orders = JSON.parse(localStorage.getItem('tiqtaqo_orders') || '[]');
+        const filteredOrders = orders.filter(o => o.id !== orderId);
+        localStorage.setItem('tiqtaqo_orders', JSON.stringify(filteredOrders));
+    } catch (error) {
+        console.error('Error deleting order from localStorage:', error);
+    }
+}
+
+// Get current active filter
+function getCurrentFilter() {
+    const activeBtn = document.querySelector('.filter-btn.active');
+    return activeBtn ? activeBtn.dataset.filter : 'all';
+}
+
 // Show notification
-function showNotification(message) {
+function showNotification(message, type = 'success') {
     const notification = document.getElementById('orderNotification');
     const notificationText = document.getElementById('notificationText');
-    
-    notificationText.textContent = message;
-    notification.classList.add('show');
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
+
+    if (notification && notificationText) {
+        notificationText.textContent = message;
+        notification.classList.add('show');
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
 }
 
 // Format date
 function formatDate(date) {
+    if (!date || isNaN(date.getTime())) {
+        return '--/--/----';
+    }
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
     return date.toLocaleDateString('ar-SA', options);
 }
 
 // Format time
 function formatTime(date) {
+    if (!date || isNaN(date.getTime())) {
+        return '--:--';
+    }
     const options = { hour: '2-digit', minute: '2-digit' };
     return date.toLocaleTimeString('ar-SA', options);
 }
 
 // Escape HTML to prevent XSS
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
 // Export orders to CSV
-function exportOrdersToCSV() {
-    const orders = getOrders();
-    
+async function exportOrdersToCSV() {
+    const orders = await getOrders();
+
     if (orders.length === 0) {
         alert('لا توجد طلبات للتصدير');
         return;
     }
-    
+
     let csv = 'رقم الطلب,الاسم,الهاتف,المدينة,العنوان,المنتج,السعر,الحالة,التاريخ,الملاحظات\n';
-    
+
     orders.forEach(order => {
-        csv += `${order.id},${order.customerName},${order.customerPhone},${order.city},"${order.address || ''}","${order.productName}",${order.productPrice},${order.status},${order.createdAt},"${order.notes || ''}"\n`;
+        const customerName = order.customerName || order.name || '';
+        const customerPhone = order.customerPhone || order.phone || '';
+        const city = order.city || order.customerCity || '';
+        const address = (order.address || order.customerAddress || '').replace(/"/g, '""');
+        const productName = order.productName || order.product_name || '';
+        const productPrice = order.productPrice || order.price || 0;
+        const status = order.status || '';
+        const createdAt = order.createdAt || '';
+        const notes = (order.notes || order.customerNotes || '').replace(/"/g, '""');
+
+        csv += `${order.id},${customerName},${customerPhone},${city},"${address}","${productName}",${productPrice},${status},${createdAt},"${notes}"\n`;
     });
-    
+
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -399,6 +713,42 @@ function exportOrdersToCSV() {
 }
 
 // Refresh orders (can be called from parent window)
-window.refreshOrders = function() {
-    loadOrders();
+window.refreshOrders = async function() {
+    ordersCacheValid = false; // Force refresh from Firebase
+    await loadOrders();
+};
+
+// Sync local orders to Firebase (one-time migration)
+window.syncOrdersToFirebase = async function() {
+    try {
+        const orders = JSON.parse(localStorage.getItem('tiqtaqo_orders') || '[]');
+        if (orders.length === 0) {
+            showNotification('لا توجد طلبات للمزامنة', 'warning');
+            return;
+        }
+
+        showNotification('جاري مزامنة الطلبات...', 'info');
+
+        let synced = 0;
+        for (const order of orders) {
+            if (window.OrderAPI && typeof OrderAPI.createOrder === 'function') {
+                // Check if order already exists in Firebase
+                const existingOrder = ordersCache.find(o => o.id === order.id);
+                if (!existingOrder) {
+                    const orderId = await OrderAPI.createOrder(order);
+                    if (orderId) synced++;
+                } else {
+                    synced++; // Already synced
+                }
+            }
+        }
+
+        ordersCacheValid = false;
+        await loadOrders();
+        showNotification(`تم مزامنة ${synced} طلب بنجاح`);
+
+    } catch (error) {
+        console.error('Error syncing orders:', error);
+        showNotification('حدث خطأ أثناء المزامنة', 'error');
+    }
 };
