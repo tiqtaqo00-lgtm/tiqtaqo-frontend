@@ -90,13 +90,14 @@ function initFirebaseFn() {
 export const initFirebase = initFirebaseFn;
 export const isFirebaseReady = () => firebaseInitialized;
 export const getDb = () => db;
-export const getAuth = () => auth;
+
+// Note: getAuth is already imported from Firebase SDK, no need to re-export
 
 // ALSO export to window for backward compatibility with non-module scripts
 window.initFirebase = initFirebaseFn;
 window.isFirebaseReady = () => firebaseInitialized;
 window.getDb = getDb;
-window.getAuth = getAuth;
+window.getAuth = getAuth; // Use the imported getAuth function directly
 
 // Product API functions
 export const ProductAPI = {
