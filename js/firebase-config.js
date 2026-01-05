@@ -26,7 +26,7 @@ import {
     writeBatch
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { 
-    getAuth, 
+    getAuth as firebaseGetAuth, 
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged 
@@ -61,7 +61,7 @@ function initFirebaseFn() {
     try {
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        auth = getAuth(app);
+        auth = firebaseGetAuth(app);
         
         // Enable offline persistence (Critical for reducing reads)
         enableIndexedDbPersistence(db).catch((err) => {
@@ -97,7 +97,7 @@ export const getDb = () => db;
 window.initFirebase = initFirebaseFn;
 window.isFirebaseReady = () => firebaseInitialized;
 window.getDb = getDb;
-window.getAuth = getAuth; // Use the imported getAuth function directly
+window.getAuth = firebaseGetAuth; // Use the renamed import
 
 // Product API functions
 export const ProductAPI = {
