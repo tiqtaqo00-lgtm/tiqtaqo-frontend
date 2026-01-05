@@ -79,9 +79,16 @@ function loadAdminInfo() {
 // Load all orders from Firebase
 async function loadOrders() {
     try {
+        console.log('loadOrders called');
+        console.log('OrderAPI available:', !!OrderAPI);
+        console.log('OrderAPI.getOrders type:', typeof OrderAPI?.getOrders);
+        
         // Check if OrderAPI is available (imported from module)
         if (OrderAPI && typeof OrderAPI.getOrders === 'function') {
+            console.log('Calling OrderAPI.getOrders()...');
             const orders = await OrderAPI.getOrders();
+            console.log('Orders received:', orders.length);
+            
             ordersCache = orders || [];
             ordersCacheValid = true;
             updateStats(ordersCache);
