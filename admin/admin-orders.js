@@ -4,6 +4,12 @@
 // Import Firebase functions directly since this is now a module
 import { initFirebase, OrderAPI } from '../js/firebase-config.js';
 
+// Debug: Log what was imported
+console.log('=== FIREBASE IMPORT DEBUG ===');
+console.log('initFirebase type:', typeof initFirebase);
+console.log('OrderAPI type:', typeof OrderAPI);
+console.log('OrderAPI.getOrders type:', typeof OrderAPI?.getOrders);
+
 // Global orders cache for real-time updates
 let ordersCache = [];
 let ordersCacheValid = false;
