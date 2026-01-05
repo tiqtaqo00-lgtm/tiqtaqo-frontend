@@ -20,16 +20,13 @@ async function initializeFirebaseAndLoadOrders() {
         // Show loading state
         showOrdersLoading();
 
-        // Wait for Firebase to be available
-        await waitForFirebase(5000);
-
-        // Initialize Firebase if not already done
-        if (typeof window.initFirebase === 'function') {
+        // Initialize Firebase if not already done (for safety)
+        if (typeof initFirebase === 'function') {
             initFirebase();
         }
 
         // Give Firebase a moment to initialize
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Load admin info and orders
         loadAdminInfo();
@@ -46,35 +43,6 @@ async function initializeFirebaseAndLoadOrders() {
         setupFilters();
         setupEventListeners();
     }
-}
-
-// Wait for Firebase to be ready
-function waitForFirebase(timeout = 5000) {
-    return new Promise((resolve, reject) => {
-        // Check if Firebase is already ready
-        if (window.isFirebaseReady && window.isFirebaseReady()) {
-            resolve();
-            return;
-        }
-
-        // Listen for Firebase loaded event
-        const handleFirebaseLoaded = () => {
-            window.removeEventListener('firebase-loaded', handleFirebaseLoaded);
-            resolve();
-        };
-
-        window.addEventListener('firebase-loaded', handleFirebaseLoaded);
-
-        // Timeout check
-        setTimeout(() => {
-            window.removeEventListener('firebase-loaded', handleFirebaseLoaded);
-            if (window.isFirebaseReady && window.isFirebaseReady()) {
-                resolve();
-            } else {
-                reject(new Error('Firebase initialization timeout'));
-            }
-        }, timeout);
-    });
 }
 
 // Show loading state for orders
