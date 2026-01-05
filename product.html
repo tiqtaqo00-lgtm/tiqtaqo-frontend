@@ -229,13 +229,32 @@
     <script>
         // Get product ID from URL FIRST
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
+        let productId = urlParams.get('id');
 
         // Store productId globally so it's available to all scripts
         window.currentProductId = productId;
 
-        // Console log for debugging
-        console.log('Product ID from URL:', productId);
+        // Console log for debugging - EXPANDED VERSION
+        console.log('╔════════════════════════════════════════════════════════════╗');
+        console.log('║              PRODUCT PAGE DEBUG INFO                        ║');
+        console.log('╠════════════════════════════════════════════════════════════╣');
+        console.log('║ Full URL:', window.location.href);
+        console.log('║ URL Search Params:', window.location.search);
+        console.log('║ Product ID from URL:', productId);
+        console.log('║ All URL Parameters:');
+        urlParams.forEach((value, key) => {
+            console.log('║   - ' + key + ' = ' + value);
+        });
+        console.log('╚════════════════════════════════════════════════════════════╝');
+        
+        // CRITICAL: If no product ID, log this immediately and show diagnostic
+        if (!productId) {
+            console.error('╔════════════════════════════════════════════════════════════╗');
+            console.error('║         CRITICAL ERROR: NO PRODUCT ID FOUND!               ║');
+            console.error('╚════════════════════════════════════════════════════════════╝');
+            console.error('This means the URL does not contain ?id=... parameter');
+            console.error('Please check the link you clicked to get to this page');
+        }
     </script>
     <script type="module">
         // Proper Firebase v9 imports
@@ -244,17 +263,18 @@
 
         const productId = window.currentProductId;
 
+        console.log('[FIREBASE MODULE] Starting with productId:', productId);
+
         // Debug object for troubleshooting
         window.PRODUCT_DEBUG = {
             productId: productId,
             loaded: false,
             timestamp: new Date().toISOString(),
+            logs: [],
             log: function(msg, data) {
                 console.log('[PRODUCT DEBUG]', msg, data || '');
-                this.logs = this.logs || [];
                 this.logs.push({time: new Date().toISOString(), msg: msg, data: data});
-            },
-            getLogs: function() { return this.logs || []; }
+            }
         };
 
         // Simple Firebase test and fetch
@@ -275,11 +295,13 @@
 
             if (!productId) {
                 window.PRODUCT_DEBUG.log('ERROR: No product ID in URL');
+                console.error('CRITICAL: No product ID in URL!');
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
                         <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c;"></i>
                         <h2 style="color: var(--black); margin: 20px 0 15px;">Produit non trouvé</h2>
                         <p style="color: #666;">Aucun ID produit dans l'URL</p>
+                        <p style="color: #999; font-size: 12px; margin-top: 20px;">Vérifiez l'URL - elle doit contenir ?id=...</p>
                     </div>
                 `;
                 return;
@@ -301,6 +323,7 @@
                 const db = getFirestore(app);
 
                 window.PRODUCT_DEBUG.log('Fetching from Firebase', {productId: productId});
+                console.log('[FIREBASE] Fetching product with ID:', productId);
 
                 const docRef = doc(db, 'products', productId);
                 const docSnap = await getDoc(docRef);
@@ -308,6 +331,7 @@
                 if (docSnap.exists()) {
                     const product = { id: docSnap.id, ...docSnap.data() };
                     window.PRODUCT_DEBUG.log('Product fetched successfully', {name: product.name, id: product.id});
+                    console.log('[FIREBASE] Product found:', product.name);
 
                     // Store for use by other functions (both in module and regular scripts)
                     window.currentProduct = product;
@@ -328,8 +352,8 @@
                     // Display the product
                     displayProduct(product, container);
                 } else {
-                    window.PRODUCT_DEBUG.log('ERROR: Product not found in Firebase');
-                    console.log('Product not found');
+                    window.PRODUCT_DEBUG.log('ERROR: Product not found in Firebase', {productId: productId});
+                    console.error('[FIREBASE] Product not found in Firebase! ID:', productId);
                     container.innerHTML = `
                         <div class="container" style="padding: 150px 20px; text-align: center;">
                             <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
@@ -342,7 +366,7 @@
                 }
             } catch (error) {
                 window.PRODUCT_DEBUG.log('ERROR: Firebase error', {message: error.message, code: error.code});
-                console.error('Error fetching product:', error);
+                console.error('[FIREBASE] Error:', error.message, error.code);
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
                         <i class="fas fa-times-circle" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
