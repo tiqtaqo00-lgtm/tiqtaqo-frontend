@@ -2551,23 +2551,36 @@ body {
     }
 }
 
-/* ===== Best Sellers Section ===== */
+/* ===== Best Sellers Section - Luxurious Frame Design ===== */
 .best-sellers {
     padding: 100px 0;
-    background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
+    background-color: #f5f5f5;
     position: relative;
     overflow: hidden;
+    border-top: 3px solid var(--gold);
+    border-bottom: 3px solid var(--gold);
 }
 
+/* Add subtle gold inner border for extra elegance */
 .best-sellers::before {
     content: '';
     position: absolute;
-    top: 0;
+    top: 12px;
     left: 0;
     right: 0;
-    bottom: 0;
-    background-image: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="1.5" fill="%23d4af37" opacity="0.1"/></svg>');
-    background-size: 60px 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%);
+    pointer-events: none;
+}
+
+.best-sellers::after {
+    content: '';
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%);
     pointer-events: none;
 }
 
@@ -2577,11 +2590,11 @@ body {
 }
 
 .best-sellers .section-title {
-    color: var(--white);
+    color: var(--black);
 }
 
 .best-sellers .section-subtitle {
-    color: rgba(255, 255, 255, 0.7);
+    color: #555;
     text-align: center;
     font-size: 18px;
     margin-bottom: 50px;
