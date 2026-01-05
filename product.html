@@ -244,10 +244,25 @@
 
         const productId = window.currentProductId;
 
+        // Debug object for troubleshooting
+        window.PRODUCT_DEBUG = {
+            productId: productId,
+            loaded: false,
+            timestamp: new Date().toISOString(),
+            log: function(msg, data) {
+                console.log('[PRODUCT DEBUG]', msg, data || '');
+                this.logs = this.logs || [];
+                this.logs.push({time: new Date().toISOString(), msg: msg, data: data});
+            },
+            getLogs: function() { return this.logs || []; }
+        };
+
         // Simple Firebase test and fetch
         async function loadProductSimple() {
             const container = document.getElementById('productDetail');
             if (!container) return;
+
+            window.PRODUCT_DEBUG.log('Starting product load', {productId: productId});
 
             // Show loading
             container.innerHTML = `
@@ -259,6 +274,7 @@
             `;
 
             if (!productId) {
+                window.PRODUCT_DEBUG.log('ERROR: No product ID in URL');
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
                         <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #e74c3c;"></i>
@@ -284,27 +300,35 @@
                 const app = initializeApp(firebaseConfig);
                 const db = getFirestore(app);
 
-                console.log('Fetching product:', productId);
+                window.PRODUCT_DEBUG.log('Fetching from Firebase', {productId: productId});
 
                 const docRef = doc(db, 'products', productId);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const product = { id: docSnap.id, ...docSnap.data() };
-                    console.log('Product found:', product.name);
+                    window.PRODUCT_DEBUG.log('Product fetched successfully', {name: product.name, id: product.id});
 
                     // Store for use by other functions (both in module and regular scripts)
                     window.currentProduct = product;
                     window.currentProductForCart = product;
+                    window.PRODUCT_DEBUG.loaded = true;
+                    
                     // Store in localStorage with multiple key formats for better compatibility
-                    localStorage.setItem('currentProduct_' + product.id, JSON.stringify(product));
-                    localStorage.setItem('currentProductData', JSON.stringify(product));
-                    localStorage.setItem('tempProductData', JSON.stringify(product));
-                    console.log('Product stored in localStorage with keys:', 'currentProduct_' + product.id, 'currentProductData', 'tempProductData');
+                    const productJSON = JSON.stringify(product);
+                    localStorage.setItem('currentProduct_' + product.id, productJSON);
+                    localStorage.setItem('currentProductData', productJSON);
+                    localStorage.setItem('tempProductData', productJSON);
+                    
+                    window.PRODUCT_DEBUG.log('Product stored in multiple locations', {
+                        windowCurrentProduct: !!window.currentProduct,
+                        localStorageKeys: ['currentProduct_' + product.id, 'currentProductData', 'tempProductData']
+                    });
 
                     // Display the product
                     displayProduct(product, container);
                 } else {
+                    window.PRODUCT_DEBUG.log('ERROR: Product not found in Firebase');
                     console.log('Product not found');
                     container.innerHTML = `
                         <div class="container" style="padding: 150px 20px; text-align: center;">
@@ -317,6 +341,7 @@
                     `;
                 }
             } catch (error) {
+                window.PRODUCT_DEBUG.log('ERROR: Firebase error', {message: error.message, code: error.code});
                 console.error('Error fetching product:', error);
                 container.innerHTML = `
                     <div class="container" style="padding: 150px 20px; text-align: center;">
