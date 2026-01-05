@@ -1351,25 +1351,62 @@
         let selectedProductColor = null;
         let selectedProductColorHex = null;
 
+        // Wait for Firebase and main.js to be ready
+        async function waitForFirebase(timeout = 10000) {
+            return new Promise((resolve, reject) => {
+                const startTime = Date.now();
+
+                const checkReady = () => {
+                    if (typeof window.getProduct === 'function' &&
+                        typeof window.ProductAPI !== 'undefined' &&
+                        typeof window.ProductAPI.getProduct === 'function') {
+                        resolve(true);
+                        return;
+                    }
+
+                    if (Date.now() - startTime > timeout) {
+                        console.log('Timeout waiting for Firebase, will use localStorage fallback');
+                        resolve(false);
+                        return;
+                    }
+
+                    setTimeout(checkReady, 100);
+                };
+
+                checkReady();
+            });
+        }
+
         // Open order modal with product info
         async function openOrderModal(productId) {
             console.log('openOrderModal called with productId:', productId);
-            
-            // Use window.getProduct from main.js
+
+            // Try to get product from different sources
             let product = null;
-            if (typeof window.getProduct === 'function') {
+
+            // Option 1: Use window.currentProduct (already loaded by page)
+            if (window.currentProduct && window.currentProduct.id === productId) {
+                console.log('Using window.currentProduct from page load');
+                product = window.currentProduct;
+            }
+            // Option 2: Use window.getProduct from main.js
+            else if (typeof window.getProduct === 'function') {
                 console.log('Using window.getProduct from main.js');
                 product = await window.getProduct(productId);
-            } else {
-                console.error('window.getProduct not available!');
-                showNotification('Erreur: Fonction non disponible', 'error');
-                return;
+            }
+            // Option 3: Try window.currentProductForCart
+            else if (window.currentProductForCart && window.currentProductForCart.id === productId) {
+                console.log('Using window.currentProductForCart');
+                product = window.currentProductForCart;
             }
 
             if (!product) {
+                console.error('Product not found for ID:', productId);
                 showNotification('Produit non trouvé!', 'warning');
                 return;
             }
+
+            console.log('Product found:', product.name);
 
             const hasPromotion = product.promotion && product.promotion > 0;
             const finalPrice = hasPromotion

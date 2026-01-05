@@ -249,13 +249,13 @@ async function getProducts(options = {}) {
         }
     }
 
-    // ProductAPI not available - this is an error condition
-    updateDiagnostic('ERROR: ProductAPI not available! Firebase not initialized.', 'error');
-    updateDiagnostic('This means firebase-config.js is not loaded or has an error', 'error');
-    return { products: [], hasMore: false };
+    // Firebase not available or failed, try localStorage
+    updateDiagnostic('Firebase not available or failed, trying localStorage...', 'warning');
+
+    const localProducts = localStorage.getItem('luxury_products');
     if (localProducts) {
         let products = JSON.parse(localProducts);
-        
+
         // Apply filters locally
         if (category) {
             products = products.filter(p => p.category === category);
@@ -265,14 +265,22 @@ async function getProducts(options = {}) {
         }
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase();
-            products = products.filter(p => 
+            products = products.filter(p =>
                 p.name?.toLowerCase().includes(searchLower) ||
                 p.description?.toLowerCase().includes(searchLower)
             );
         }
-        
+
+        // Sort by created_at (newest first)
+        products.sort((a, b) => {
+            const dateA = a.created_at || a.createdAt || '';
+            const dateB = b.created_at || b.createdAt || '';
+            return dateB.localeCompare(dateA);
+        });
+
         return {
             products: products.slice(0, pageSize),
+            lastDoc: null,
             hasMore: products.length > pageSize
         };
     }
