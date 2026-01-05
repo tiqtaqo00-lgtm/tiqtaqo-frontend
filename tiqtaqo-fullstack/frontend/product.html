@@ -293,8 +293,9 @@
                     const product = { id: docSnap.id, ...docSnap.data() };
                     console.log('Product found:', product.name);
 
-                    // Store for use by other functions
+                    // Store for use by other functions (both in module and regular scripts)
                     window.currentProduct = product;
+                    localStorage.setItem('currentProduct_' + product.id, JSON.stringify(product));
 
                     // Display the product
                     displayProduct(product, container);
@@ -1401,9 +1402,22 @@
                 console.log('Using window.currentProductForCart');
                 product = window.currentProductForCart;
             }
-            // Option 3: Use window.getProduct from main.js as fallback
-            else if (typeof window.getProduct === 'function') {
-                console.log('Using window.getProduct from main.js');
+            // Option 3: Try localStorage (stored by the module script)
+            else {
+                console.log('Trying localStorage for product...');
+                const storedProduct = localStorage.getItem('currentProduct_' + productId);
+                if (storedProduct) {
+                    try {
+                        product = JSON.parse(storedProduct);
+                        console.log('Found product in localStorage:', product.name);
+                    } catch (e) {
+                        console.error('Error parsing product from localStorage:', e);
+                    }
+                }
+            }
+            // Option 4: Use window.getProduct from main.js as last resort
+            if (!product && typeof window.getProduct === 'function') {
+                console.log('Using window.getProduct from main.js as fallback');
                 try {
                     product = await window.getProduct(productId);
                 } catch (error) {
