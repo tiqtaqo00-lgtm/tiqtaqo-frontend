@@ -1432,24 +1432,6 @@
             }
 
             console.log('Product found:', product.name);
-            // Option 2: Use window.getProduct from main.js
-            else if (typeof window.getProduct === 'function') {
-                console.log('Using window.getProduct from main.js');
-                product = await window.getProduct(productId);
-            }
-            // Option 3: Try window.currentProductForCart
-            else if (window.currentProductForCart && window.currentProductForCart.id === productId) {
-                console.log('Using window.currentProductForCart');
-                product = window.currentProductForCart;
-            }
-
-            if (!product) {
-                console.error('Product not found for ID:', productId);
-                showNotification('Produit non trouvé!', 'warning');
-                return;
-            }
-
-            console.log('Product found:', product.name);
 
             const hasPromotion = product.promotion && product.promotion > 0;
             const finalPrice = hasPromotion
