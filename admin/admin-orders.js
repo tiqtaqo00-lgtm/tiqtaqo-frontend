@@ -85,29 +85,38 @@ function loadAdminInfo() {
 // Load all orders from Firebase
 async function loadOrders() {
     try {
-        console.log('loadOrders called');
-        console.log('OrderAPI available:', !!OrderAPI);
-        console.log('OrderAPI.getOrders type:', typeof OrderAPI?.getOrders);
+        console.log('=== LOAD ORDERS DEBUG ===');
+        console.log('OrderAPI:', OrderAPI);
+        console.log('typeof OrderAPI:', typeof OrderAPI);
         
-        // Check if OrderAPI is available (imported from module)
-        if (OrderAPI && typeof OrderAPI.getOrders === 'function') {
-            console.log('Calling OrderAPI.getOrders()...');
-            const orders = await OrderAPI.getOrders();
-            console.log('Orders received:', orders.length);
-            
-            ordersCache = orders || [];
-            ordersCacheValid = true;
-            updateStats(ordersCache);
-            displayOrders(ordersCache, 'all');
+        if (!OrderAPI) {
+            console.error('OrderAPI is undefined!');
+            loadOrdersFromLocalStorage();
             return;
         }
-
-        // Fallback if OrderAPI is not available
-        console.warn('OrderAPI not available, falling back to localStorage');
-        loadOrdersFromLocalStorage();
+        
+        if (typeof OrderAPI.getOrders !== 'function') {
+            console.error('OrderAPI.getOrders is not a function!');
+            console.error('OrderAPI contents:', OrderAPI);
+            loadOrdersFromLocalStorage();
+            return;
+        }
+        
+        console.log('Calling OrderAPI.getOrders()...');
+        const orders = await OrderAPI.getOrders();
+        console.log('Orders received:', orders);
+        console.log('Orders length:', orders?.length);
+        
+        ordersCache = orders || [];
+        ordersCacheValid = true;
+        updateStats(ordersCache);
+        displayOrders(ordersCache, 'all');
 
     } catch (error) {
+        console.error('=== ERROR IN LOAD ORDERS ===');
         console.error('Error loading orders from Firebase:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
         // Fallback to localStorage on error
         loadOrdersFromLocalStorage();
     }
