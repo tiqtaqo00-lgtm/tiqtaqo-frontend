@@ -86,13 +86,43 @@ const initFirebase = () => {
 };
 
 // Export functions for use in other files
-window.initFirebase = initFirebase;
-window.isFirebaseReady = () => firebaseInitialized;
-window.getDb = () => db;
-window.getAuth = () => auth;
+export const initFirebase = () => {
+    if (firebaseInitialized) return { db, auth };
+    
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        // Enable offline persistence (Critical for reducing reads)
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.warn('Multiple tabs - persistence in one tab only');
+            } else if (err.code === 'unimplemented') {
+                console.warn('Browser does not support persistence');
+            }
+        });
+        
+        firebaseInitialized = true;
+        
+        console.log('Firebase initialized successfully');
+        
+        // Dispatch event to notify other scripts
+        window.dispatchEvent(new Event('firebase-loaded'));
+        
+        return { db, auth };
+    } catch (error) {
+        console.error('Firebase initialization error:', error);
+        return null;
+    }
+};
+
+export const isFirebaseReady = () => firebaseInitialized;
+export const getDb = () => db;
+export const getAuth = () => auth;
 
 // Product API functions
-window.ProductAPI = {
+export const ProductAPI = {
     // Get products with pagination - simplified version
     async getProducts({ 
         category = null, 
@@ -307,7 +337,7 @@ window.ProductAPI = {
 };
 
 // Order API functions
-window.OrderAPI = {
+export const OrderAPI = {
     async createOrder(orderData) {
         if (!db) return null;
         
@@ -375,7 +405,7 @@ window.OrderAPI = {
 };
 
 // Review API functions
-window.ReviewAPI = {
+export const ReviewAPI = {
     async addReview(productId, reviewData) {
         if (!db) return null;
         
@@ -437,7 +467,7 @@ window.ReviewAPI = {
 };
 
 // Admin Authentication
-window.AdminAuth = {
+export const AdminAuth = {
     async login(email, password) {
         if (!auth) return null;
         
@@ -467,8 +497,19 @@ window.AdminAuth = {
     }
 };
 
-// Export initialization
-console.log('Firebase API loaded. Call initFirebase() to initialize.');
+// ALSO export to window for backward compatibility with non-module scripts
+// This ensures pages that load firebase-config.js as module can still work
+window.initFirebase = initFirebase;
+window.isFirebaseReady = isFirebaseReady;
+window.getDb = getDb;
+window.getAuth = getAuth;
+window.ProductAPI = ProductAPI;
+window.OrderAPI = OrderAPI;
+window.ReviewAPI = ReviewAPI;
+window.AdminAuth = AdminAuth;
 
-// Notify that Firebase is ready (for diagnostic panel)
-window.dispatchEvent(new Event('firebase-loaded'));
+// Initialize Firebase immediately when module loads
+initFirebase();
+
+// Export initialization
+console.log('Firebase module loaded and initialized');

@@ -1,6 +1,9 @@
 // Admin Orders Management System - Firebase Edition
 // Orders are now stored in Firebase Firestore for permanent access from any device
 
+// Import Firebase functions directly since this is now a module
+import { initFirebase, OrderAPI } from '../js/firebase-config.js';
+
 // Global orders cache for real-time updates
 let ordersCache = [];
 let ordersCacheValid = false;
@@ -108,8 +111,8 @@ function loadAdminInfo() {
 // Load all orders from Firebase
 async function loadOrders() {
     try {
-        // Check if OrderAPI is available
-        if (window.OrderAPI && typeof OrderAPI.getOrders === 'function') {
+        // Check if OrderAPI is available (imported from module)
+        if (OrderAPI && typeof OrderAPI.getOrders === 'function') {
             const orders = await OrderAPI.getOrders();
             ordersCache = orders || [];
             ordersCacheValid = true;
@@ -153,7 +156,7 @@ async function getOrders() {
     }
 
     // Try Firebase if cache is empty
-    if (window.OrderAPI && typeof OrderAPI.getOrders === 'function') {
+    if (OrderAPI && typeof OrderAPI.getOrders === 'function') {
         try {
             const orders = await OrderAPI.getOrders();
             ordersCache = orders || [];
@@ -512,7 +515,7 @@ async function markOrderCompleted(orderId) {
 
     try {
         // Try Firebase first
-        if (window.OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
+        if (OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
             const success = await OrderAPI.updateOrderStatus(orderId, 'completed');
             if (success) {
                 // Update local cache
@@ -548,7 +551,7 @@ async function markOrderCancelled(orderId) {
 
     try {
         // Try Firebase first
-        if (window.OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
+        if (OrderAPI && typeof OrderAPI.updateOrderStatus === 'function') {
             const success = await OrderAPI.updateOrderStatus(orderId, 'cancelled');
             if (success) {
                 // Update local cache
@@ -598,7 +601,7 @@ async function deleteOrder(orderId) {
 
     try {
         // Try Firebase first
-        if (window.OrderAPI && typeof OrderAPI.deleteOrder === 'function') {
+        if (OrderAPI && typeof OrderAPI.deleteOrder === 'function') {
             const success = await OrderAPI.deleteOrder(orderId);
             if (success) {
                 // Update local cache
@@ -731,7 +734,7 @@ window.syncOrdersToFirebase = async function() {
 
         let synced = 0;
         for (const order of orders) {
-            if (window.OrderAPI && typeof OrderAPI.createOrder === 'function') {
+            if (OrderAPI && typeof OrderAPI.createOrder === 'function') {
                 // Check if order already exists in Firebase
                 const existingOrder = ordersCache.find(o => o.id === order.id);
                 if (!existingOrder) {
