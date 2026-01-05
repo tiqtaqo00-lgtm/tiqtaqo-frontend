@@ -579,18 +579,25 @@
         }
 
         // Open order modal from product page
+        // This function is called by the "Commander maintenant" button
         async function openOrderModalFromProduct(productId) {
             console.log('openOrderModalFromProduct called with productId:', productId);
-            
+
             // Ensure selected color is available
             if (!window.selectedProductColor && window.currentProductColors && window.currentProductColors.length > 0) {
                 window.selectedProductColor = window.currentProductColors[0].name;
                 window.selectedProductColorHex = window.currentProductColors[0].hex;
             }
-            
-            // Use main.js openOrderModal function
-            if (typeof window.openOrderModal === 'function') {
-                console.log('Calling openOrderModal from main.js');
+
+            // Use the local openOrderModal function (defined below in this script)
+            // This uses the product data already loaded on the page
+            if (typeof window.openOrderModalLocal === 'function') {
+                console.log('Using local openOrderModalLocal function');
+                window.openOrderModalLocal(productId);
+            }
+            // Fallback: try global openOrderModal
+            else if (typeof window.openOrderModal === 'function') {
+                console.log('Calling window.openOrderModal from main.js');
                 window.openOrderModal(productId, window.selectedProductColor, window.selectedProductColorHex);
             } else {
                 console.error('openOrderModal function not found!');
@@ -1377,18 +1384,40 @@
             });
         }
 
-        // Open order modal with product info
-        async function openOrderModal(productId) {
-            console.log('openOrderModal called with productId:', productId);
+        // Open order modal with product info - LOCAL VERSION (uses page-loaded data)
+        async function openOrderModalLocal(productId) {
+            console.log('openOrderModalLocal called with productId:', productId);
 
-            // Try to get product from different sources
+            // Try to get product from different sources (in order of preference)
             let product = null;
 
-            // Option 1: Use window.currentProduct (already loaded by page)
+            // Option 1: Use window.currentProduct (already loaded by page's inline script)
             if (window.currentProduct && window.currentProduct.id === productId) {
                 console.log('Using window.currentProduct from page load');
                 product = window.currentProduct;
             }
+            // Option 2: Use window.currentProductForCart (set by displayProduct)
+            else if (window.currentProductForCart && window.currentProductForCart.id === productId) {
+                console.log('Using window.currentProductForCart');
+                product = window.currentProductForCart;
+            }
+            // Option 3: Use window.getProduct from main.js as fallback
+            else if (typeof window.getProduct === 'function') {
+                console.log('Using window.getProduct from main.js');
+                try {
+                    product = await window.getProduct(productId);
+                } catch (error) {
+                    console.error('Error fetching product from main.js:', error);
+                }
+            }
+
+            if (!product) {
+                console.error('Product not found for ID:', productId);
+                showNotification('Produit non trouvé!', 'warning');
+                return;
+            }
+
+            console.log('Product found:', product.name);
             // Option 2: Use window.getProduct from main.js
             else if (typeof window.getProduct === 'function') {
                 console.log('Using window.getProduct from main.js');
@@ -2193,6 +2222,7 @@
         window.initReviews = initReviews;
         window.loadReviews = loadReviews;
         window.updateRatingDisplay = updateRatingDisplay;
+        window.openOrderModalLocal = openOrderModalLocal;
     </script>
 </body>
 </html>
