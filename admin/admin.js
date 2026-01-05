@@ -439,6 +439,13 @@ function addColorRow(name = '', hex = '#000000', image = '', index = null) {
                     ${image ? `<img src="${image}" alt="Couleur">` : '<i class="fas fa-camera"></i>'}
                 </div>
                 <input type="file" id="colorImage-${rowId}" accept="image/*" style="display:none" onchange="handleColorImageUpload(this, '${rowId}')">
+                <div class="color-url-input">
+                    <input type="url" id="colorImageUrl-${rowId}" placeholder="https://i.ibb.co/..." 
+                           title="Ou collez un lien d'image">
+                    <button type="button" onclick="addColorImageFromUrl('${rowId}')" title="Ajouter">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
             <button type="button" class="remove-color-btn" onclick="removeColorRow('${rowId}')">
                 <i class="fas fa-times"></i>
@@ -468,6 +475,49 @@ function handleColorImageUpload(input, rowId) {
             colorImageUpload.dataset.image = e.target.result;
         };
         reader.readAsDataURL(file);
+    }
+}
+
+// Add color image from URL
+function addColorImageFromUrl(rowId) {
+    const urlInput = document.getElementById(`colorImageUrl-${rowId}`);
+    let url = urlInput.value.trim();
+    
+    if (url) {
+        // Clean up the URL
+        if (url.includes('?')) {
+            url = url.split('?')[0];
+        }
+        
+        // Validate URL
+        try {
+            new URL(url);
+        } catch (e) {
+            alert('Veuillez entrer une URL valide!\nExemple: https://i.ibb.co/abc123/image.jpg');
+            return;
+        }
+        
+        // Check if it looks like an image URL
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        const isImageUrl = validExtensions.some(ext => url.toLowerCase().includes(ext));
+        
+        if (!isImageUrl) {
+            const confirmAdd = confirm('Cette URL ne semble pas être une image. Voulez-vous quand même l\'ajouter?');
+            if (!confirmAdd) return;
+        }
+        
+        // Update the color image
+        const row = document.getElementById(rowId);
+        const colorImageUpload = row.querySelector('.color-image-upload');
+        colorImageUpload.innerHTML = `<img src="${url}" alt="Couleur" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i>'">`;
+        colorImageUpload.dataset.image = url;
+        
+        // Clear input
+        urlInput.value = '';
+        
+        console.log('Color image URL added:', url);
+    } else {
+        alert('Veuillez entrer une URL d\'image!\n\nExemple: https://i.ibb.co/abc123/image.jpg');
     }
 }
 
@@ -842,6 +892,7 @@ window.loadProductColors = loadProductColors;
 window.addColorRow = addColorRow;
 window.updateColorPreview = updateColorPreview;
 window.handleColorImageUpload = handleColorImageUpload;
+window.addColorImageFromUrl = addColorImageFromUrl;
 window.removeColorRow = removeColorRow;
 window.addNewColor = addNewColor;
 window.getProductColors = getProductColors;
