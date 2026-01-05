@@ -622,7 +622,14 @@
         </div>
     </div>
 
-    <script type="module" src="../js/firebase-config.js"></script>
-    <script src="admin-orders.js"></script>
+    <script type="module">
+        // Import Firebase config first, then load admin orders
+        import '../js/firebase-config.js';
+        
+        // Now load the admin orders script
+        const script = document.createElement('script');
+        script.src = 'admin-orders.js';
+        document.body.appendChild(script);
+    </script>
 </body>
 </html>

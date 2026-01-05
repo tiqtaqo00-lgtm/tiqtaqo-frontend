@@ -4,11 +4,6 @@
 // NOTE: OrderAPI is imported via window from firebase-config.js which is loaded as a module
 // The module exports OrderAPI to window object for compatibility
 
-// Debug: Check what was loaded
-console.log('=== FIREBASE ORDER API DEBUG ===');
-console.log('window.OrderAPI:', window.OrderAPI);
-console.log('window.OrderAPI?.getOrders:', typeof window.OrderAPI?.getOrders);
-
 // Global orders cache for real-time updates
 let ordersCache = [];
 let ordersCacheValid = false;
@@ -22,13 +17,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Wait for Firebase and load orders
 async function waitForFirebaseAndLoadOrders() {
     try {
-        // Show loading state
+        console.log('Starting orders initialization...');
+        
+        // Show loading state FIRST
         showOrdersLoading();
+        console.log('Loading state shown');
 
         // Wait for Firebase to be available
         let attempts = 0;
-        const maxAttempts = 20;
+        const maxAttempts = 50;
         
+        console.log('Waiting for OrderAPI...');
         while (!window.OrderAPI || typeof window.OrderAPI.getOrders !== 'function') {
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
