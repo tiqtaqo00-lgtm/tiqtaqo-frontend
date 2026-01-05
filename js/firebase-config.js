@@ -328,13 +328,21 @@ window.OrderAPI = {
         if (!db) return [];
         
         try {
-            const q = query(
-                collection(db, 'orders'),
-                orderBy('created_at', 'desc')
-            );
+            // Get all orders without ordering (to avoid index requirement)
+            const snapshot = await getDocs(collection(db, 'orders'));
+            let orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Sort locally by createdAt or created_at
+            orders.sort((a, b) => {
+                const dateA = a.createdAt || a.created_at || 0;
+                const dateB = b.createdAt || b.created_at || 0;
+                // Handle Firebase serverTimestamp
+                const timeA = typeof dateA === 'object' && dateA !== null ? (dateA.toDate ? dateA.toDate().getTime() : 0) : new Date(dateA).getTime();
+                const timeB = typeof dateB === 'object' && dateB !== null ? (dateB.toDate ? dateB.toDate().getTime() : 0) : new Date(dateB).getTime();
+                return timeB - timeA; // Newest first
+            });
+            
+            return orders;
         } catch (error) {
             console.error('Error fetching orders:', error);
             return [];
