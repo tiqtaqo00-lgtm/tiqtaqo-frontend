@@ -1002,81 +1002,95 @@ async function getCanOffers() {
 }
 
 // Load CAN Offers on homepage
+let canOffersRetries = 0;
 async function loadCanOffers() {
     const canOffersGrid = document.getElementById('canOffersGrid');
-    if (!canOffersGrid) return;
     
-    console.log('Loading CAN offers...');
-    
-    const canOffers = await getCanOffers();
-    
-    console.log('CAN offers found:', canOffers.length);
-    
-    if (canOffers.length === 0) {
-        const section = document.querySelector('.can-offers-section');
-        if (section) {
-            section.style.display = 'none';
+    // If element doesn't exist, retry up to 5 times with increasing delay
+    if (!canOffersGrid) {
+        canOffersRetries++;
+        if (canOffersRetries <= 5) {
+            console.log('Waiting for canOffersGrid... retry ' + canOffersRetries);
+            setTimeout(loadCanOffers, canOffersRetries * 200);
         }
         return;
     }
     
-    const section = document.querySelector('.can-offers-section');
-    if (section) {
-        section.style.display = 'block';
+    // Reset retries on successful find
+    canOffersRetries = 0;
+    
+    console.log('Loading CAN offers...');
+    
+    try {
+        const canOffers = await getCanOffers();
+        console.log('CAN offers found:', canOffers.length);
+        
+        if (canOffers.length === 0) {
+            const section = document.querySelector('.can-offers-section');
+            if (section) {
+                section.style.display = 'none';
+            }
+            return;
+        }
+        
+        const section = document.querySelector('.can-offers-section');
+        if (section) {
+            section.style.display = 'block';
+        }
+        
+        const displayProducts = canOffers.slice(0, 3);
+        console.log('Displaying products:', displayProducts.map(p => ({id: p.id, name: p.name})));
+        
+        // Build HTML manually
+        let html = '';
+        
+        displayProducts.forEach((product, index) => {
+            const hasPromotion = product.promotion && product.promotion > 0;
+            const finalPrice = hasPromotion 
+                ? product.price - (product.price * product.promotion / 100)
+                : product.price;
+            
+            const productName = product.name || 'Sans nom';
+            const productPrice = Math.round(finalPrice);
+            
+            // Image handling with multiple fallbacks
+            let imageHtml = '';
+            if (product.images && product.images.length > 0 && product.images[0]) {
+                imageHtml = '<img src="' + product.images[0] + '" alt="' + productName + '">';
+            } else if (product.image) {
+                imageHtml = '<img src="' + product.image + '" alt="' + productName + '">';
+            } else {
+                imageHtml = '<div class="no-image"><i class="fas fa-image"></i><span>' + productName + '</span></div>';
+            }
+            
+            const badgeHtml = hasPromotion 
+                ? '<div class="promo-badge">-' + product.promotion + '%</div>'
+                : '';
+            
+            html += '<div class="can-card" onclick="location.href=\'product.html?id=' + product.id + '\'">';
+            html += badgeHtml;
+            html += '<div class="morocco-flags"><span class="green"></span><span class="red"></span></div>';
+            html += '<div class="can-image">' + imageHtml + '</div>';
+            html += '<div class="can-details">';
+            html += '<h3>' + productName + '</h3>';
+            html += '<div class="can-price">';
+            if (hasPromotion) {
+                html += '<span class="old-price">' + product.price + ' DH</span>';
+            }
+            html += '<span class="new-price">' + productPrice + ' DH</span>';
+            html += '</div>';
+            html += '<button class="order-btn" onclick="event.stopPropagation();openOrderModal(\'' + product.id + '\')">Commander</button>';
+            html += '</div></div>';
+        });
+        
+        canOffersGrid.innerHTML = html;
+        
+        // Initialize scroll animations
+        initScrollAnimations();
+        
+    } catch (error) {
+        console.error('Error loading CAN offers:', error);
     }
-    
-    const displayProducts = canOffers.slice(0, 3);
-    
-    console.log('Displaying products:', displayProducts.map(p => ({id: p.id, name: p.name})));
-    
-    // Build HTML manually to avoid template literal issues
-    let html = '';
-    
-    displayProducts.forEach((product, index) => {
-        const hasPromotion = product.promotion && product.promotion > 0;
-        const finalPrice = hasPromotion 
-            ? product.price - (product.price * product.promotion / 100)
-            : product.price;
-        
-        const productName = product.name || 'Sans nom';
-        const productPrice = Math.round(finalPrice);
-        const originalPrice = hasPromotion ? product.price + ' DH' : '';
-        
-        // Get image - use a placeholder if none
-        let imageHtml = '';
-        if (product.images && product.images.length > 0 && product.images[0]) {
-            imageHtml = '<img src="' + product.images[0] + '" alt="' + productName + '" style="width:100%;height:100%;object-fit:cover;">';
-        } else if (product.image) {
-            imageHtml = '<img src="' + product.image + '" alt="' + productName + '" style="width:100%;height:100%;object-fit:cover;">';
-        } else {
-            imageHtml = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e,#2d2d4a);"><i class="fas fa-image" style="font-size:48px;color:#d4af37;"></i></div>';
-        }
-        
-        const badgeHtml = hasPromotion 
-            ? '<div style="position:absolute;top:15px;right:15px;background:linear-gradient(135deg,#c90012,#8b0000);color:white;padding:8px 15px;border-radius:20px;font-size:12px;font-weight:700;z-index:10;">-' + product.promotion + '%</div>'
-            : '';
-        
-        html += '<div class="can-offer-card scroll-animate stagger-' + ((index % 3) + 1) + '" style="cursor:pointer;position:relative;overflow:hidden;">';
-        html += '<div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#c90012,#d4af37,#006233);z-index:5;"></div>';
-        html += badgeHtml;
-        html += '<div style="position:absolute;top:15px;left:15px;display:flex;gap:4px;z-index:10;"><span style="width:16px;height:16px;background:#006233;border-radius:3px;"></span><span style="width:16px;height:16px;background:#c90012;border-radius:3px;"></span></div>';
-        html += '<div style="height:200px;background:linear-gradient(135deg,#1a1a2e,#2d2d4a);display:flex;align-items:center;justify-content:center;overflow:hidden;">' + imageHtml + '</div>';
-        html += '<div style="padding:20px;background:linear-gradient(145deg,#1a1a2e,#0f0f1a);">';
-        html += '<h3 style="font-size:18px;color:#fff;margin:0 0 10px 0;font-weight:600;">' + productName + '</h3>';
-        html += '<div style="margin-bottom:15px;">';
-        if (hasPromotion) {
-            html += '<span style="color:rgba(255,255,255,0.5);text-decoration:line-through;margin-right:10px;font-size:14px;">' + originalPrice + '</span>';
-        }
-        html += '<span style="color:#d4af37;font-size:22px;font-weight:700;">' + productPrice + ' DH</span>';
-        html += '</div>';
-        html += '<button onclick="event.stopPropagation();openOrderModal(\'' + product.id + '\')" style="width:100%;background:linear-gradient(135deg,#c90012,#8b0000);color:white;border:none;padding:14px 20px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-shopping-cart"></i> Commander</button>';
-        html += '</div></div>';
-    });
-    
-    canOffersGrid.innerHTML = html;
-    
-    // Initialize scroll animations
-    initScrollAnimations();
 }
 
 // ===== Search Functionality =====
@@ -1461,10 +1475,18 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             updateDiagnostic('DOMContentLoaded: Calling loadCanOffers()', 'info');
             loadCanOffers();
-        }, 100);
+        }, 500);
     }
     
+    // Retry CAN Offers loading after a longer delay (for slow networks)
     window.addEventListener('load', function() {
+        setTimeout(() => {
+            const canOffersGrid = document.getElementById('canOffersGrid');
+            if (canOffersGrid && canOffersGrid.innerHTML.trim() === '') {
+                console.log('Retrying CAN offers load...');
+                loadCanOffers();
+            }
+        }, 1500);
         hideLoading();
     });
 });
