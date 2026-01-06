@@ -1322,46 +1322,115 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
     .can-offers-title {
-        font-size: 36px;
+        font-size: 28px;
     }
     
     .can-offers-subtitle {
-        font-size: 14px;
+        font-size: 13px;
+        padding: 0 15px;
     }
     
     .can-offers-grid {
         grid-template-columns: 1fr;
-        gap: 25px;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .can-offers-badge {
+        padding: 8px 20px;
+        font-size: 13px;
     }
     
     .btn-can-offers {
-        padding: 15px 35px;
-        font-size: 15px;
+        padding: 12px 25px;
+        font-size: 14px;
     }
     
     .football-card {
-        border-radius: 16px;
+        border-radius: 12px;
+        border-width: 2px;
+    }
+    
+    .football-card::before {
+        padding: 2px;
+        border-radius: 12px;
+    }
+    
+    .football-card .card-header {
+        padding: 12px 15px;
+        gap: 8px;
+    }
+    
+    .football-card .crest-area {
+        gap: 8px;
+    }
+    
+    .football-card .crest-icon {
+        width: 28px;
+        height: 18px;
+        font-size: 12px;
+    }
+    
+    .football-card .crest-text {
+        display: none;
+    }
+    
+    .football-card .competition-badge {
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+    
+    .football-card .competition-badge i {
+        font-size: 10px;
     }
     
     .football-card .card-image-container {
-        height: 200px;
+        height: 160px;
     }
     
     .football-card .card-body {
-        padding: 20px;
+        padding: 15px;
     }
     
-    .football-card .new-price {
-        font-size: 26px;
+    .football-card .card-body h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
     }
     
     .football-card .price-section {
-        padding: 12px;
+        padding: 10px;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    
+    .football-card .old-price {
+        font-size: 13px;
+    }
+    
+    .football-card .new-price {
+        font-size: 22px;
+    }
+    
+    .football-card .price-label {
+        font-size: 9px;
     }
     
     .football-card .order-btn {
-        padding: 14px 20px;
-        font-size: 14px;
+        padding: 10px 15px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+    
+    .football-card .card-footer {
+        padding: 10px 15px;
+        font-size: 11px;
+    }
+    
+    .football-card .promo-ribbon {
+        padding: 5px 30px;
+        font-size: 11px;
+        top: 10px;
+        right: -25px;
     }
 }
 
