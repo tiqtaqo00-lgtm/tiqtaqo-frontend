@@ -2193,7 +2193,10 @@
             div.textContent = text;
             return div.innerHTML;
         }
-        
+
+        // Add event listener for review form submission
+        document.getElementById('reviewForm').addEventListener('submit', submitReview);
+
         // Make functions globally available
         window.submitReview = submitReview;
         window.setRating = setRating;
