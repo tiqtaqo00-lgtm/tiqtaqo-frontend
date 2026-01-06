@@ -1425,7 +1425,7 @@ body {
     
     .football-card .price-label {
         font-size: 8px;
-        display: none;
+        color: rgba(255, 255, 255, 0.6);
     }
     
     .football-card .order-btn {
