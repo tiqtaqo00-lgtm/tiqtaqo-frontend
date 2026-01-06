@@ -618,11 +618,28 @@
             try {
                 let products = [];
 
+                // Wait for ProductAPI to be available (up to 3 seconds)
+                console.log('Waiting for ProductAPI...');
+                let waitCount = 0;
+                while (!window.ProductAPI || typeof window.ProductAPI.getProducts !== 'function') {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    waitCount++;
+                    if (waitCount > 30) {
+                        console.log('ProductAPI not available after 3s, checking localStorage...');
+                        break;
+                    }
+                }
+                console.log('ProductAPI check passed, waitCount:', waitCount);
+
                 // Try Firebase first
-                if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
-                    const result = await ProductAPI.getProducts({ pageSize: 100, forceRefresh: true });
-                    products = (result.products || []).filter(p => p.showInCanOffers && p.visible);
-                    console.log('Firebase CAN products:', products.length);
+                if (window.ProductAPI && typeof window.ProductAPI.getProducts === 'function') {
+                    try {
+                        const result = await window.ProductAPI.getProducts({ pageSize: 100, forceRefresh: true });
+                        products = (result.products || []).filter(p => p.showInCanOffers && p.visible);
+                        console.log('Firebase CAN products:', products.length);
+                    } catch (error) {
+                        console.error('Error fetching from Firebase:', error);
+                    }
                 }
 
                 // Fallback to localStorage
