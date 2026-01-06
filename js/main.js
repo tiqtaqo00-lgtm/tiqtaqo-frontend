@@ -2225,6 +2225,7 @@ window.searchProducts = searchProducts;
 window.loadMoreProducts = loadMoreProducts;
 window.initAddToCartButtons = initAddToCartButtons;
 window.showNotification = showNotification;
+window.viewProduct = viewProduct;
 
 // Initialize add to cart buttons with MutationObserver for dynamically added elements
 (function() {
