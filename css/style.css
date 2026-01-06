@@ -1408,9 +1408,9 @@ body {
     }
     
     .football-card .price-section {
-        padding: 6px;
-        gap: 6px;
-        margin-bottom: 8px;
+        padding: 4px;
+        gap: 4px;
+        margin-bottom: 6px;
         flex-direction: column;
         align-items: flex-start;
     }
