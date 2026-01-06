@@ -1038,8 +1038,12 @@ async function loadCanOffers() {
             section.style.display = 'block';
         }
         
-        const displayProducts = canOffers;
-        console.log('Displaying all products:', displayProducts.length + ' products found');
+        // Check if we're on the dedicated CAN offers page (has canProductsGrid)
+        const isCanOffersPage = document.getElementById('canProductsGrid') !== null;
+        
+        // Show only 3 products on homepage, all products on CAN offers page
+        const displayProducts = isCanOffersPage ? canOffers : canOffers.slice(0, 3);
+        console.log('Displaying products:', displayProducts.length + ' products' + (isCanOffersPage ? ' (all products page)' : ' (homepage - limited to 3)'));
         
         // Build HTML manually
         let html = '';
