@@ -145,9 +145,29 @@ async function getCategories() {
     }
 
     // Fallback to localStorage or default categories
-    const localCategories = localStorage.getItem('luxury_categories');
-    if (localCategories) {
-        return JSON.parse(localCategories);
+    let categories = localStorage.getItem('luxury_categories');
+    if (categories) {
+        categories = JSON.parse(categories);
+        
+        // Check if 'boite' category exists, if not add it
+        if (!categories.find(c => c.id === 'boite')) {
+            // Add 'boite' category in the correct position (after packs)
+            const updatedCategories = [
+                { id: 'packs', name: 'Packs', icon: 'fa-gift', visible: true, order: 1 },
+                { id: 'boite', name: 'Boite', icon: 'fa-box-open', visible: true, order: 2 },
+                ...categories.filter(c => c.id !== 'packs') // Remove old packs to avoid duplication
+            ];
+            
+            // Reorder remaining categories
+            updatedCategories.forEach((cat, index) => {
+                cat.order = index + 1;
+            });
+            
+            localStorage.setItem('luxury_categories', JSON.stringify(updatedCategories));
+            return updatedCategories;
+        }
+        
+        return categories;
     }
 
     // Default categories
