@@ -963,6 +963,8 @@ body {
     cursor: pointer;
     position: relative;
     border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
 }
 
 .can-offer-card::before {
@@ -973,6 +975,7 @@ body {
     right: 0;
     height: 4px;
     background: linear-gradient(90deg, #c90012, var(--gold), #006233);
+    z-index: 1;
 }
 
 .can-offer-card:hover {
@@ -983,8 +986,19 @@ body {
 
 .can-offer-card .product-image-container {
     position: relative;
-    height: 280px;
+    height: 200px;
+    min-height: 200px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4a 100%);
+}
+
+.can-offer-card .product-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .can-offer-card .product-image-container::after {

@@ -1006,7 +1006,11 @@ async function loadCanOffers() {
     const canOffersGrid = document.getElementById('canOffersGrid');
     if (!canOffersGrid) return;
     
+    console.log('Loading CAN offers...');
+    
     const canOffers = await getCanOffers();
+    
+    console.log('CAN offers found:', canOffers.length);
     
     if (canOffers.length === 0) {
         // Optionally hide the entire section if no offers exist
@@ -1026,36 +1030,47 @@ async function loadCanOffers() {
     // Display up to 3 products on homepage
     const displayProducts = canOffers.slice(0, 3);
     
+    console.log('Displaying products:', displayProducts.map(p => ({id: p.id, name: p.name})));
+    
     canOffersGrid.innerHTML = displayProducts.map((product, index) => {
         const hasPromotion = product.promotion && product.promotion > 0;
         const finalPrice = hasPromotion 
             ? product.price - (product.price * product.promotion / 100)
             : product.price;
         
-        const productImage = (product.images && product.images.length > 0) 
-            ? product.images[0] 
-            : (product.image || '');
+        // Get product image - with multiple fallbacks
+        let productImage = '';
+        if (product.images && product.images.length > 0 && product.images[0]) {
+            productImage = product.images[0];
+        } else if (product.image) {
+            productImage = product.image;
+        }
+        
+        // Create fallback SVG as data URL
+        const fallbackImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23f5f5f5' width='300' height='300'/%3E%3Ctext fill='%23999' font-family='Arial' font-size='16' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImage%3C/text%3E%3C/svg%3E";
+        
+        // If no image, use fallback
+        const displayImage = productImage || fallbackImage;
         
         return `
             <div class="can-offer-card scroll-animate stagger-${(index % 3) + 1}" 
                  onclick="location.href='product.html?id=${product.id}'" 
                  style="cursor: pointer;">
-                <div class="product-image-container">
+                <div class="product-image-container" style="background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4a 100%); display: flex; align-items: center; justify-content: center;">
                     ${hasPromotion ? `<div class="can-offer-badge">-${product.promotion}%</div>` : ''}
                     <div class="can-morocco-badge">
                         <span class="green"></span>
                         <span class="red"></span>
                     </div>
-                    <img src="${productImage}" alt="${product.name}" 
-                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
+                    ${productImage ? `<img src="${productImage}" alt="${product.name || 'Product'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%25%27 height=%27100%25%27 viewBox=%270 0 300 300%27%3E%3Crect fill=%27%231a1a2e%27 width=%27300%27 height=%27300%27/%3E%3Ctext fill=%27%23d4af37%27 font-family=%27Arial%27 font-size=%2718%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3E${product.name || 'Product'}%3C/text%3E%3C/svg%3E'">` : `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;"><i class="fas fa-image" style="font-size: 40px; color: #d4af37; margin-bottom: 10px;"></i><span style="color: #d4af37; font-weight: 600;">${product.name || 'Product'}</span></div>`}
                 </div>
                 <div class="product-info">
-                    <h3>${product.name}</h3>
-                    <div class="product-price">
-                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                        <span class="price">${Math.round(finalPrice)} DH</span>
+                    <h3 style="font-size: 18px; margin-bottom: 10px; color: #fff;">${product.name || 'Sans nom'}</h3>
+                    <div class="product-price" style="margin-bottom: 15px;">
+                        ${hasPromotion ? `<span class="old-price" style="color: rgba(255,255,255,0.5); text-decoration: line-through; margin-right: 10px;">${product.price} DH</span>` : ''}
+                        <span class="price" style="color: #d4af37; font-size: 22px; font-weight: 700;">${Math.round(finalPrice)} DH</span>
                     </div>
-                    <button class="btn-primary" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                    <button class="btn-primary" style="width: 100%; background: linear-gradient(135deg, #c90012 0%, #8b0000 100%); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                         <i class="fas fa-shopping-cart"></i> Commander
                     </button>
                 </div>
