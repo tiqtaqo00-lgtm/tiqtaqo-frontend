@@ -241,7 +241,8 @@ export const ProductAPI = {
                 updated_at: serverTimestamp(),
                 view_count: 0,
                 sold_count: 0,
-                visible: true
+                visible: true,
+                showInCanOffers: true
             });
             
             return docRef.id;
