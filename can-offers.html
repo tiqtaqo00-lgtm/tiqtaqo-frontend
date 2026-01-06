@@ -68,99 +68,6 @@
             50% { opacity: 1; }
         }
 
-        /* Floating Elements Container */
-        .floating-elements-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 5;
-            overflow: hidden;
-        }
-
-        /* Floating Balls */
-        .float-ball {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .float-ball.white {
-            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #cccccc 50%, #999999 100%);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.3);
-            animation: ballFloat 18s infinite linear;
-        }
-
-        .float-ball.red {
-            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #ff6666 30%, #c90012 60%, #8b0000 100%);
-            box-shadow: 0 0 10px rgba(201, 0, 18, 0.6), 0 0 20px rgba(201, 0, 18, 0.3);
-            animation: ballFloat 18s infinite linear;
-        }
-
-        .float-ball.green {
-            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #66cc66 30%, #006233 60%, #004422 100%);
-            box-shadow: 0 0 10px rgba(0, 98, 51, 0.6), 0 0 20px rgba(0, 98, 51, 0.3);
-            animation: ballFloat 18s infinite linear;
-        }
-
-        .float-ball.gold {
-            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #ffe066 30%, #d4af37 60%, #b8860b 100%);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 0 0 20px rgba(212, 175, 55, 0.3);
-            animation: ballFloat 18s infinite linear;
-        }
-
-        @keyframes ballFloat {
-            0% {
-                opacity: 0;
-                transform: translateY(100vh) translateX(0) rotate(0deg);
-            }
-            5% {
-                opacity: 0.9;
-            }
-            90% {
-                opacity: 0.9;
-            }
-            95% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-50px) translateX(20px) rotate(360deg);
-            }
-        }
-
-        /* Floating Icons */
-        .float-icon {
-            position: absolute;
-            font-size: 24px;
-            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.7));
-            animation: iconFloat 22s infinite linear;
-        }
-
-        @keyframes iconFloat {
-            0% {
-                opacity: 0;
-                transform: translateY(100vh);
-            }
-            5% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            95% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-        }
-
         .can-page-header {
             position: relative;
             padding: 60px 0 40px;
@@ -901,31 +808,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Floating Elements -->
-    <div class="floating-elements-container">
-        <!-- Ball 1 - White -->
-        <div class="float-ball white" style="left: 5%; animation-delay: 0s;"></div>
-        <!-- Ball 2 - Red -->
-        <div class="float-ball red" style="left: 20%; animation-delay: 3s;"></div>
-        <!-- Ball 3 - Green -->
-        <div class="float-ball green" style="left: 35%; animation-delay: 6s;"></div>
-        <!-- Ball 4 - Gold -->
-        <div class="float-ball gold" style="left: 50%; animation-delay: 9s;"></div>
-        <!-- Ball 5 - White -->
-        <div class="float-ball white" style="left: 65%; animation-delay: 12s;"></div>
-        <!-- Ball 6 - Red -->
-        <div class="float-ball red" style="left: 80%; animation-delay: 15s;"></div>
-        <!-- Ball 7 - Green -->
-        <div class="float-ball green" style="left: 95%; animation-delay: 18s;"></div>
-        
-        <!-- Icons -->
-        <div class="float-icon" style="left: 10%; animation-delay: 2s;">🏆</div>
-        <div class="float-icon" style="left: 30%; animation-delay: 5s;">⚽</div>
-        <div class="float-icon" style="left: 55%; animation-delay: 8s;">⭐</div>
-        <div class="float-icon" style="left: 75%; animation-delay: 11s;">🥇</div>
-        <div class="float-icon" style="left: 90%; animation-delay: 14s;">🏆</div>
-    </div>
 
     <!-- Footer -->
     <footer class="can-page-footer">
