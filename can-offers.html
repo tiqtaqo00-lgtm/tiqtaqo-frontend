@@ -190,6 +190,321 @@
             margin-bottom: 10px;
         }
 
+        /* Football Card Styles - Same as Homepage */
+        .football-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            border: 3px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .football-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            padding: 3px;
+            background: linear-gradient(145deg, #c90012, var(--gold), #006233);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .football-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(212, 175, 55, 0.3);
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        .football-card .card-header {
+            position: relative;
+            padding: 20px 25px 15px;
+            background: linear-gradient(135deg, rgba(201, 0, 18, 0.2) 0%, rgba(0, 98, 51, 0.2) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .football-card .crest-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .football-card .crest-icon {
+            width: 40px;
+            height: 26px;
+            background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .football-card .crest-icon::before {
+            content: '★';
+            color: #006233;
+            font-size: 18px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .football-card .crest-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .football-card .crest-text .line {
+            width: 30px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .football-card .crest-text .green-line {
+            background: linear-gradient(90deg, #006233 0%, #00994d 100%);
+        }
+
+        .football-card .crest-text .red-line {
+            background: linear-gradient(90deg, #c90012 0%, #ff4d6d 100%);
+        }
+
+        .football-card .competition-badge {
+            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+            color: #1a1a1a;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .football-card .competition-badge i {
+            font-size: 14px;
+        }
+
+        .football-card .card-image-container {
+            position: relative;
+            height: 280px;
+            overflow: hidden;
+        }
+
+        .football-card .card-image-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(212, 175, 55, 0.1) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .football-card .card-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .football-card:hover .card-image-container img {
+            transform: scale(1.08);
+        }
+
+        .football-card .card-image-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(201, 0, 18, 0.05) 50%, transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .football-card .promo-ribbon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            z-index: 2;
+            box-shadow: 0 4px 15px rgba(201, 0, 18, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .football-card .card-body {
+            padding: 25px 30px 30px;
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+        }
+
+        .football-card .card-body h3 {
+            font-size: 20px;
+            color: var(--white);
+            margin-bottom: 15px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            line-height: 1.4;
+        }
+
+        .football-card:hover .card-body h3 {
+            color: var(--gold);
+        }
+
+        .football-card .price-section {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .football-card .price-section > div {
+            flex: 1;
+        }
+
+        .football-card .old-price {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: line-through;
+            font-size: 16px;
+            font-weight: 500;
+            display: block;
+        }
+
+        .football-card .new-price {
+            color: var(--gold);
+            font-size: 26px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+            display: block;
+            margin-top: 5px;
+        }
+
+        .football-card .price-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .football-card .order-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .football-card .order-btn:hover {
+            background: linear-gradient(135deg, #c9a227 0%, var(--gold) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+        }
+
+        .football-card .order-btn i {
+            font-size: 16px;
+        }
+
+        .football-card .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .football-card .match-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .football-card .match-info i {
+            color: var(--gold);
+            font-size: 14px;
+        }
+
+        .football-card .availability {
+            color: #28a745;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .football-card .availability::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .football-card .no-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            color: rgba(255, 255, 255, 0.3);
+            gap: 10px;
+        }
+
+        .football-card .no-image i {
+            font-size: 50px;
+        }
+
+        .football-card .no-image span {
+            font-size: 14px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .can-page-title {
@@ -203,6 +518,18 @@
             .can-products-grid {
                 grid-template-columns: 1fr;
                 gap: 25px;
+            }
+
+            .football-card .card-image-container {
+                height: 220px;
+            }
+
+            .football-card .card-body {
+                padding: 20px;
+            }
+
+            .football-card .card-footer {
+                padding: 12px 20px;
             }
         }
     </style>
