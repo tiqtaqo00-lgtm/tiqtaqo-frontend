@@ -615,137 +615,167 @@
             font-size: 14px;
         }
 
-        /* Responsive */
+        /* Responsive - Optimized for Mobile */
         @media (max-width: 768px) {
             .can-page-title {
-                font-size: 36px;
-            }
-
-            .can-page-subtitle {
-                font-size: 16px;
-            }
-
-            .can-products-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                font-size: 28px;
                 padding: 0 10px;
             }
 
-            /* Center the last card when there's an odd number */
+            .can-page-subtitle {
+                font-size: 14px;
+                padding: 0 20px;
+            }
+
+            .can-page-badge {
+                padding: 8px 20px;
+                font-size: 13px;
+            }
+
+            .can-page-badge i {
+                font-size: 18px;
+            }
+
+            .can-morocco-flags span {
+                width: 20px;
+                height: 20px;
+            }
+
+            /* Grid - 2 cards per row */
+            .can-products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 0 8px;
+            }
+
+            /* Center last card when odd number */
             .can-products-grid .football-card:nth-child(2n+1):last-child {
                 grid-column: 1 / -1;
-                max-width: calc(50% - 6px);
+                max-width: calc(50% - 5px);
                 margin: 0 auto;
             }
 
+            /* Card - Compact mobile design */
             .football-card {
-                border-radius: 12px;
-                border-width: 2px;
+                border-radius: 10px;
+                border-width: 1.5px;
             }
 
             .football-card::before {
-                border-radius: 12px;
-                padding: 2px;
+                border-radius: 10px;
+                padding: 1.5px;
             }
 
+            /* Card Header */
             .football-card .card-header {
-                padding: 10px 12px 8px;
-                flex-direction: column;
-                gap: 8px;
-                align-items: flex-start;
+                padding: 6px 8px 4px;
+                flex-direction: row;
+                gap: 4px;
+                align-items: center;
             }
 
             .football-card .crest-area {
-                gap: 8px;
+                gap: 6px;
             }
 
             .football-card .crest-icon {
-                width: 28px;
-                height: 18px;
+                width: 24px;
+                height: 16px;
                 border-radius: 2px;
             }
 
             .football-card .crest-icon::before {
-                font-size: 12px;
+                font-size: 10px;
             }
 
             .football-card .crest-text .line {
                 height: 2px;
-            }
-
-            .football-card .crest-text .green-line {
-                width: 24px;
-            }
-
-            .football-card .crest-text .red-line {
-                width: 20px;
+                width: 18px;
             }
 
             .football-card .competition-badge {
-                padding: 5px 10px;
-                font-size: 10px;
-                border-radius: 15px;
-                align-self: flex-start;
+                padding: 4px 8px;
+                font-size: 9px;
+                border-radius: 12px;
+                align-self: center;
             }
 
             .football-card .competition-badge i {
-                font-size: 10px;
+                font-size: 9px;
             }
 
+            /* Product Image */
             .football-card .card-image-container {
-                height: 140px;
+                height: 100px;
             }
 
+            /* Card Body */
             .football-card .card-body {
-                padding: 12px;
+                padding: 8px;
             }
 
             .football-card .card-body h3 {
-                font-size: 15px;
-                margin-bottom: 10px;
+                font-size: 11px;
+                margin-bottom: 6px;
                 line-height: 1.3;
+                font-weight: 600;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                min-height: 28px;
             }
 
+            /* Price Section - Compact */
             .football-card .price-section {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 2px;
-                padding: 4px;
-                margin-bottom: 6px;
+                padding: 0;
+                margin-bottom: 8px;
+                background: transparent;
             }
 
             .football-card .old-price {
-                font-size: 12px;
+                font-size: 10px;
+                margin-bottom: 1px;
             }
 
             .football-card .new-price {
-                font-size: 18px;
+                font-size: 16px;
+                font-weight: 700;
             }
 
             .football-card .price-label {
-                font-size: 9px;
+                display: none;
             }
 
+            /* Order Button - Large and easy to tap */
             .football-card .order-btn {
-                padding: 10px 12px;
-                font-size: 12px;
+                padding: 10px 8px;
+                font-size: 11px;
+                font-weight: 600;
                 border-radius: 8px;
-                gap: 8px;
+                gap: 6px;
+                width: 100%;
             }
 
             .football-card .order-btn i {
                 font-size: 12px;
             }
 
+            /* Card Footer */
             .football-card .card-footer {
-                padding: 10px 12px;
-                flex-direction: column;
-                gap: 6px;
-                align-items: flex-start;
+                padding: 6px 8px;
+                flex-direction: row;
+                gap: 8px;
+                align-items: center;
+                justify-content: space-between;
             }
 
             .football-card .match-info {
-                font-size: 10px;
+                font-size: 9px;
+                gap: 4px;
             }
 
             .football-card .match-info i {
@@ -753,14 +783,54 @@
             }
 
             .football-card .availability {
-                font-size: 10px;
+                font-size: 9px;
+                gap: 4px;
             }
 
+            .football-card .availability::before {
+                width: 6px;
+                height: 6px;
+            }
+
+            /* Promo Ribbon */
             .football-card .promo-ribbon {
-                padding: 5px 12px;
+                padding: 3px 8px;
+                font-size: 9px;
+                top: 8px;
+                right: 8px;
+                border-radius: 10px;
+            }
+        }
+
+        /* Extra small mobile devices */
+        @media (max-width: 380px) {
+            .can-products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                padding: 0 5px;
+            }
+
+            .football-card .card-image-container {
+                height: 85px;
+            }
+
+            .football-card .card-body {
+                padding: 6px;
+            }
+
+            .football-card .card-body h3 {
                 font-size: 10px;
-                top: 10px;
-                right: 10px;
+                -webkit-line-clamp: 2;
+                min-height: 26px;
+            }
+
+            .football-card .new-price {
+                font-size: 14px;
+            }
+
+            .football-card .order-btn {
+                padding: 8px 6px;
+                font-size: 10px;
             }
         }
     </style>
