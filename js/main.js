@@ -120,6 +120,11 @@ const collectionIcons = {
         icon: 'fa-glasses',
         gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
         description: 'Lunettes de soleil et de vue'
+    },
+    'boite': {
+        icon: 'fa-box-open',
+        gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+        description: 'Élégantes boîtes de rangement pour vos précieuses montres'
     }
 };
 
@@ -148,12 +153,13 @@ async function getCategories() {
     // Default categories
     const defaultCategories = [
         { id: 'packs', name: 'Packs', icon: 'fa-gift', visible: true, order: 1 },
-        { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2 },
-        { id: 'femme', name: 'Femme', icon: 'fa-crown', visible: true, order: 3 },
-        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 4 },
-        { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 5 },
-        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 6 },
-        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 7 }
+        { id: 'boite', name: 'Boite', icon: 'fa-box-open', visible: true, order: 2 },
+        { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 3 },
+        { id: 'femme', name: 'Femme', icon: 'fa-crown', visible: true, order: 4 },
+        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
+        { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 6 },
+        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 },
+        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 8 }
     ];
     
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));

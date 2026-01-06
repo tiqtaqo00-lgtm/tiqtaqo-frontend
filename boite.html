@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Montres Homme - TiqtaQo</title>
+    <title>Boites de Rangement - TiqtaQo</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <!-- Cart Panel -->
+    <!-- Sidebar Menu -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>Menu</h2>
@@ -88,10 +88,13 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
-            <li><a href="packs-select.html"><i class="fas fa-box"></i> Packs</a></li>
+            <li><a href="packs-select.html"><i class="fas fa-gift"></i> Packs</a></li>
             <li><a href="boite.html"><i class="fas fa-box-open"></i> Boite</a></li>
-            <li><a href="homme.html"><i class="fas fa-male"></i> Homme</a></li>
-            <li><a href="femme.html"><i class="fas fa-female"></i> Femme</a></li>
+            <li><a href="homme.html"><i class="fas fa-user-tie"></i> Homme</a></li>
+            <li><a href="femme.html"><i class="fas fa-crown"></i> Femme</a></li>
+            <li><a href="wallets-select.html"><i class="fas fa-wallet"></i> Wallets</a></li>
+            <li><a href="belts.html"><i class="fas fa-ribbon"></i> Belts</a></li>
+            <li><a href="glasses-select.html"><i class="fas fa-glasses"></i> Glasses</a></li>
             <li><a href="accessoires-select.html"><i class="fas fa-gem"></i> Accessoires</a></li>
             <li><a href="about.html"><i class="fas fa-info-circle"></i> À propos</a></li>
             <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
@@ -129,8 +132,8 @@
     <!-- Page Header -->
     <section class="page-header">
         <div class="container">
-            <h1><i class="fas fa-watch"></i> Montres Homme</h1>
-            <p>Collection exclusive de montres masculines</p>
+            <h1><i class="fas fa-box-open"></i> Boites de Rangement</h1>
+            <p>Élégantes boîtes pour protéger et ranger vos montres précieuses</p>
         </div>
     </section>
 
@@ -243,26 +246,10 @@
                     initFilterSidebar();
                 }
                 
-                // Add mobile filter button - NOW USING NAVBAR BUTTON INSTEAD
-                // Commented out since filter toggle is now in navbar
-                /*
-                const productsSection = document.querySelector('.products-section, #productsSection');
-                if (productsSection) {
-                    const existingToggle = document.querySelector('.mobile-filter-toggle');
-                    if (!existingToggle) {
-                        const mobileToggle = document.createElement('button');
-                        mobileToggle.className = 'mobile-filter-toggle';
-                        mobileToggle.innerHTML = '<i class="fas fa-filter"></i> Filtrer et Trier';
-                        mobileToggle.onclick = window.toggleMobileFilters;
-                        productsSection.insertBefore(mobileToggle, productsSection.firstChild);
-                    }
-                }
-                */
-                
                 // Load products for this category
                 console.log('Loading category products...');
                 if (typeof loadCategoryProducts === 'function') {
-                    await loadCategoryProducts('homme');
+                    await loadCategoryProducts('boite');
                 }
                 
                 // Initialize infinite scroll if available
@@ -276,7 +263,7 @@
                 // Try to load products anyway as fallback
                 if (typeof loadCategoryProducts === 'function') {
                     console.log('Attempting fallback product load...');
-                    loadCategoryProducts('homme');
+                    loadCategoryProducts('boite');
                 }
             }
         }
