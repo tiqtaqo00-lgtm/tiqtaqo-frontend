@@ -589,24 +589,36 @@
 
     <script type="module" src="js/firebase-config.js?v=2"></script>
     <script type="module">
-        import { initializeFirebase } from './js/firebase-config.js';
+        import { initFirebase } from './js/firebase-config.js';
 
         // Initialize page
         async function initCanPage() {
             console.log('Initializing CAN Offers page...');
             
-            // Wait for Firebase to be ready
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Initialize Firebase
-            try {
-                await initializeFirebase();
-                console.log('Firebase initialized');
-            } catch (error) {
-                console.error('Firebase init error:', error);
+            // Initialize Firebase first
+            if (typeof window.initFirebase === 'function') {
+                try {
+                    await window.initFirebase();
+                    console.log('Firebase initialized');
+                } catch (error) {
+                    console.error('Firebase init error:', error);
+                }
             }
 
-            // Load CAN products
+            // Wait for ProductAPI to be available (up to 3 seconds)
+            console.log('Waiting for ProductAPI...');
+            let waitCount = 0;
+            while (!window.ProductAPI || typeof window.ProductAPI.getProducts !== 'function') {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                waitCount++;
+                if (waitCount > 30) {
+                    console.log('ProductAPI not available after 3s, using localStorage fallback');
+                    break;
+                }
+            }
+            console.log('ProductAPI check passed, waitCount:', waitCount);
+
+            // Load products
             await loadCanProducts();
         }
 
