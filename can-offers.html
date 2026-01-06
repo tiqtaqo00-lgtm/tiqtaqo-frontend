@@ -68,103 +68,96 @@
             50% { opacity: 1; }
         }
 
-        /* Floating Football Elements */
-        .floating-ball {
+        /* Floating Elements Container */
+        .floating-elements-container {
             position: fixed;
-            width: 35px;
-            height: 35px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        /* Floating Balls */
+        .float-ball {
+            position: absolute;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 1;
-            opacity: 0;
-            animation: floatUp 20s infinite linear;
         }
 
-        .floating-ball::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            width: 12px;
-            height: 12px;
-            background: rgba(255,255,255,0.5);
-            border-radius: 50%;
+        .float-ball.white {
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #cccccc 50%, #999999 100%);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.3);
+            animation: ballFloat 18s infinite linear;
         }
 
-        .floating-ball::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
+        .float-ball.red {
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #ff6666 30%, #c90012 60%, #8b0000 100%);
+            box-shadow: 0 0 10px rgba(201, 0, 18, 0.6), 0 0 20px rgba(201, 0, 18, 0.3);
+            animation: ballFloat 18s infinite linear;
         }
 
-        .floating-ball.white {
-            background: radial-gradient(circle at 30% 30%, #fff 0%, #ccc 50%, #999 100%);
-            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+        .float-ball.green {
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #66cc66 30%, #006233 60%, #004422 100%);
+            box-shadow: 0 0 10px rgba(0, 98, 51, 0.6), 0 0 20px rgba(0, 98, 51, 0.3);
+            animation: ballFloat 18s infinite linear;
         }
 
-        .floating-ball.red {
-            background: radial-gradient(circle at 30% 30%, #ffcccc 0%, #c90012 50%, #8b0000 100%);
-            box-shadow: 0 0 15px rgba(201, 0, 18, 0.5);
+        .float-ball.gold {
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #ffe066 30%, #d4af37 60%, #b8860b 100%);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 0 0 20px rgba(212, 175, 55, 0.3);
+            animation: ballFloat 18s infinite linear;
         }
 
-        .floating-ball.green {
-            background: radial-gradient(circle at 30% 30%, #90EE90 0%, #006233 50%, #004422 100%);
-            box-shadow: 0 0 15px rgba(0, 98, 51, 0.5);
-        }
-
-        .floating-ball.gold {
-            background: radial-gradient(circle at 30% 30%, #FFF8DC 0%, #d4af37 50%, #b8860b 100%);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-        }
-
-        @keyframes floatUp {
+        @keyframes ballFloat {
             0% {
                 opacity: 0;
-                transform: translateY(110vh) translateX(0) rotate(0deg) scale(0.8);
+                transform: translateY(100vh) translateX(0) rotate(0deg);
             }
-            8% {
-                opacity: 0.8;
+            5% {
+                opacity: 0.9;
             }
-            92% {
-                opacity: 0.8;
+            90% {
+                opacity: 0.9;
+            }
+            95% {
+                opacity: 0;
             }
             100% {
                 opacity: 0;
-                transform: translateY(-60px) translateX(30px) rotate(360deg) scale(1);
+                transform: translateY(-50px) translateX(20px) rotate(360deg);
             }
         }
 
-        /* Floating Trophy Icons */
-        .floating-icon {
-            position: fixed;
-            font-size: 28px;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0;
-            animation: floatUpIcon 25s infinite linear;
-            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+        /* Floating Icons */
+        .float-icon {
+            position: absolute;
+            font-size: 24px;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.7));
+            animation: iconFloat 22s infinite linear;
         }
 
-        @keyframes floatUpIcon {
+        @keyframes iconFloat {
             0% {
                 opacity: 0;
-                transform: translateY(110vh) rotate(-10deg);
+                transform: translateY(100vh);
             }
-            8% {
-                opacity: 0.9;
+            5% {
+                opacity: 1;
             }
-            92% {
-                opacity: 0.9;
+            90% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 0;
             }
             100% {
                 opacity: 0;
-                transform: translateY(-50px) rotate(10deg);
+                transform: translateY(-50px);
             }
         }
 
@@ -909,6 +902,31 @@
         </div>
     </section>
 
+    <!-- Floating Elements -->
+    <div class="floating-elements-container">
+        <!-- Ball 1 - White -->
+        <div class="float-ball white" style="left: 5%; animation-delay: 0s;"></div>
+        <!-- Ball 2 - Red -->
+        <div class="float-ball red" style="left: 20%; animation-delay: 3s;"></div>
+        <!-- Ball 3 - Green -->
+        <div class="float-ball green" style="left: 35%; animation-delay: 6s;"></div>
+        <!-- Ball 4 - Gold -->
+        <div class="float-ball gold" style="left: 50%; animation-delay: 9s;"></div>
+        <!-- Ball 5 - White -->
+        <div class="float-ball white" style="left: 65%; animation-delay: 12s;"></div>
+        <!-- Ball 6 - Red -->
+        <div class="float-ball red" style="left: 80%; animation-delay: 15s;"></div>
+        <!-- Ball 7 - Green -->
+        <div class="float-ball green" style="left: 95%; animation-delay: 18s;"></div>
+        
+        <!-- Icons -->
+        <div class="float-icon" style="left: 10%; animation-delay: 2s;">🏆</div>
+        <div class="float-icon" style="left: 30%; animation-delay: 5s;">⚽</div>
+        <div class="float-icon" style="left: 55%; animation-delay: 8s;">⭐</div>
+        <div class="float-icon" style="left: 75%; animation-delay: 11s;">🥇</div>
+        <div class="float-icon" style="left: 90%; animation-delay: 14s;">🏆</div>
+    </div>
+
     <!-- Footer -->
     <footer class="can-page-footer">
         <p class="morocco-love">🇲🇦 Avec tout notre amour pour le Maroc 🇲🇦</p>
@@ -1114,48 +1132,8 @@
 
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            initFloatingElements();
             initCanPage();
         });
-
-        // Create floating football elements
-        function initFloatingElements() {
-            const container = document.body;
-            
-            // Create floating balls with Moroccan colors
-            const ballColors = ['white', 'red', 'green', 'gold'];
-            const ballPositions = [5, 20, 35, 50, 65, 80, 95];
-            const ballDelays = [0, 3, 6, 9, 12, 15, 18];
-            
-            ballPositions.forEach((pos, index) => {
-                setTimeout(() => {
-                    const ball = document.createElement('div');
-                    ball.className = `floating-ball ${ballColors[index % ballColors.length]}`;
-                    ball.style.left = `${pos}%`;
-                    ball.style.animationDelay = '0s';
-                    ball.style.animationDuration = `${18 + Math.random() * 8}s`;
-                    container.appendChild(ball);
-                }, ballDelays[index] * 1000);
-            });
-
-            // Create floating icons (trophies, stars, etc.)
-            const icons = ['🏆', '⚽', '⭐', '🥇'];
-            const iconPositions = [10, 30, 60, 90];
-            const iconDelays = [2, 5, 8, 11];
-            
-            icons.forEach((icon, index) => {
-                setTimeout(() => {
-                    const iconEl = document.createElement('div');
-                    iconEl.className = 'floating-icon';
-                    iconEl.textContent = icon;
-                    iconEl.style.left = `${iconPositions[index]}%`;
-                    iconEl.style.animationDuration = `${22 + Math.random() * 6}s`;
-                    container.appendChild(iconEl);
-                }, iconDelays[index] * 1000);
-            });
-
-            console.log('Floating elements initialized');
-        }
     </script>
     
     <!-- Common scripts -->
