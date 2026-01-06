@@ -81,20 +81,41 @@ async function saveProducts(products) {
 
 // Get categories from localStorage
 function getCategories() {
-    const categories = localStorage.getItem('luxury_categories');
+    let categories = localStorage.getItem('luxury_categories');
     if (categories) {
-        return JSON.parse(categories);
+        categories = JSON.parse(categories);
+        
+        // Check if 'boite' category exists, if not add it
+        if (!categories.find(c => c.id === 'boite')) {
+            // Add 'boite' category in the correct position (after packs)
+            const updatedCategories = [
+                { id: 'packs', name: 'Packs', icon: 'fa-gift', visible: true, order: 1 },
+                { id: 'boite', name: 'Boite', icon: 'fa-box-open', visible: true, order: 2 },
+                ...categories.filter(c => c.id !== 'packs') // Remove old packs to avoid duplication
+            ];
+            
+            // Reorder remaining categories
+            updatedCategories.forEach((cat, index) => {
+                cat.order = index + 1;
+            });
+            
+            localStorage.setItem('luxury_categories', JSON.stringify(updatedCategories));
+            return updatedCategories;
+        }
+        
+        return categories;
     }
     
-    // Default categories
+    // Default categories - NOW INCLUDING 'boite'
     const defaultCategories = [
         { id: 'packs', name: 'Packs', icon: 'fa-gift', visible: true, order: 1 },
-        { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 2 },
-        { id: 'femme', name: 'Femme', icon: 'fa-crown', visible: true, order: 3 },
-        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 4 },
-        { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 5 },
-        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 6 },
-        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 7 }
+        { id: 'boite', name: 'Boite', icon: 'fa-box-open', visible: true, order: 2 },
+        { id: 'homme', name: 'Homme', icon: 'fa-user-tie', visible: true, order: 3 },
+        { id: 'femme', name: 'Femme', icon: 'fa-crown', visible: true, order: 4 },
+        { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
+        { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 6 },
+        { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 },
+        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 8 }
     ];
     
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
