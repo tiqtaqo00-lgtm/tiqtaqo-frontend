@@ -466,6 +466,11 @@
 
                     // Display the product
                     displayProduct(product, container);
+                    
+                    // Initialize reviews system
+                    if (typeof initReviews === 'function') {
+                        initReviews(productId);
+                    }
                 } else {
                     console.log('Product not found');
                     container.innerHTML = `
