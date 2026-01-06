@@ -1064,26 +1064,37 @@ async function loadCanOffers() {
             }
             
             const promoBadgeHtml = hasPromotion 
-                ? '<div class="promo-badge">-' + product.promotion + '%</div>'
+                ? '<div class="promo-ribbon">-' + product.promotion + '%</div>'
                 : '';
             
-            const trophyBadgeHtml = '<div class="can-badge"><i class="fas fa-trophy"></i> CAN 2025</div>';
+            const trophyBadgeHtml = '<div class="competition-badge"><i class="fas fa-trophy"></i> CAN 2025</div>';
             
-            html += '<div class="can-card scroll-animate stagger-' + ((index % 3) + 1) + '" onclick="location.href=\'product.html?id=' + product.id + '\'">';
+            // Morocco crest HTML
+            const crestHtml = '<div class="crest-area"><div class="crest-icon"></div><div class="crest-text"><div class="green-line"></div><div class="red-line"></div></div></div>';
+            
+            html += '<div class="football-card scroll-animate stagger-' + ((index % 3) + 1) + '" onclick="location.href=\'product.html?id=' + product.id + '\'">';
+            html += '<div class="card-header">';
+            html += crestHtml;
             html += trophyBadgeHtml;
-            html += '<div class="morocco-flags"><span class="green"></span><span class="red"></span></div>';
-            html += promoBadgeHtml;
-            html += '<div class="can-image">' + imageHtml + '</div>';
-            html += '<div class="can-details">';
-            html += '<h3>' + productName + '</h3>';
-            html += '<div class="can-price">';
-            if (hasPromotion) {
-                html += '<span class="old-price">' + product.price + ' DH</span>';
-            }
-            html += '<span class="new-price">' + productPrice + ' DH</span>';
             html += '</div>';
-            html += '<button class="order-btn" onclick="event.stopPropagation();openOrderModal(\'' + product.id + '\')"><i class="fas fa-shopping-cart"></i> Commander</button>';
-            html += '</div></div>';
+            html += '<div class="card-image-container">' + imageHtml;
+            html += promoBadgeHtml;
+            html += '</div>';
+            html += '<div class="card-body">';
+            html += '<h3>' + productName + '</h3>';
+            html += '<div class="price-section">';
+            if (hasPromotion) {
+                html += '<div><span class="price-label">Ancien prix</span><br><span class="old-price">' + product.price + ' DH</span></div>';
+            }
+            html += '<div style="text-align: ' + (hasPromotion ? 'left' : 'left') + ';"><span class="price-label">Prix spécial</span><br><span class="new-price">' + productPrice + ' DH</span></div>';
+            html += '</div>';
+            html += '<button class="order-btn" onclick="event.stopPropagation();openOrderModal(\'' + product.id + '\')"><i class="fas fa-shopping-cart"></i> Commander maintenant</button>';
+            html += '</div>';
+            html += '<div class="card-footer">';
+            html += '<div class="match-info"><i class="fas fa-shipping-fast"></i> Livraison gratuite</div>';
+            html += '<div class="availability">En stock</div>';
+            html += '</div>';
+            html += '</div>';
         });
         
         canOffersGrid.innerHTML = html;
@@ -2357,7 +2368,7 @@ function initScrollAnimations() {
             });
         }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
         
-        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card, .can-card').forEach((card, index) => {
+        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card, .football-card').forEach((card, index) => {
             card.classList.add('scroll-animate');
             card.classList.add(`stagger-${(index % 6) + 1}`);
             observer.observe(card);

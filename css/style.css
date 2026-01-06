@@ -821,14 +821,15 @@ body {
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* ===== CAN Offers Section - Morocco Theme (Enhanced) ===== */
+/* ===== CAN Offers Section - Morocco Football Theme ===== */
 .can-offers-section {
     padding: 80px 0;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
     position: relative;
     overflow: hidden;
 }
 
+/* Football field pattern background */
 .can-offers-section::before {
     content: '';
     position: absolute;
@@ -836,10 +837,26 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.1) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(0, 98, 51, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(201, 0, 18, 0.08) 0%, transparent 50%);
+    background-image: 
+        /* Football field lines */
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+        /* Stadium glow */
+        radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 60%);
+    background-size: 100px 100px, 100px 100px, 100% 100%;
+    pointer-events: none;
+}
+
+/* Stadium lights effect */
+.can-offers-section::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 200px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 200, 0.1) 0%, transparent 70%);
     pointer-events: none;
 }
 
@@ -853,38 +870,18 @@ body {
     overflow: hidden;
 }
 
-.can-pattern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(212, 175, 55, 0.03) 10px, rgba(212, 175, 55, 0.03) 11px),
-        repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(212, 175, 55, 0.02) 10px, rgba(212, 175, 55, 0.02) 11px);
-    opacity: 0.5;
-}
-
+/* Soccer ball decoration */
 .can-ball-decoration {
     position: absolute;
-    width: 300px;
-    height: 300px;
-    border: 2px dashed rgba(212, 175, 55, 0.1);
-    border-radius: 50%;
-    top: -100px;
-    right: -100px;
-    animation: rotateBall 30s linear infinite;
-}
-
-.can-ball-decoration::before {
-    content: '';
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
-    bottom: -50px;
-    left: -50px;
+    width: 400px;
+    height: 400px;
+    top: -150px;
+    right: -150px;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23ffffff'/%3E%3Cpath d='M50 2 L62 20 L50 38 L38 20 Z' fill='%23000000'/%3E%3Cpath d='M50 62 L62 80 L50 98 L38 80 Z' fill='%23000000'/%3E%3Cpath d='M2 50 L20 62 L38 50 L20 38 Z' fill='%23000000'/%3E%3Cpath d='M62 50 L80 62 L98 50 L80 38 Z' fill='%23000000'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23000000'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 60px 60px;
+    animation: rotateBall 60s linear infinite;
 }
 
 @keyframes rotateBall {
@@ -908,36 +905,41 @@ body {
     gap: 10px;
     background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
     color: white;
-    padding: 10px 25px;
+    padding: 12px 30px;
     border-radius: 50px;
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 16px;
     margin-bottom: 20px;
-    box-shadow: 0 5px 20px rgba(201, 0, 18, 0.4);
+    box-shadow: 0 5px 25px rgba(201, 0, 18, 0.5);
     animation: pulseBadge 2s ease-in-out infinite;
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .can-offers-badge i {
-    font-size: 18px;
+    font-size: 20px;
 }
 
 @keyframes pulseBadge {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%, 100% { transform: scale(1); box-shadow: 0 5px 25px rgba(201, 0, 18, 0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 8px 35px rgba(201, 0, 18, 0.7); }
 }
 
 .can-offers-title {
-    font-size: 48px;
-    font-weight: 700;
+    font-size: 52px;
+    font-weight: 800;
     color: var(--white);
     margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
 }
 
 .can-offers-title .title-highlight {
-    background: linear-gradient(135deg, var(--gold) 0%, #ffd700 100%);
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #c9a227 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-shadow: none;
 }
 
 .can-offers-subtitle {
@@ -945,164 +947,196 @@ body {
     color: rgba(255, 255, 255, 0.7);
     max-width: 600px;
     margin: 0 auto;
+    letter-spacing: 1px;
 }
 
-/* ===== Enhanced CAN Offer Cards with Football Theme ===== */
+/* ===== Football Card Design ===== */
 .can-offers-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 30px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 35px;
+    margin-bottom: 50px;
 }
 
-/* Main CAN Card - Morocco Theme */
-.can-card {
+/* Main Football Card */
+.football-card {
     background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
-    border-radius: 25px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
     position: relative;
-    border: 2px solid transparent;
-    display: flex;
-    flex-direction: column;
+    border: 3px solid rgba(212, 175, 55, 0.2);
 }
 
-/* Morocco flag accent at top of card */
-.can-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(90deg, #006233, var(--gold), #c90012);
-    z-index: 2;
-}
-
-.can-card:hover {
-    transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 25px 50px rgba(212, 175, 55, 0.25);
-    border-color: rgba(212, 175, 55, 0.3);
-}
-
-/* CAN Badge - Trophy Style */
-.can-card .can-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
-    color: #1a1a1a;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    z-index: 10;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.can-card .can-badge i {
-    font-size: 14px;
-}
-
-/* Morocco Flag Mini Badge */
-.can-card .morocco-flags {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    display: flex;
-    gap: 3px;
-    z-index: 10;
-}
-
-.can-card .morocco-flags span {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.can-card .morocco-flags .green {
-    background: linear-gradient(135deg, #006233 0%, #004422 100%);
-}
-
-.can-card .morocco-flags .red {
-    background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
-}
-
-/* Card Image Container */
-.can-card .can-image {
-    position: relative;
-    height: 220px;
-    min-height: 220px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4a 100%);
-}
-
-.can-card .can-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
-}
-
-.can-card:hover .can-image img {
-    transform: scale(1.1);
-}
-
-/* Image overlay gradient */
-.can-card .can-image::after {
+/* Card border with gold accent */
+.football-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, transparent 0%, rgba(212, 175, 55, 0.1) 100%);
+    border-radius: 20px;
+    padding: 3px;
+    background: linear-gradient(145deg, #c90012, var(--gold), #006233);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
 }
 
-/* Fallback for no image */
-.can-card .no-image {
+.football-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(212, 175, 55, 0.3);
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+/* Card Header with Stadium Pattern */
+.football-card .card-header {
+    position: relative;
+    padding: 20px 25px 15px;
+    background: linear-gradient(135deg, rgba(201, 0, 18, 0.2) 0%, rgba(0, 98, 51, 0.2) 100%);
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Morocco crest area */
+.football-card .crest-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.football-card .crest-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #006233 50%, #c90012 50%);
+    border-radius: 50%;
+    display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    color: rgba(212, 175, 55, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
 }
 
-.can-card .no-image i {
-    font-size: 60px;
-    margin-bottom: 10px;
+.football-card .crest-icon::before {
+    content: '★';
+    color: var(--gold);
+    font-size: 20px;
 }
 
-.can-card .no-image span {
-    font-size: 14px;
-    text-align: center;
-    padding: 0 20px;
-}
-
-/* Card Details Section */
-.can-card .can-details {
-    padding: 25px;
-    flex: 1;
+.football-card .crest-text {
     display: flex;
     flex-direction: column;
 }
 
-.can-card .can-details h3 {
-    font-size: 20px;
+.football-card .crest-text .line {
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: 3px;
+}
+
+.football-card .crest-text .green-line {
+    width: 30px;
+    background: linear-gradient(90deg, #006233, #004422);
+}
+
+.football-card .crest-text .red-line {
+    width: 25px;
+    background: linear-gradient(90deg, #c90012, #8b0000);
+}
+
+/* Competition badge */
+.football-card .competition-badge {
+    background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+    color: #1a1a1a;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+.football-card .competition-badge i {
+    font-size: 14px;
+}
+
+/* Image Container - Stadium Style */
+.football-card .card-image-container {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4a 100%);
+}
+
+/* Stadium crowd effect */
+.football-card .card-image-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(201, 0, 18, 0.3) 0%, transparent 100%);
+    z-index: 2;
+}
+
+/* Image */
+.football-card .card-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.football-card:hover .card-image-container img {
+    transform: scale(1.15);
+}
+
+/* Image overlay gradient */
+.football-card .card-image-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.8) 100%);
+    pointer-events: none;
+}
+
+/* Promotion ribbon */
+.football-card .promo-ribbon {
+    position: absolute;
+    top: 20px;
+    right: -30px;
+    background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+    color: white;
+    padding: 8px 40px;
+    font-size: 14px;
+    font-weight: 700;
+    transform: rotate(45deg);
+    box-shadow: 0 4px 15px rgba(201, 0, 18, 0.5);
+    z-index: 10;
+}
+
+/* Card Body */
+.football-card .card-body {
+    padding: 25px;
+}
+
+.football-card .card-body h3 {
+    font-size: 22px;
     color: var(--white);
-    margin-bottom: 12px;
-    font-weight: 600;
+    margin-bottom: 15px;
+    font-weight: 700;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -1110,136 +1144,183 @@ body {
     overflow: hidden;
 }
 
-/* Price Section */
-.can-card .can-price {
+/* Price section - Stadium scoreboard style */
+.football-card .price-section {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
-.can-card .can-price .old-price {
+.football-card .old-price {
     color: rgba(255, 255, 255, 0.5);
     text-decoration: line-through;
     font-size: 16px;
     font-weight: 400;
 }
 
-.can-card .can-price .new-price {
+.football-card .new-price {
     color: var(--gold);
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 800;
+    text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
 }
 
-/* Promo Badge */
-.can-card .promo-badge {
-    position: absolute;
-    top: 50px;
-    right: 15px;
-    background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 13px;
-    font-weight: 600;
-    z-index: 10;
-    box-shadow: 0 4px 15px rgba(201, 0, 18, 0.4);
+.football-card .price-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-/* Order Button */
-.can-card .order-btn {
+/* Order button - Match day button style */
+.football-card .order-btn {
     width: 100%;
-    padding: 14px 20px;
+    padding: 16px 25px;
     background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
     color: white;
     border: none;
     border-radius: 12px;
-    font-weight: 600;
-    font-size: 15px;
+    font-weight: 700;
+    font-size: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-top: auto;
-    box-shadow: 0 5px 15px rgba(201, 0, 18, 0.3);
+    gap: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 6px 20px rgba(201, 0, 18, 0.4);
 }
 
-.can-card .order-btn:hover {
+.football-card .order-btn:hover {
     background: linear-gradient(135deg, #006233 0%, #004422 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 98, 51, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 98, 51, 0.5);
 }
 
-.can-card .order-btn i {
-    font-size: 16px;
+.football-card .order-btn i {
+    font-size: 18px;
 }
 
-/* Decorative football pattern at bottom of card */
-.can-card::after {
+/* Card footer - Match info style */
+.football-card .card-footer {
+    padding: 15px 25px;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.football-card .match-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+}
+
+.football-card .match-info i {
+    color: var(--gold);
+}
+
+.football-card .availability {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #28a745;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.football-card .availability::before {
     content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: 
-        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 8px),
-        radial-gradient(circle at 40% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 8px),
-        radial-gradient(circle at 60% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 8px),
-        radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 8px);
-    opacity: 0.5;
+    width: 8px;
+    height: 8px;
+    background: #28a745;
+    border-radius: 50%;
+    animation: pulseDot 2s ease-in-out infinite;
 }
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* Scroll animations for cards */
+.football-card.scroll-animate {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.football-card.scroll-animate.animated {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.football-card.scroll-animate.stagger-1 { transition-delay: 0ms; }
+.football-card.scroll-animate.stagger-2 { transition-delay: 150ms; }
+.football-card.scroll-animate.stagger-3 { transition-delay: 300ms; }
 
 .can-offers-cta {
     text-align: center;
+    margin-top: 40px;
 }
 
 .btn-can-offers {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
     background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
     color: #1a1a1a;
-    padding: 16px 35px;
+    padding: 18px 45px;
     border-radius: 50px;
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 700;
+    font-size: 18px;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .btn-can-offers:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 20px 50px rgba(212, 175, 55, 0.6);
 }
 
 .btn-can-offers i {
+    font-size: 20px;
     transition: transform 0.3s ease;
 }
 
 .btn-can-offers:hover i {
-    transform: translateX(5px);
+    transform: translateX(8px);
 }
 
 .no-can-offers {
     text-align: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     color: rgba(255, 255, 255, 0.6);
 }
 
 .no-can-offers i {
-    font-size: 60px;
+    font-size: 80px;
     color: rgba(212, 175, 55, 0.3);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .can-offers-title {
-        font-size: 32px;
+        font-size: 36px;
     }
     
     .can-offers-subtitle {
@@ -1248,28 +1329,37 @@ body {
     
     .can-offers-grid {
         grid-template-columns: 1fr;
+        gap: 25px;
     }
     
     .btn-can-offers {
-        padding: 14px 25px;
-        font-size: 14px;
+        padding: 15px 35px;
+        font-size: 15px;
     }
     
-    .can-card {
-        border-radius: 20px;
+    .football-card {
+        border-radius: 16px;
     }
     
-    .can-card .can-image {
-        height: 180px;
-        min-height: 180px;
+    .football-card .card-image-container {
+        height: 200px;
     }
     
-    .can-card .can-details {
+    .football-card .card-body {
         padding: 20px;
     }
     
-    .can-card .can-price .new-price {
-        font-size: 24px;
+    .football-card .new-price {
+        font-size: 26px;
+    }
+    
+    .football-card .price-section {
+        padding: 12px;
+    }
+    
+    .football-card .order-btn {
+        padding: 14px 20px;
+        font-size: 14px;
     }
 }
 
