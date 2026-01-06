@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAN Offers - TiqtaQo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CAN Page Specific Styles */
+        .can-page {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .can-page::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(0, 98, 51, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(201, 0, 18, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .can-page-header {
+            position: relative;
+            padding: 60px 0 40px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .can-page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+        }
+
+        .can-page-header .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .can-page-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 30px rgba(201, 0, 18, 0.4);
+            animation: pulseBadge 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseBadge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .can-page-badge i {
+            font-size: 24px;
+        }
+
+        .can-page-title {
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 15px;
+            text-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .can-page-title .highlight {
+            background: linear-gradient(135deg, var(--gold) 0%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .can-page-subtitle {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .can-morocco-flags {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 25px;
+        }
+
+        .can-morocco-flags span {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .can-morocco-flags .green {
+            background: linear-gradient(135deg, #006233 0%, #004422 100%);
+        }
+
+        .can-morocco-flags .red {
+            background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+        }
+
+        /* Products Section */
+        .can-products-section {
+            padding: 40px 0 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .can-products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 35px;
+        }
+
+        /* CAN Product Card - Football Theme */
+        .can-product-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .can-product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #c90012, var(--gold), #006233);
+            border-radius: 30px 30px 0 0;
+        }
+
+        .can-product-card::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(212, 175, 55, 0.5);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
+        }
+
+        .can-product-card:hover {
+            transform: translateY(-20px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(212, 175, 55, 0.25);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .can-product-card .product-image-container {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .can-product-card .product-image-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(212, 175, 55, 0.08) 100%);
+            pointer-events: none;
+        }
+
+        .can-product-card .can-offer-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 2;
+            box-shadow: 0 6px 20px rgba(201, 0, 18, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .can-product-card .can-morocco-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 4px;
+            z-index: 2;
+        }
+
+        .can-morocco-badge span {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .can-morocco-badge .green {
+            background: linear-gradient(135deg, #006233 0%, #004422 100%);
+        }
+
+        .can-morocco-badge .red {
+            background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+        }
+
+        .can-product-card .product-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .can-product-card:hover .product-image-container img {
+            transform: scale(1.1);
+        }
+
+        .can-product-card .product-info {
+            padding: 30px;
+        }
+
+        .can-product-card .product-info h3 {
+            font-size: 22px;
+            color: var(--white);
+            margin-bottom: 12px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .can-product-card:hover .product-info h3 {
+            color: var(--gold);
+        }
+
+        .can-product-card .product-info p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .can-product-card .product-price {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .can-product-card .old-price {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: line-through;
+            font-size: 18px;
+        }
+
+        .can-product-card .price {
+            color: var(--gold);
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .can-product-card .product-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .can-product-card .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, #c90012 0%, #8b0000 100%);
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .can-product-card .btn-primary:hover {
+            background: linear-gradient(135deg, #006233 0%, #004422 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 98, 51, 0.4);
+        }
+
+        .can-product-card .btn-secondary {
+            padding: 16px 20px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            color: var(--gold);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .can-product-card .btn-secondary:hover {
+            background: var(--gold);
+            color: #1a1a1a;
+            transform: translateY(-3px);
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .no-products i {
+            font-size: 80px;
+            color: rgba(212, 175, 55, 0.3);
+            margin-bottom: 25px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .no-products h3 {
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .no-products p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+        }
+
+        /* Footer */
+        .can-page-footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .can-page-footer p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+        }
+
+        .can-page-footer .morocco-love {
+            color: #c90012;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .can-page-title {
+                font-size: 36px;
+            }
+
+            .can-page-subtitle {
+                font-size: 16px;
+            }
+
+            .can-products-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .can-product-card .product-info {
+                padding: 20px;
+            }
+
+            .can-product-card .price {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body class="can-page">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Desktop Search Bar -->
+            <div class="search-container desktop-search">
+                <input type="text" class="search-input" id="desktopSearchInput" placeholder="Rechercher un produit...">
+                <button class="search-icon-btn" id="desktopSearchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Search Button -->
+            <button class="search-icon-btn mobile-search-btn" id="mobileSearchBtn">
+                <i class="fas fa-search"></i>
+            </button>
+            
+            <a href="index.html" class="logo-link">
+                <i class="fas fa-crown"></i>
+                <span>TiqtaQo</span>
+            </a>
+            
+            <!-- Cart Button -->
+            <button class="cart-toggle" id="cartToggle">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <div class="nav-spacer"></div>
+        </div>
+    </nav>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <input type="text" class="search-modal-input" id="searchModalInput" placeholder="Rechercher un produit...">
+                <button class="close-search-modal" id="closeSearchModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="search-modal-results" id="searchModalResults">
+                <div class="search-modal-placeholder">
+                    <i class="fas fa-search"></i>
+                    <p>Tapez pour rechercher</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Panel -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-bag"></i> سلة المشتريات (<span id="cartCount">0</span>)</h3>
+            <button class="close-cart" id="closeCart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be loaded dynamically -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>المجموع:</span>
+                <span id="cartTotal">0.00 MAD</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn">
+                <i class="fab fa-whatsapp"></i>
+                طلب عبر واتساب
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
+            <li><a href="can-offers.html" class="active"><i class="fas fa-trophy"></i> CAN Offers</a></li>
+            <li><a href="packs-select.html"><i class="fas fa-gift"></i> Packs</a></li>
+            <li><a href="boite.html"><i class="fas fa-box-open"></i> Boite</a></li>
+            <li><a href="homme.html"><i class="fas fa-user-tie"></i> Homme</a></li>
+            <li><a href="femme.html"><i class="fas fa-crown"></i> Femme</a></li>
+            <li><a href="wallets-select.html"><i class="fas fa-wallet"></i> Wallets</a></li>
+            <li><a href="belts.html"><i class="fas fa-ribbon"></i> Belts</a></li>
+            <li><a href="glasses-select.html"><i class="fas fa-glasses"></i> Glasses</a></li>
+            <li><a href="accessoires-select.html"><i class="fas fa-gem"></i> Accessoires</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> À propos</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+            <li class="admin-link"><a href="admin/login.html"><i class="fas fa-lock"></i> Admin</a></li>
+        </ul>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <i class="fas fa-truck"></i>
+        LIVRAISON Gratuite PARTOUT AU MAROC
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/212674743106" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- CAN Page Header -->
+    <header class="can-page-header">
+        <div class="container">
+            <div class="can-page-badge">
+                <i class="fas fa-trophy"></i>
+                CAN 2025 - MAROC
+            </div>
+            <h1 class="can-page-title">
+                <span class="highlight">Offres</span> Spéciales
+            </h1>
+            <p class="can-page-subtitle">
+                Célébrez la Coupe d'Afrique des Nations au Maroc avec nos offres exclusives
+            </p>
+            <div class="can-morocco-flags">
+                <span class="green"></span>
+                <span class="red"></span>
+                <span class="green"></span>
+                <span class="red"></span>
+                <span class="green"></span>
+                <span class="red"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Products Section -->
+    <section class="can-products-section">
+        <div class="container">
+            <div class="can-products-grid" id="canProductsGrid">
+                <!-- Products will be loaded dynamically -->
+                <div class="no-products">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <h3>Chargement...</h3>
+                    <p>Veuillez patienter</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="can-page-footer">
+        <p class="morocco-love">🇲🇦 Avec tout notre amour pour le Maroc 🇲🇦</p>
+        <p>&copy; 2025 TiqtaQo. Tous droits réservés.</p>
+    </footer>
+
+    <script type="module" src="js/firebase-config.js?v=2"></script>
+    <script type="module">
+        import { initializeFirebase } from './js/firebase-config.js';
+
+        // Initialize page
+        async function initCanPage() {
+            console.log('Initializing CAN Offers page...');
+            
+            // Wait for Firebase to be ready
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Initialize Firebase
+            try {
+                await initializeFirebase();
+                console.log('Firebase initialized');
+            } catch (error) {
+                console.error('Firebase init error:', error);
+            }
+
+            // Load CAN products
+            await loadCanProducts();
+        }
+
+        // Load CAN products
+        async function loadCanProducts() {
+            const grid = document.getElementById('canProductsGrid');
+            if (!grid) return;
+
+            try {
+                let products = [];
+
+                // Try Firebase first
+                if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
+                    const result = await ProductAPI.getProducts({ pageSize: 100, forceRefresh: true });
+                    products = (result.products || []).filter(p => p.showInCanOffers && p.visible);
+                    console.log('Firebase CAN products:', products.length);
+                }
+
+                // Fallback to localStorage
+                if (products.length === 0) {
+                    const localProducts = localStorage.getItem('luxury_products');
+                    if (localProducts) {
+                        products = JSON.parse(localProducts).filter(p => p.showInCanOffers && p.visible);
+                        console.log('Local CAN products:', products.length);
+                    }
+                }
+
+                // Sort by created_at (newest first)
+                products.sort((a, b) => {
+                    const dateA = a.created_at || a.createdAt || '';
+                    const dateB = b.created_at || b.createdAt || '';
+                    return dateB.localeCompare(dateA);
+                });
+
+                if (products.length === 0) {
+                    grid.innerHTML = `
+                        <div class="no-products">
+                            <i class="fas fa-trophy"></i>
+                            <h3>Aucun CAN Offer disponible</h3>
+                            <p>Revenez bientôt pour découvrir nos offres spéciales!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = products.map((product, index) => {
+                    const hasPromotion = product.promotion && product.promotion > 0;
+                    const finalPrice = hasPromotion 
+                        ? product.price - (product.price * product.promotion / 100)
+                        : product.price;
+                    
+                    const productImage = (product.images && product.images.length > 0) 
+                        ? product.images[0] 
+                        : (product.image || '');
+
+                    return `
+                        <div class="can-product-card scroll-animate stagger-${(index % 4) + 1}" 
+                             onclick="location.href='product.html?id=${product.id}'" 
+                             style="cursor: pointer;">
+                            <div class="product-image-container">
+                                ${hasPromotion ? `<div class="can-offer-badge"><i class="fas fa-fire"></i> -${product.promotion}%</div>` : ''}
+                                <div class="can-morocco-badge">
+                                    <span class="green"></span>
+                                    <span class="red"></span>
+                                </div>
+                                <img src="${productImage}" alt="${product.name}" 
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
+                            </div>
+                            <div class="product-info">
+                                <h3>${product.name}</h3>
+                                <p>${product.description || 'Produit de qualité premium'}</p>
+                                <div class="product-price">
+                                    ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                                    <span class="price">${Math.round(finalPrice)} DH</span>
+                                </div>
+                                <div class="product-actions">
+                                    <button class="btn-primary" onclick="event.stopPropagation(); window.openOrderModal('${product.id}')">
+                                        <i class="fas fa-shopping-cart"></i> Commander
+                                    </button>
+                                    <button class="btn-secondary add-to-cart-btn" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); window.handleAddToCart('${product.id}')">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Initialize scroll animations
+                initScrollAnimations();
+                
+                // Initialize add to cart buttons
+                initAddToCartButtons();
+
+            } catch (error) {
+                console.error('Error loading CAN products:', error);
+                grid.innerHTML = `
+                    <div class="no-products">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Erreur de chargement</h3>
+                        <p>Veuillez rafraîchir la page</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Scroll animation
+        function initScrollAnimations() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .scroll-animate { opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+                .scroll-animate.animated { opacity: 1; transform: translateY(0); }
+                .scroll-animate.stagger-1 { transition-delay: 0ms; }
+                .scroll-animate.stagger-2 { transition-delay: 100ms; }
+                .scroll-animate.stagger-3 { transition-delay: 200ms; }
+                .scroll-animate.stagger-4 { transition-delay: 300ms; }
+            `;
+            document.head.appendChild(style);
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animated');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+                document.querySelectorAll('.can-product-card').forEach((card, index) => {
+                    card.classList.add('scroll-animate');
+                    card.classList.add(`stagger-${(index % 4) + 1}`);
+                    observer.observe(card);
+                });
+            } else {
+                document.querySelectorAll('.can-product-card').forEach(card => {
+                    card.classList.add('animated');
+                });
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initCanPage);
+    </script>
+    
+    <!-- Common scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -981,6 +981,92 @@ async function loadBestSellers() {
     initScrollAnimations();
 }
 
+// ===== CAN Offers Functions =====
+
+// Get products marked for CAN Offers
+async function getCanOffers() {
+    try {
+        if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
+            // Get all products and filter by showInCanOffers flag
+            const result = await ProductAPI.getProducts({ pageSize: 100, forceRefresh: true });
+            const allProducts = result.products || [];
+            return allProducts.filter(p => p.showInCanOffers && p.visible);
+        }
+    } catch (error) {
+        console.error('Error fetching CAN offers from Firebase:', error);
+    }
+    
+    // Fallback to localStorage
+    const products = JSON.parse(localStorage.getItem('luxury_products') || '[]');
+    return products.filter(p => p.showInCanOffers && p.visible);
+}
+
+// Load CAN Offers on homepage
+async function loadCanOffers() {
+    const canOffersGrid = document.getElementById('canOffersGrid');
+    if (!canOffersGrid) return;
+    
+    const canOffers = await getCanOffers();
+    
+    if (canOffers.length === 0) {
+        // Optionally hide the entire section if no offers exist
+        const section = document.querySelector('.can-offers-section');
+        if (section) {
+            section.style.display = 'none';
+        }
+        return;
+    }
+    
+    // Show the section
+    const section = document.querySelector('.can-offers-section');
+    if (section) {
+        section.style.display = 'block';
+    }
+    
+    // Display up to 3 products on homepage
+    const displayProducts = canOffers.slice(0, 3);
+    
+    canOffersGrid.innerHTML = displayProducts.map((product, index) => {
+        const hasPromotion = product.promotion && product.promotion > 0;
+        const finalPrice = hasPromotion 
+            ? product.price - (product.price * product.promotion / 100)
+            : product.price;
+        
+        const productImage = (product.images && product.images.length > 0) 
+            ? product.images[0] 
+            : (product.image || '');
+        
+        return `
+            <div class="can-offer-card scroll-animate stagger-${(index % 3) + 1}" 
+                 onclick="location.href='product.html?id=${product.id}'" 
+                 style="cursor: pointer;">
+                <div class="product-image-container">
+                    ${hasPromotion ? `<div class="can-offer-badge">-${product.promotion}%</div>` : ''}
+                    <div class="can-morocco-badge">
+                        <span class="green"></span>
+                        <span class="red"></span>
+                    </div>
+                    <img src="${productImage}" alt="${product.name}" 
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
+                </div>
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <div class="product-price">
+                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                        <span class="price">${Math.round(finalPrice)} DH</span>
+                    </div>
+                    <button class="btn-primary" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                        <i class="fas fa-shopping-cart"></i> Commander
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Initialize scroll animations
+    initScrollAnimations();
+}
+
 // ===== Search Functionality =====
 
 // Search products
@@ -1355,6 +1441,14 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             updateDiagnostic('DOMContentLoaded: Calling loadCollections()', 'info');
             loadCollections();
+        }, 100);
+    }
+    
+    // Load CAN Offers if grid exists
+    if (document.getElementById('canOffersGrid')) {
+        setTimeout(() => {
+            updateDiagnostic('DOMContentLoaded: Calling loadCanOffers()', 'info');
+            loadCanOffers();
         }, 100);
     }
     

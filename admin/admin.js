@@ -385,6 +385,7 @@ async function editProduct(id) {
         document.getElementById('productPromotion').value = product.promotion || 0;
         document.getElementById('productBestSeller').checked = product.bestSeller || false;
         document.getElementById('productVisible').checked = product.visible;
+        document.getElementById('productCanOffer').checked = product.showInCanOffers || false;
         
         // Handle gender for branched categories
         const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
@@ -746,6 +747,7 @@ async function saveProduct(event) {
         promotion: parseInt(document.getElementById('productPromotion').value) || 0,
         bestSeller: document.getElementById('productBestSeller').checked,
         visible: document.getElementById('productVisible').checked,
+        showInCanOffers: document.getElementById('productCanOffer').checked,
         created_at: new Date().toISOString()
     };
     
