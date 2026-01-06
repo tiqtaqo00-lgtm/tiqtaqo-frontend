@@ -1331,9 +1331,10 @@ body {
     }
     
     .can-offers-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
         margin-bottom: 30px;
+        padding: 0 10px;
     }
     
     .can-offers-badge {
@@ -1357,18 +1358,18 @@ body {
     }
     
     .football-card .card-header {
-        padding: 12px 15px;
-        gap: 8px;
+        padding: 8px 10px;
+        gap: 6px;
     }
     
     .football-card .crest-area {
-        gap: 8px;
+        gap: 6px;
     }
     
     .football-card .crest-icon {
-        width: 28px;
-        height: 18px;
-        font-size: 12px;
+        width: 24px;
+        height: 16px;
+        font-size: 10px;
     }
     
     .football-card .crest-text {
@@ -1376,61 +1377,83 @@ body {
     }
     
     .football-card .competition-badge {
-        padding: 5px 10px;
-        font-size: 10px;
+        padding: 4px 8px;
+        font-size: 9px;
+        gap: 4px;
     }
     
     .football-card .competition-badge i {
-        font-size: 10px;
-    }
-    
-    .football-card .card-image-container {
-        height: 160px;
-    }
-    
-    .football-card .card-body {
-        padding: 15px;
-    }
-    
-    .football-card .card-body h3 {
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    
-    .football-card .price-section {
-        padding: 10px;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-    
-    .football-card .old-price {
-        font-size: 13px;
-    }
-    
-    .football-card .new-price {
-        font-size: 22px;
-    }
-    
-    .football-card .price-label {
         font-size: 9px;
     }
     
+    .football-card .card-image-container {
+        height: 120px;
+    }
+    
+    .football-card .card-body {
+        padding: 10px;
+    }
+    
+    .football-card .card-body h3 {
+        font-size: 12px;
+        margin-bottom: 6px;
+        -webkit-line-clamp: 2;
+    }
+    
+    .football-card .price-section {
+        padding: 6px;
+        gap: 6px;
+        margin-bottom: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .football-card .old-price {
+        font-size: 10px;
+    }
+    
+    .football-card .new-price {
+        font-size: 16px;
+    }
+    
+    .football-card .price-label {
+        font-size: 8px;
+        display: none;
+    }
+    
     .football-card .order-btn {
-        padding: 10px 15px;
-        font-size: 13px;
-        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+    
+    .football-card .order-btn i {
+        display: none;
     }
     
     .football-card .card-footer {
-        padding: 10px 15px;
-        font-size: 11px;
+        padding: 6px 10px;
+        font-size: 9px;
     }
     
     .football-card .promo-ribbon {
-        padding: 5px 30px;
-        font-size: 11px;
-        top: 10px;
-        right: -25px;
+        padding: 3px 20px;
+        font-size: 9px;
+        top: 8px;
+        right: -20px;
+    }
+    
+    .can-offers-section {
+        padding: 30px 0;
+    }
+    
+    .can-offers-section .container {
+        padding: 0 5px;
+    }
+    
+    .can-offers-header {
+        margin-bottom: 20px;
     }
 }
 
