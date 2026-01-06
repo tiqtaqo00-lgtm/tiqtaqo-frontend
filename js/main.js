@@ -1063,13 +1063,16 @@ async function loadCanOffers() {
                 imageHtml = '<div class="no-image"><i class="fas fa-image"></i><span>' + productName + '</span></div>';
             }
             
-            const badgeHtml = hasPromotion 
+            const promoBadgeHtml = hasPromotion 
                 ? '<div class="promo-badge">-' + product.promotion + '%</div>'
                 : '';
             
-            html += '<div class="can-card" onclick="location.href=\'product.html?id=' + product.id + '\'">';
-            html += badgeHtml;
+            const trophyBadgeHtml = '<div class="can-badge"><i class="fas fa-trophy"></i> CAN 2025</div>';
+            
+            html += '<div class="can-card scroll-animate stagger-' + ((index % 3) + 1) + '" onclick="location.href=\'product.html?id=' + product.id + '\'">';
+            html += trophyBadgeHtml;
             html += '<div class="morocco-flags"><span class="green"></span><span class="red"></span></div>';
+            html += promoBadgeHtml;
             html += '<div class="can-image">' + imageHtml + '</div>';
             html += '<div class="can-details">';
             html += '<h3>' + productName + '</h3>';
@@ -1079,7 +1082,7 @@ async function loadCanOffers() {
             }
             html += '<span class="new-price">' + productPrice + ' DH</span>';
             html += '</div>';
-            html += '<button class="order-btn" onclick="event.stopPropagation();openOrderModal(\'' + product.id + '\')">Commander</button>';
+            html += '<button class="order-btn" onclick="event.stopPropagation();openOrderModal(\'' + product.id + '\')"><i class="fas fa-shopping-cart"></i> Commander</button>';
             html += '</div></div>';
         });
         
@@ -2354,7 +2357,7 @@ function initScrollAnimations() {
             });
         }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
         
-        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card').forEach((card, index) => {
+        document.querySelectorAll('.collection-card, .product-card, .best-seller, .feature-card, .can-card').forEach((card, index) => {
             card.classList.add('scroll-animate');
             card.classList.add(`stagger-${(index % 6) + 1}`);
             observer.observe(card);
