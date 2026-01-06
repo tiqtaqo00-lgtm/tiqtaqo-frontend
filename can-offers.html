@@ -68,6 +68,179 @@
             50% { opacity: 1; }
         }
 
+        /* Floating Football Elements */
+        .floating-football {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(212, 212, 212, 0.8) 20%, rgba(200, 200, 200, 0.6) 40%, rgba(50, 50, 50, 0.3) 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            animation: footballFloat 15s infinite linear;
+        }
+
+        .floating-football::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: 
+                /* Pentagon pattern */
+                radial-gradient(circle at 50% 50%, transparent 35%, rgba(50, 50, 50, 0.4) 36%, rgba(50, 50, 50, 0.4) 40%, transparent 41%),
+                /* Border circles */
+                radial-gradient(circle at 50% 10%, rgba(50, 50, 50, 0.3) 0%, transparent 15%),
+                radial-gradient(circle at 85% 35%, rgba(50, 50, 50, 0.3) 0%, transparent 12%),
+                radial-gradient(circle at 65% 75%, rgba(50, 50, 50, 0.3) 0%, transparent 12%),
+                radial-gradient(circle at 35% 75%, rgba(50, 50, 50, 0.3) 0%, transparent 12%),
+                radial-gradient(circle at 15% 35%, rgba(50, 50, 50, 0.3) 0%, transparent 12%);
+            border-radius: 50%;
+        }
+
+        .floating-football::after {
+            content: '';
+            position: absolute;
+            top: 8%;
+            left: 15%;
+            width: 25%;
+            height: 25%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* Moroccan flag colored footballs */
+        .floating-football.red {
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(201, 0, 18, 0.7) 20%, rgba(201, 0, 18, 0.5) 50%, rgba(139, 0, 0, 0.4) 100%);
+        }
+
+        .floating-football.red::before {
+            background: 
+                radial-gradient(circle at 50% 50%, transparent 35%, rgba(255, 255, 255, 0.3) 36%, rgba(255, 255, 255, 0.3) 40%, transparent 41%),
+                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.2) 0%, transparent 15%),
+                radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.2) 0%, transparent 12%),
+                radial-gradient(circle at 65% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 12%),
+                radial-gradient(circle at 35% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 12%),
+                radial-gradient(circle at 15% 35%, rgba(255, 255, 255, 0.2) 0%, transparent 12%);
+        }
+
+        .floating-football.green {
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(0, 98, 51, 0.7) 20%, rgba(0, 98, 51, 0.5) 50%, rgba(0, 60, 30, 0.4) 100%);
+        }
+
+        .floating-football.green::before {
+            background: 
+                radial-gradient(circle at 50% 50%, transparent 35%, rgba(255, 255, 255, 0.3) 36%, rgba(255, 255, 255, 0.3) 40%, transparent 41%),
+                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.2) 0%, transparent 15%),
+                radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.2) 0%, transparent 12%),
+                radial-gradient(circle at 65% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 12%),
+                radial-gradient(circle at 35% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 12%),
+                radial-gradient(circle at 15% 35%, rgba(255, 255, 255, 0.2) 0%, transparent 12%);
+        }
+
+        .floating-football.gold {
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(212, 175, 55, 0.7) 20%, rgba(212, 175, 55, 0.5) 50%, rgba(180, 150, 30, 0.4) 100%);
+        }
+
+        .floating-football.gold::before {
+            background: 
+                radial-gradient(circle at 50% 50%, transparent 35%, rgba(255, 255, 255, 0.4) 36%, rgba(255, 255, 255, 0.4) 40%, transparent 41%),
+                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.3) 0%, transparent 15%),
+                radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.3) 0%, transparent 12%),
+                radial-gradient(circle at 65% 75%, rgba(255, 255, 255, 0.3) 0%, transparent 12%),
+                radial-gradient(circle at 35% 75%, rgba(255, 255, 255, 0.3) 0%, transparent 12%),
+                radial-gradient(circle at 15% 35%, rgba(255, 255, 255, 0.3) 0%, transparent 12%);
+        }
+
+        @keyframes footballFloat {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(0deg) scale(0.5);
+            }
+            5% {
+                opacity: var(--ball-opacity, 0.6);
+            }
+            90% {
+                opacity: var(--ball-opacity, 0.6);
+            }
+            95% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) rotate(360deg) scale(1);
+            }
+        }
+
+        /* Trophy icon floating */
+        .floating-trophy {
+            position: fixed;
+            font-size: 30px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            animation: trophyFloat 20s infinite linear;
+        }
+
+        @keyframes trophyFloat {
+            0% {
+                opacity: 0;
+                transform: translateX(-50px) translateY(100vh) rotate(0deg);
+            }
+            5% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            95% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(50px) translateY(-100px) rotate(360deg);
+            }
+        }
+
+        /* Zellige pattern particles */
+        .zigzag-particle {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            animation: zigzagFloat 25s infinite ease-in-out;
+        }
+
+        .zigzag-particle svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes zigzagFloat {
+            0% {
+                opacity: 0;
+                transform: translateX(0) translateY(100vh) rotate(0deg);
+            }
+            5% {
+                opacity: 0.4;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            95% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(30px) translateY(-100px) rotate(180deg);
+            }
+        }
+
         .can-page-header {
             position: relative;
             padding: 60px 0 40px;
@@ -1013,7 +1186,70 @@
         }
 
         // Initialize when DOM is ready
-        document.addEventListener('DOMContentLoaded', initCanPage);
+        document.addEventListener('DOMContentLoaded', function() {
+            initCanPage();
+            initFloatingElements();
+        });
+
+        // Create floating football and trophy elements
+        function initFloatingElements() {
+            const container = document.body;
+            
+            // Create footballs
+            const footballColors = ['red', 'green', 'gold', ''];
+            const footballSizes = [30, 40, 50, 35];
+            const footballPositions = [10, 25, 40, 55, 70, 85, 95];
+            
+            footballPositions.forEach((pos, index) => {
+                setTimeout(() => {
+                    const ball = document.createElement('div');
+                    ball.className = `floating-football ${footballColors[index % footballColors.length]}`;
+                    ball.style.left = `${pos}%`;
+                    ball.style.setProperty('--ball-opacity', (0.3 + Math.random() * 0.4).toString());
+                    ball.style.animationDuration = `${15 + Math.random() * 10}s`;
+                    ball.style.animationDelay = `${Math.random() * 5}s`;
+                    ball.style.width = `${footballSizes[index % footballSizes.length]}px`;
+                    ball.style.height = `${footballSizes[index % footballSizes.length]}px`;
+                    container.appendChild(ball);
+                }, index * 2000);
+            });
+
+            // Create trophies
+            const trophyIcons = ['🏆', '⚽', '🥇', '⭐'];
+            trophyIcons.forEach((icon, index) => {
+                setTimeout(() => {
+                    const trophy = document.createElement('div');
+                    trophy.className = 'floating-trophy';
+                    trophy.textContent = icon;
+                    trophy.style.left = `${15 + (index * 20)}%`;
+                    trophy.style.animationDelay = `${index * 4}s`;
+                    trophy.style.fontSize = `${20 + Math.random() * 20}px`;
+                    container.appendChild(trophy);
+                }, index * 3000);
+            });
+
+            // Create zellige-style particles
+            const zelligeColors = ['#c90012', '#006233', '#d4af37'];
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'zigzag-particle';
+                    particle.style.left = `${10 + (i * 11)}%`;
+                    particle.style.animationDelay = `${i * 3}s`;
+                    
+                    // Create zellige-style SVG
+                    const color = zelligeColors[i % zelligeColors.length];
+                    particle.innerHTML = `
+                        <svg viewBox="0 0 20 20" fill="${color}" opacity="0.6">
+                            <path d="M0 0 L10 10 L0 20 Z" fill="${color}"/>
+                            <path d="M20 0 L10 10 L20 20 Z" fill="${color}" opacity="0.7"/>
+                            <path d="M0 0 L20 0 L10 10 Z" fill="${color}" opacity="0.8"/>
+                        </svg>
+                    `;
+                    container.appendChild(particle);
+                }, i * 2500);
+            }
+        }
     </script>
     
     <!-- Common scripts -->
