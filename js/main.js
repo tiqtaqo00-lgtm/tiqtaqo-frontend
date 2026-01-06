@@ -1038,8 +1038,8 @@ async function loadCanOffers() {
             section.style.display = 'block';
         }
         
-        const displayProducts = canOffers.slice(0, 3);
-        console.log('Displaying products:', displayProducts.map(p => ({id: p.id, name: p.name})));
+        const displayProducts = canOffers;
+        console.log('Displaying all products:', displayProducts.length + ' products found');
         
         // Build HTML manually
         let html = '';
