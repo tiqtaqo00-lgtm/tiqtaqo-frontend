@@ -1337,6 +1337,13 @@ body {
         padding: 0 10px;
     }
     
+    /* Center the last card when there's an odd number */
+    .can-offers-grid .football-card:nth-child(2n+1):last-child {
+        grid-column: 1 / -1;
+        max-width: calc(50% - 6px);
+        margin: 0 auto;
+    }
+    
     .can-offers-badge {
         padding: 8px 20px;
         font-size: 13px;
