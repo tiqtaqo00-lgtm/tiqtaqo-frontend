@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#121212"/>
+  
+  <!-- Crown - Simple 3-point crown -->
+  <path d="M256 80 L320 180 L290 180 L310 230 L350 180 L352 180 L330 250 L380 180 L385 185 L350 280 L410 180 L415 190 L390 300 L450 190 L455 210 L430 340 L490 220 L495 260 L455 380 L512 280 L512 512 L0 512 L0 280 L57 380 L115 260 L120 220 L175 300 L200 190 L205 180 L162 280 L170 185 L175 180 L192 250 L240 180 L242 180 L222 180 L192 180 L256 80 Z" fill="#D4AF37"/>
+</svg>
