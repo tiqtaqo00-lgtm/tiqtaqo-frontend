@@ -334,20 +334,6 @@ BulkImport.handleFile = async function(file) {
     }
 };
 
-// Add button to admin pages
-document.addEventListener('DOMContentLoaded', function() {
-    // Add quick add button to navbar or admin area
-    const navContainer = document.querySelector('.nav-container') || document.querySelector('.admin-nav');
-    if (navContainer && !document.getElementById('quickAddBtn')) {
-        const btn = document.createElement('button');
-        btn.id = 'quickAddBtn';
-        btn.innerHTML = '⚡ إضافة منتج';
-        btn.style.cssText = 'padding: 8px 15px; background: linear-gradient(135deg, var(--gold), #b8860b); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;';
-        btn.onclick = QuickAdd.showForm;
-        navContainer.appendChild(btn);
-    }
-});
-
 // Export for global use
 window.BulkImport = BulkImport;
 window.QuickAdd = QuickAdd;
