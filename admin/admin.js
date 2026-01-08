@@ -163,17 +163,17 @@ async function loadProductsTable() {
     }
     
     tbody.innerHTML = products.map(product => `
-        <tr>
-            <td>${product.id}</td>
-            <td>
+        <tr style="color: #000;">
+            <td style="color: #000;">${product.id}</td>
+            <td style="color: #000;">
                 ${product.image ? `<img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">` : 'Pas d\'image'}
                 ${product.images && product.images.length > 1 ? `<span style="display: block; font-size: 10px; color: #666;">+${product.images.length - 1} autres</span>` : ''}
             </td>
-            <td>${product.name}</td>
-            <td>${product.price} DH</td>
-            <td><span class="category-badge badge-${product.category}">${getCategoryName(product.category)}</span></td>
-            <td>${getGenderDisplay(product)}</td>
-            <td>${product.promotion > 0 ? product.promotion + '%' : '-'}</td>
+            <td style="color: #000;">${product.name}</td>
+            <td style="color: #000;">${product.price} DH</td>
+            <td style="color: #000;"><span class="category-badge badge-${product.category}">${getCategoryName(product.category)}</span></td>
+            <td style="color: #000;">${getGenderDisplay(product)}</td>
+            <td style="color: #000;">${product.promotion > 0 ? product.promotion + '%' : '-'}</td>
             <td>
                 <button class="btn-toggle ${product.bestSeller ? 'active' : ''}" style="${product.bestSeller ? 'background: linear-gradient(135deg, #ff6b6b, #ee5a24);' : ''}" onclick="toggleProductBestSeller('${product.id}')">
                     ${product.bestSeller ? '<i class="fas fa-fire"></i> Oui' : '<i class="fas fa-times"></i> Non'}
