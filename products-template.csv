@@ -1,0 +1,8 @@
+name,category,price,oldPrice,colors,image,description,canOffer,bestSeller,stock
+Montre Luxe Or,montres,850,1200,Or|Argent,https://example.com/watch1.jpg,ساعة ذهبية فاخرة مع سير stainless steel,TRUE,FALSE,10
+Montre Sport Noir,montres,450,,Noir,https://example.com/watch2.jpg,ساعة رياضية أنيقة مقاومة للماء,FALSE,TRUE,25
+Pack Complet Élégant,packs,1500,2000,Noir|Marron,https://example.com/pack1.jpg,باقة كاملة: ساعة + محفظة + حزام,TRUE,TRUE,5
+Lunettes Vintage,glasses,280,350,Noir| tortoise,https://example.com/glasses1.jpg,نظارات فينتاج رجالية أنيقة,FALSE,FALSE,15
+Portefeuille Cuir,v wallets,180,220,Marron|Noir,https://example.com/wallet1.jpg,محفظة جلدية فاخرة handcrafted,TRUE,FALSE,30
+Ceinture Classique,belts,120,,Marron|Noir,https://example.com/belt1.jpg,حزام جلدي كلاسيكي,FALSE,FALSE,20
+Accessoire Set,accessoires,95,,Doré|Argent,https://example.com/acc1.jpg,طقم إكسسوارات رجالي,FALSE,FALSE,40
