@@ -59,6 +59,7 @@ function renderColorOptions(colors, selectedColorName) {
     if (!colors || colors.length === 0) return '';
     
     console.log('renderColorOptions called with colors:', colors);
+    console.log('First color object keys:', Object.keys(colors[0] || {}));
 
     return `
         <div class="product-colors-section">
@@ -68,30 +69,48 @@ function renderColorOptions(colors, selectedColorName) {
             <div class="color-options" id="colorOptions">
                 ${colors.map((color, index) => {
                     const isSelected = selectedColorName === color.name;
-                    const isDual = DualColorUtils.isDualColor(color);
                     
-                    // Log all color details expanded
-                    console.log(`Color ${index}:`, {
+                    // Log ALL properties of the color object
+                    console.log(`Color ${index} raw data:`, JSON.parse(JSON.stringify(color)));
+                    console.log(`Color ${index} all values:`, {
                         name: color.name,
-                        isDual,
                         hex: color.hex,
                         hex1: color.hex1,
                         hex2: color.hex2,
-                        image: color.image ? '[image URL]' : 'none'
+                        color1: color.color1,
+                        color2: color.color2,
+                        image: color.image
                     });
+                    
+                    // Try different possible field names for dual colors
+                    const hex1 = color.hex1 || color.color1 || null;
+                    const hex2 = color.hex2 || color.color2 || null;
+                    const isDual = hex1 && hex2 && 
+                                   hex1.trim() !== '' && 
+                                   hex2.trim() !== '' &&
+                                   hex1 !== 'null' && hex1 !== 'undefined' &&
+                                   hex2 !== 'null' && hex2 !== 'undefined';
+                    
+                    console.log(`Color ${index} isDual:`, isDual, { hex1, hex2 });
                     
                     if (isDual) {
                         // Dual-color circle (diagonal split)
+                        // Use the detected hex1 and hex2 values
+                        const finalHex1 = hex1 || '#ff0000';
+                        const finalHex2 = hex2 || '#0000ff';
+                        
+                        console.log(`Rendering dual color ${index}:`, { finalHex1, finalHex2 });
+                        
                         return `
                             <button type="button" 
                                     class="color-option ${isSelected ? 'selected' : ''}" 
                                     data-color="${color.name}" 
-                                    data-hex="${color.hex1}"
-                                    data-hex2="${color.hex2}"
+                                    data-hex="${finalHex1}"
+                                    data-hex2="${finalHex2}"
                                     data-image="${color.image || ''}"
-                                    onclick="selectProductColor(this, '${color.name}', '${color.hex1}', '${color.hex2}', '${color.image || ''}')"
-                                    style="${DualColorUtils.getDualColorStyle(color.hex1, color.hex2, isSelected)}"
-                                    title="${DualColorUtils.getDisplayName(color)}">
+                                    onclick="selectProductColor(this, '${color.name}', '${finalHex1}', '${finalHex2}', '${color.image || ''}')"
+                                    style="background: conic-gradient(${finalHex1} 0deg 180deg, ${finalHex2} 180deg 360deg); border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
+                                    title="${color.name || finalHex1 + ' / ' + finalHex2}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
                             </button>
                         `;
