@@ -51,9 +51,8 @@ const DualColorUtils = {
     getDisplayName(color) {
         if (this.isDualColor(color)) {
             const name = color.colorName || color.name;
-            const hex1 = color.colorHex1 || color.hex1 || color.color1;
-            const hex2 = color.colorHex2 || color.hex2 || color.color2;
-            return name || `${hex1} / ${hex2}`;
+            // Return only the name if it exists, otherwise return empty string
+            return name || '';
         }
         return color.colorName || color.name || color.hex || '';
     }
@@ -125,7 +124,7 @@ function renderColorOptions(colors, selectedColorName) {
                                     data-image="${image || ''}"
                                     onclick="selectProductColor(this, '${colorName}', '${finalHex1}', '${finalHex2}', '${image || ''}')"
                                     style="background: linear-gradient(135deg, ${finalHex1} 50%, ${finalHex2} 50%); border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
-                                    title="${colorName || finalHex1 + ' / ' + finalHex2}">
+                                    title="${colorName || ''}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
                             </button>
                         `;
