@@ -72,26 +72,21 @@ function renderColorOptions(colors, selectedColorName) {
                     
                     // Log ALL properties of the color object
                     console.log(`Color ${index} raw data:`, JSON.parse(JSON.stringify(color)));
-                    console.log(`Color ${index} all values:`, {
-                        name: color.name,
-                        hex: color.hex,
-                        hex1: color.hex1,
-                        hex2: color.hex2,
-                        color1: color.color1,
-                        color2: color.color2,
-                        image: color.image
-                    });
+                    console.log(`Color ${index} all values - DIRECT: name="${color.name}", hex="${color.hex}", hex1="${color.hex1}", hex2="${color.hex2}", color1="${color.color1}", color2="${color.color2}"`);
                     
                     // Try different possible field names for dual colors
                     const hex1 = color.hex1 || color.color1 || null;
                     const hex2 = color.hex2 || color.color2 || null;
+                    
+                    console.log(`Color ${index} detected values: hex1="${hex1}", hex2="${hex2}"`);
+                    
                     const isDual = hex1 && hex2 && 
-                                   hex1.trim() !== '' && 
-                                   hex2.trim() !== '' &&
+                                   String(hex1).trim() !== '' && 
+                                   String(hex2).trim() !== '' &&
                                    hex1 !== 'null' && hex1 !== 'undefined' &&
                                    hex2 !== 'null' && hex2 !== 'undefined';
                     
-                    console.log(`Color ${index} isDual:`, isDual, { hex1, hex2 });
+                    console.log(`Color ${index} isDual:`, isDual);
                     
                     if (isDual) {
                         // Dual-color circle (diagonal split)
