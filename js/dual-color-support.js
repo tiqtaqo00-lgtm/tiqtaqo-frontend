@@ -131,17 +131,25 @@ function renderColorOptions(colors, selectedColorName) {
                         
                         console.log(`Rendering dual color ${index}: ${finalHex1} / ${finalHex2}`);
                         
-                        // Don't show hex values in title if no name exists
-                        const displayTitle = (colorName && !String(colorName).startsWith('#')) ? colorName : '';
+                        // Don't show hex values in title - only show if name is a real name (not containing hex codes)
+                        let displayTitle = '';
+                        if (colorName && typeof colorName === 'string' && colorName.trim() !== '') {
+                            // Check if name looks like hex codes (contains # and /)
+                            const looksLikeHex = colorName.includes('#') || 
+                                                (colorName.match(/#[0-9A-Fa-f]{6}/g) || []).length > 0;
+                            if (!looksLikeHex) {
+                                displayTitle = colorName;
+                            }
+                        }
                         
                         return `
                             <button type="button" 
                                     class="color-option ${isSelected ? 'selected' : ''}" 
-                                    data-color="${colorName}" 
+                                    data-color="${colorName || ''}" 
                                     data-hex="${finalHex1}"
                                     data-hex2="${finalHex2}"
                                     data-image="${image || ''}"
-                                    onclick="selectProductColor(this, '${colorName}', '${finalHex1}', '${finalHex2}', '${image || ''}')"
+                                    onclick="selectProductColor(this, '${colorName || ''}', '${finalHex1}', '${finalHex2}', '${image || ''}')"
                                     style="background: linear-gradient(135deg, ${finalHex1} 50%, ${finalHex2} 50%); border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
                                     title="${displayTitle}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
@@ -151,16 +159,22 @@ function renderColorOptions(colors, selectedColorName) {
                         // Single-color circle
                         const hex = getColorField(color, 'Hex') || hex1 || '#000000';
                         
-                        // Don't show hex values in title if no name exists or if name looks like hex
-                        const displayTitle = (colorName && !String(colorName).startsWith('#')) ? colorName : '';
+                        // Don't show hex values in title - only show if name is a real name
+                        let displayTitle = '';
+                        if (colorName && typeof colorName === 'string' && colorName.trim() !== '') {
+                            const looksLikeHex = colorName.includes('#');
+                            if (!looksLikeHex) {
+                                displayTitle = colorName;
+                            }
+                        }
                         
                         return `
                             <button type="button" 
                                     class="color-option ${isSelected ? 'selected' : ''}" 
-                                    data-color="${colorName}" 
+                                    data-color="${colorName || ''}" 
                                     data-hex="${hex}"
                                     data-image="${image || ''}"
-                                    onclick="selectProductColor(this, '${colorName}', '${hex}', null, '${image || ''}')"
+                                    onclick="selectProductColor(this, '${colorName || ''}', '${hex}', null, '${image || ''}')"
                                     style="background: ${hex}; border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
                                     title="${displayTitle}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
