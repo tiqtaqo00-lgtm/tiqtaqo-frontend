@@ -433,7 +433,13 @@ function loadProductColors(colors) {
     container.innerHTML = '';
     
     colors.forEach((color, index) => {
-        addColorRow(color.name, color.hex, color.hex2 || '', color.image, index);
+        // Support both old format (name, hex, hex2, image) and new format (colorName, colorHex1, colorHex2, colorImage)
+        const name = color.colorName || color.name || '';
+        const hex = color.colorHex1 || color.hex || '#000000';
+        const hex2 = color.colorHex2 || color.hex2 || '';
+        const image = color.colorImage || color.image || '';
+        
+        addColorRow(name, hex, hex2, image, index);
     });
 }
 
@@ -630,7 +636,13 @@ function getProductColors() {
         const image = colorImageUpload.dataset.image || (colorImageUpload.querySelector('img') ? colorImageUpload.querySelector('img').src : '');
         
         if (name) {
-            colors.push({ name, hex, hex2, image });
+            // Save with correct field names for frontend compatibility
+            colors.push({ 
+                colorName: name, 
+                colorHex1: hex, 
+                colorHex2: hex2, 
+                colorImage: image 
+            });
         }
     });
     
