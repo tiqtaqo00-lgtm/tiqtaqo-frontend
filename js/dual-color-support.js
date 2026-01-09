@@ -50,27 +50,36 @@ const DualColorUtils = {
     // Get display name for dual color
     getDisplayName(color) {
         if (!color) {
-            console.log('getDisplayName: color is null/undefined, returning empty string');
             return '';
         }
         
         const name = getColorField(color, 'Name');
-        console.log('getDisplayName: name =', name, ', type =', typeof name);
         
-        // Check if name exists and is not a hex value (doesn't start with #)
-        if (name && String(name).trim() !== '' && !String(name).trim().startsWith('#')) {
-            return name;
-        }
-        
-        // If it's a dual color and no valid name exists, return empty string
-        if (this.isDualColor(color)) {
-            console.log('getDisplayName: dual color with no valid name, returning empty string');
+        // If no name, return empty string
+        if (!name || typeof name !== 'string') {
             return '';
         }
         
-        // For single colors without valid name, return empty string too
-        console.log('getDisplayName: single color with no valid name, returning empty string');
-        return '';
+        const trimmedName = name.trim();
+        
+        // If empty after trimming, return empty string
+        if (trimmedName === '') {
+            return '';
+        }
+        
+        // If name contains hex codes (# followed by 6 hex digits), it's coordinates - don't show
+        const hasHexCode = /#[0-9A-Fa-f]{6}/g.test(trimmedName);
+        if (hasHexCode) {
+            return '';
+        }
+        
+        // If name starts with #, it's a hex value - don't show
+        if (trimmedName.startsWith('#')) {
+            return '';
+        }
+        
+        // Otherwise, return the name
+        return trimmedName;
     }
 };
 

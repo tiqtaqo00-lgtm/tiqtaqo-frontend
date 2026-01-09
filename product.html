@@ -241,7 +241,7 @@
 
     <script type="module" src="js/firebase-config.js?v=2"></script>
     <script type="module" src="js/main.js"></script>
-    <script src="js/dual-color-support.js?v=4"></script>
+    <script src="js/dual-color-support.js?v=5"></script>
     <script>
         // Get product ID from URL FIRST
         const urlParams = new URLSearchParams(window.location.search);
@@ -737,8 +737,16 @@
             // Update color name display
             const colorDisplay = document.getElementById('selectedColorDisplay');
             if (colorDisplay) {
-                // Show only the color name, not the coordinates
-                colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${colorName}`;
+                // Don't show coordinates as color name - only show if it looks like a real name
+                let displayName = colorName;
+                if (!displayName || 
+                    String(displayName).includes('#') || 
+                    (String(displayName).match(/#[0-9A-Fa-f]{6}/g) || []).length > 0 ||
+                    !isNaN(displayName) ||
+                    String(displayName).trim() === '') {
+                    displayName = '';
+                }
+                colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${displayName}`;
             }
 
             // Update the product image if a color image is provided
