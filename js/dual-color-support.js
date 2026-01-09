@@ -70,12 +70,14 @@ function renderColorOptions(colors, selectedColorName) {
                     const isSelected = selectedColorName === color.name;
                     const isDual = DualColorUtils.isDualColor(color);
                     
-                    console.log(`Color ${index}:`, { 
-                        name: color.name, 
-                        isDual, 
-                        hex: color.hex, 
-                        hex1: color.hex1, 
-                        hex2: color.hex2 
+                    // Log all color details expanded
+                    console.log(`Color ${index}:`, {
+                        name: color.name,
+                        isDual,
+                        hex: color.hex,
+                        hex1: color.hex1,
+                        hex2: color.hex2,
+                        image: color.image ? '[image URL]' : 'none'
                     });
                     
                     if (isDual) {
