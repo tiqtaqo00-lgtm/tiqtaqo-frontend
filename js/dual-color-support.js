@@ -49,19 +49,27 @@ const DualColorUtils = {
 
     // Get display name for dual color
     getDisplayName(color) {
-        if (!color) return '';
-        
-        const name = getColorField(color, 'Name');
-        if (name && String(name).trim() !== '') {
-            return name;
-        }
-        
-        // If it's a dual color and no name exists, return empty string
-        if (this.isDualColor(color)) {
+        if (!color) {
+            console.log('getDisplayName: color is null/undefined, returning empty string');
             return '';
         }
         
-        // For single colors without name, return empty string too
+        const name = getColorField(color, 'Name');
+        console.log('getDisplayName: name =', name, ', type =', typeof name);
+        
+        // Check if name exists and is not a hex value (doesn't start with #)
+        if (name && String(name).trim() !== '' && !String(name).trim().startsWith('#')) {
+            return name;
+        }
+        
+        // If it's a dual color and no valid name exists, return empty string
+        if (this.isDualColor(color)) {
+            console.log('getDisplayName: dual color with no valid name, returning empty string');
+            return '';
+        }
+        
+        // For single colors without valid name, return empty string too
+        console.log('getDisplayName: single color with no valid name, returning empty string');
         return '';
     }
 };
@@ -123,6 +131,9 @@ function renderColorOptions(colors, selectedColorName) {
                         
                         console.log(`Rendering dual color ${index}: ${finalHex1} / ${finalHex2}`);
                         
+                        // Don't show hex values in title if no name exists
+                        const displayTitle = (colorName && !String(colorName).startsWith('#')) ? colorName : '';
+                        
                         return `
                             <button type="button" 
                                     class="color-option ${isSelected ? 'selected' : ''}" 
@@ -132,13 +143,16 @@ function renderColorOptions(colors, selectedColorName) {
                                     data-image="${image || ''}"
                                     onclick="selectProductColor(this, '${colorName}', '${finalHex1}', '${finalHex2}', '${image || ''}')"
                                     style="background: linear-gradient(135deg, ${finalHex1} 50%, ${finalHex2} 50%); border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
-                                    title="${colorName || ''}">
+                                    title="${displayTitle}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
                             </button>
                         `;
                     } else {
                         // Single-color circle
                         const hex = getColorField(color, 'Hex') || hex1 || '#000000';
+                        
+                        // Don't show hex values in title if no name exists or if name looks like hex
+                        const displayTitle = (colorName && !String(colorName).startsWith('#')) ? colorName : '';
                         
                         return `
                             <button type="button" 
@@ -148,7 +162,7 @@ function renderColorOptions(colors, selectedColorName) {
                                     data-image="${image || ''}"
                                     onclick="selectProductColor(this, '${colorName}', '${hex}', null, '${image || ''}')"
                                     style="background: ${hex}; border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
-                                    title="${colorName || hex}">
+                                    title="${displayTitle}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
                             </button>
                         `;
