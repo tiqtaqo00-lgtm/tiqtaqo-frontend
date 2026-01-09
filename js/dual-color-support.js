@@ -95,8 +95,9 @@ function renderColorOptions(colors, selectedColorName) {
 }
 
 // Enhanced color selection function
+// IMPORTANT: This function must have 5 parameters to match onclick handlers in renderColorOptions
 async function selectProductColor(btn, colorName, hex1, hex2 = null, colorImage = '') {
-    const isDual = hex2 && hex2 !== '' && hex2 !== null;
+    const isDual = hex2 && hex2 !== '' && hex2 !== null && hex2 !== 'null';
     
     console.log('selectProductColor called:', { colorName, hex1, hex2, colorImage });
     
@@ -108,7 +109,7 @@ async function selectProductColor(btn, colorName, hex1, hex2 = null, colorImage 
         
         // Reset dual color style if needed
         const storedHex2 = b.dataset.hex2;
-        if (storedHex2 && storedHex2 !== '' && storedHex2 !== null) {
+        if (storedHex2 && storedHex2 !== '' && storedHex2 !== null && storedHex2 !== 'null') {
             b.style.background = `conic-gradient(${b.dataset.hex} 0deg 180deg, ${storedHex2} 180deg 360deg)`;
         } else if (b.dataset.hex) {
             b.style.background = b.dataset.hex;
@@ -133,8 +134,10 @@ async function selectProductColor(btn, colorName, hex1, hex2 = null, colorImage 
         colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${colorName}`;
     }
 
-    // Wait for changeImage function to be available
-    if (colorImage && colorImage.trim() !== '') {
+    // Update product image if valid color image is provided
+    console.log('Checking colorImage for update:', colorImage);
+    
+    if (colorImage && colorImage.trim() !== '' && colorImage !== 'null' && colorImage !== 'undefined') {
         console.log('Changing product image to:', colorImage);
         
         // Try to find mainImage element directly
@@ -145,17 +148,20 @@ async function selectProductColor(btn, colorName, hex1, hex2 = null, colorImage 
             setTimeout(() => {
                 mainImage.style.transform = 'scale(1)';
             }, 200);
-            console.log('Product image updated successfully');
+            console.log('Product image updated successfully via direct DOM manipulation');
         } else {
-            console.warn('mainImage element not found');
+            console.warn('mainImage element not found in DOM');
         }
         
         // Also try to call changeImage if available
         if (typeof window.changeImage === 'function') {
             window.changeImage(colorImage, null);
+            console.log('changeImage function called');
+        } else {
+            console.warn('window.changeImage function not available');
         }
     } else {
-        console.log('No color image to change (empty or not provided)');
+        console.log('No valid color image to change. colorImage:', colorImage);
     }
 
     window.selectedProductColor = colorName;

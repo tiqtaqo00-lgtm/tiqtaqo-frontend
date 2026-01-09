@@ -698,14 +698,42 @@
         });
 
         // Select product color
-        function selectProductColor(btn, colorName, colorHex, colorImage = '') {
-            document.querySelectorAll('.color-option').forEach(btn => {
-                btn.classList.remove('selected');
-                btn.style.borderColor = '#ddd';
-                btn.innerHTML = '';
+        // IMPORTANT: This function MUST have 5 parameters to match the onclick handlers
+        function selectProductColor(btn, colorName, colorHex, colorHex2 = null, colorImage = '') {
+            console.log('selectProductColor called with:', { 
+                colorName, 
+                colorHex, 
+                colorHex2, 
+                colorImage,
+                btn: !!btn
             });
+            
+            // Update UI for all color buttons
+            document.querySelectorAll('.color-option').forEach(b => {
+                b.classList.remove('selected');
+                b.style.borderColor = '#ddd';
+                b.style.boxShadow = 'none';
+                b.innerHTML = '';
+                
+                // Reset dual color style if needed
+                const storedHex2 = b.dataset.hex2;
+                if (storedHex2 && storedHex2 !== '' && storedHex2 !== null && storedHex2 !== 'null') {
+                    b.style.background = `conic-gradient(${b.dataset.hex} 0deg 180deg, ${storedHex2} 180deg 360deg)`;
+                } else if (b.dataset.hex) {
+                    b.style.background = b.dataset.hex;
+                }
+            });
+            
             btn.classList.add('selected');
-            btn.style.borderColor = colorHex || 'var(--gold)';
+            
+            // Apply selection styling
+            const isDual = colorHex2 && colorHex2 !== '' && colorHex2 !== null && colorHex2 !== 'null';
+            if (isDual) {
+                btn.style.borderColor = 'var(--gold)';
+                btn.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.3)';
+            } else {
+                btn.style.borderColor = colorHex || 'var(--gold)';
+            }
             btn.innerHTML = '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>';
 
             const colorDisplay = document.getElementById('selectedColorDisplay');
@@ -713,12 +741,21 @@
                 colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${colorName}`;
             }
 
-            if (colorImage && colorImage.trim() !== '') {
+            // Update the product image if a color image is provided
+            console.log('About to change image, colorImage:', colorImage, 'isValid:', !!(colorImage && colorImage.trim() !== '' && colorImage !== 'null' && colorImage !== 'undefined'));
+            
+            if (colorImage && colorImage.trim() !== '' && colorImage !== 'null' && colorImage !== 'undefined') {
+                console.log('Calling changeImage with:', colorImage);
                 changeImage(colorImage, null);
+                console.log('changeImage called successfully');
+            } else {
+                console.log('No valid color image provided, skipping image change');
             }
 
+            // Store selected color globally
             window.selectedProductColor = colorName;
             window.selectedProductColorHex = colorHex;
+            window.selectedProductColorHex2 = colorHex2;
             window.selectedProductColorImage = colorImage;
         }
 
