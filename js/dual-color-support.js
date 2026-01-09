@@ -95,8 +95,10 @@ function renderColorOptions(colors, selectedColorName) {
 }
 
 // Enhanced color selection function
-function selectProductColor(btn, colorName, hex1, hex2 = null, colorImage = '') {
+async function selectProductColor(btn, colorName, hex1, hex2 = null, colorImage = '') {
     const isDual = hex2 && hex2 !== '' && hex2 !== null;
+    
+    console.log('selectProductColor called:', { colorName, hex1, hex2, colorImage });
     
     document.querySelectorAll('.color-option').forEach(b => {
         b.classList.remove('selected');
@@ -131,8 +133,29 @@ function selectProductColor(btn, colorName, hex1, hex2 = null, colorImage = '') 
         colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${colorName}`;
     }
 
-    if (colorImage) {
-        changeImage(colorImage, null);
+    // Wait for changeImage function to be available
+    if (colorImage && colorImage.trim() !== '') {
+        console.log('Changing product image to:', colorImage);
+        
+        // Try to find mainImage element directly
+        const mainImage = document.getElementById('mainImage');
+        if (mainImage) {
+            mainImage.src = colorImage;
+            mainImage.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                mainImage.style.transform = 'scale(1)';
+            }, 200);
+            console.log('Product image updated successfully');
+        } else {
+            console.warn('mainImage element not found');
+        }
+        
+        // Also try to call changeImage if available
+        if (typeof window.changeImage === 'function') {
+            window.changeImage(colorImage, null);
+        }
+    } else {
+        console.log('No color image to change (empty or not provided)');
     }
 
     window.selectedProductColor = colorName;

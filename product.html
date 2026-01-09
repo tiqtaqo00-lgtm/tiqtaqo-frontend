@@ -698,7 +698,7 @@
         });
 
         // Select product color
-        function selectProductColor(btn, colorName, colorHex, colorImage) {
+        function selectProductColor(btn, colorName, colorHex, colorImage = '') {
             document.querySelectorAll('.color-option').forEach(btn => {
                 btn.classList.remove('selected');
                 btn.style.borderColor = '#ddd';
@@ -713,7 +713,7 @@
                 colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${colorName}`;
             }
 
-            if (colorImage) {
+            if (colorImage && colorImage.trim() !== '') {
                 changeImage(colorImage, null);
             }
 
