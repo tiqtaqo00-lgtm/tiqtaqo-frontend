@@ -433,32 +433,52 @@ function loadProductColors(colors) {
     container.innerHTML = '';
     
     colors.forEach((color, index) => {
-        addColorRow(color.name, color.hex, color.image, index);
+        addColorRow(color.name, color.hex, color.hex2 || '', color.image, index);
     });
 }
 
 // Add a new color row
-function addColorRow(name = '', hex = '#000000', image = '', index = null) {
+function addColorRow(name = '', hex = '#000000', hex2 = '', image = '', index = null) {
     const container = document.getElementById('colorsContainer');
     const rowId = index !== null ? `color-row-${index}` : `color-row-${Date.now()}`;
+    
+    const isDual = hex2 && hex2 !== '';
+    const dualColorStyle = isDual ? `background: conic-gradient(${hex} 0deg 180deg, ${hex2} 180deg 360deg);` : `background: ${hex};`;
+    const dualCheckboxChecked = isDual ? 'checked' : '';
+    const hex2Display = isDual ? 'block' : 'none';
     
     const row = document.createElement('div');
     row.className = 'color-row';
     row.id = rowId;
+    
+    if (hex2) {
+        row.dataset.hex2 = hex2;
+    }
+    
     row.innerHTML = `
         <div class="color-inputs">
             <div class="color-name-group">
                 <label>Nom du couleur</label>
-                <input type="text" class="color-name" value="${name}" placeholder="Ex: Noir, Or, Argent...">
+                <input type="text" class="color-name" value="${name}" placeholder="Ex: Noir/Vert (deux couleurs)">
             </div>
             <div class="color-hex-group">
-                <label>Couleur</label>
+                <label>Couleur 1</label>
                 <input type="color" class="color-hex" value="${hex}" onchange="updateColorPreview(this)">
+                <div style="margin-top: 5px;">
+                    <label style="font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" ${dualCheckboxChecked} onchange="toggleDualColor(this, '${rowId}')"> 
+                        Deux couleurs
+                    </label>
+                </div>
+                <div id="hex2-container-${rowId}" style="display: ${hex2Display}; margin-top: 5px;">
+                    <label style="font-size: 11px;">Couleur 2</label>
+                    <input type="color" id="color-hex2-${rowId}" class="color-hex2" value="${hex2 || '#000000'}" onchange="updateDualColorPreview('${rowId}')">
+                </div>
             </div>
             <div class="color-image-group">
                 <label>Image</label>
-                <div class="color-image-upload" onclick="document.getElementById('colorImage-${rowId}').click()">
-                    ${image ? `<img src="${image}" alt="Couleur">` : '<i class="fas fa-camera"></i>'}
+                <div class="color-image-upload" id="color-preview-${rowId}" style="${dualColorStyle}" onclick="document.getElementById('colorImage-${rowId}').click()">
+                    ${image ? `<img src="${image}" alt="Couleur" style="${isDual ? 'mix-blend-mode: multiply;' : ''}">` : '<i class="fas fa-camera"></i>'}
                 </div>
                 <input type="file" id="colorImage-${rowId}" accept="image/*" style="display:none" onchange="handleColorImageUpload(this, '${rowId}')">
                 <div class="color-url-input">
@@ -478,11 +498,51 @@ function addColorRow(name = '', hex = '#000000', image = '', index = null) {
     container.appendChild(row);
 }
 
+// Toggle dual color checkbox
+window.toggleDualColor = function(checkbox, rowId) {
+    const hex2Container = document.getElementById(`hex2-container-${rowId}`);
+    const row = document.getElementById(rowId);
+    const hex1 = row.querySelector('.color-hex').value;
+    const hex2Input = document.getElementById(`color-hex2-${rowId}`);
+    const preview = document.getElementById(`color-preview-${rowId}`);
+    
+    if (checkbox.checked) {
+        hex2Container.style.display = 'block';
+        const hex2 = hex2Input.value;
+        preview.style.background = `conic-gradient(${hex1} 0deg 180deg, ${hex2} 180deg 360deg)`;
+        row.dataset.hex2 = hex2;
+    } else {
+        hex2Container.style.display = 'none';
+        preview.style.background = hex1;
+        delete row.dataset.hex2;
+    }
+};
+
+// Update dual color preview
+window.updateDualColorPreview = function(rowId) {
+    const row = document.getElementById(rowId);
+    const hex1 = row.querySelector('.color-hex').value;
+    const hex2Input = document.getElementById(`color-hex2-${rowId}`);
+    const hex2 = hex2Input.value;
+    const preview = document.getElementById(`color-preview-${rowId}`);
+    
+    preview.style.background = `conic-gradient(${hex1} 0deg 180deg, ${hex2} 180deg 360deg)`;
+    row.dataset.hex2 = hex2;
+};
+
 // Update color preview circle
 function updateColorPreview(colorInput) {
     const row = colorInput.closest('.color-row');
     const colorImageUpload = row.querySelector('.color-image-upload');
-    colorImageUpload.style.background = colorInput.value;
+    const hex1 = colorInput.value;
+    const hex2Input = row.querySelector('.color-hex2');
+    
+    if (hex2Input && hex2Input.value) {
+        const hex2 = hex2Input.value;
+        colorImageUpload.style.background = `conic-gradient(${hex1} 0deg 180deg, ${hex2} 180deg 360deg)`;
+    } else {
+        colorImageUpload.style.background = hex1;
+    }
 }
 
 // Handle color image upload
@@ -565,11 +625,12 @@ function getProductColors() {
     rows.forEach(row => {
         const name = row.querySelector('.color-name').value.trim();
         const hex = row.querySelector('.color-hex').value;
+        const hex2 = row.dataset.hex2 || '';
         const colorImageUpload = row.querySelector('.color-image-upload');
         const image = colorImageUpload.dataset.image || (colorImageUpload.querySelector('img') ? colorImageUpload.querySelector('img').src : '');
         
         if (name) {
-            colors.push({ name, hex, image });
+            colors.push({ name, hex, hex2, image });
         }
     });
     
