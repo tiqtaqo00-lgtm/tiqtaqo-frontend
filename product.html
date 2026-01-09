@@ -737,10 +737,8 @@
             // Update color name display
             const colorDisplay = document.getElementById('selectedColorDisplay');
             if (colorDisplay) {
-                const displayName = isDual 
-                    ? `${colorName} (${colorHex1} / ${colorHex2})` 
-                    : colorName;
-                colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${displayName}`;
+                // Show only the color name, not the coordinates
+                colorDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: var(--gold);"></i> ${colorName}`;
             }
 
             // Update the product image if a color image is provided
