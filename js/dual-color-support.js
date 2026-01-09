@@ -20,11 +20,15 @@ const DualColorUtils = {
 
     // Generate inline style for dual-color circle
     getDualColorStyle(hex1, hex2, isSelected = false) {
+        console.log('getDualColorStyle called with:', { hex1, hex2, isSelected });
+        
         // Validate colors - use fallback if missing
         const validHex1 = hex1 && hex1.trim() !== '' && hex1 !== 'undefined' ? hex1 : '#ff0000';
         const validHex2 = hex2 && hex2.trim() !== '' && hex2 !== 'undefined' ? hex2 : '#0000ff';
         
         const gradient = `conic-gradient(${validHex1} 0deg 180deg, ${validHex2} 180deg 360deg)`;
+        console.log('Generated gradient:', gradient);
+        
         const borderColor = isSelected ? 'var(--gold)' : '#ddd';
         const boxShadow = isSelected ? '0 0 0 3px rgba(212, 175, 55, 0.3)' : 'none';
         
