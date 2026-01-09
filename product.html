@@ -711,10 +711,10 @@
                 b.style.boxShadow = 'none';
                 b.innerHTML = '';
                 
-                // Reset dual color style if needed
+                // Reset dual color style if needed - use diagonal gradient
                 const storedHex2 = b.dataset.hex2;
                 if (storedHex2 && storedHex2 !== '' && storedHex2 !== null && storedHex2 !== 'null') {
-                    b.style.background = `conic-gradient(${b.dataset.hex} 0deg 180deg, ${storedHex2} 180deg 360deg)`;
+                    b.style.background = `linear-gradient(135deg, ${b.dataset.hex} 50%, ${storedHex2} 50%)`;
                 } else if (b.dataset.hex) {
                     b.style.background = b.dataset.hex;
                 }
