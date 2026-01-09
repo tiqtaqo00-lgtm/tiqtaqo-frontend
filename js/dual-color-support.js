@@ -20,15 +20,11 @@ const DualColorUtils = {
 
     // Generate inline style for dual-color circle
     getDualColorStyle(hex1, hex2, isSelected = false) {
-        console.log('getDualColorStyle called with:', { hex1, hex2, isSelected });
-        
         // Validate colors - use fallback if missing
-        const validHex1 = hex1 && hex1.trim() !== '' && hex1 !== 'undefined' ? hex1 : '#ff0000';
-        const validHex2 = hex2 && hex2.trim() !== '' && hex2 !== 'undefined' ? hex2 : '#0000ff';
+        const validHex1 = hex1 && String(hex1).trim() !== '' ? hex1 : '#ff0000';
+        const validHex2 = hex2 && String(hex2).trim() !== '' ? hex2 : '#0000ff';
         
         const gradient = `conic-gradient(${validHex1} 0deg 180deg, ${validHex2} 180deg 360deg)`;
-        console.log('Generated gradient:', gradient);
-        
         const borderColor = isSelected ? 'var(--gold)' : '#ddd';
         const boxShadow = isSelected ? '0 0 0 3px rgba(212, 175, 55, 0.3)' : 'none';
         
@@ -36,23 +32,48 @@ const DualColorUtils = {
     },
 
     // Check if a color object is dual-color
+    // Support both field naming conventions
     isDualColor(color) {
         if (!color) return false;
-        // Check if hex2 exists and is not empty
-        const hasHex2 = color.hex2 && color.hex2.trim() !== '' && color.hex2 !== 'null' && color.hex2 !== 'undefined';
-        // Also check if hex1 exists for dual colors
-        const hasHex1 = color.hex1 && color.hex1.trim() !== '' && color.hex1 !== 'null' && color.hex1 !== 'undefined';
-        return hasHex2 && hasHex1;
+        
+        // Get colorHex1 and colorHex2 (from Firebase data)
+        const hex1 = color.colorHex1 || color.hex1 || color.color1 || null;
+        const hex2 = color.colorHex2 || color.hex2 || color.color2 || null;
+        
+        // Both must exist and not be empty
+        const hasHex1 = hex1 && String(hex1).trim() !== '' && String(hex1) !== 'null' && String(hex1) !== 'undefined';
+        const hasHex2 = hex2 && String(hex2).trim() !== '' && String(hex2) !== 'null' && String(hex2) !== 'undefined';
+        
+        return hasHex1 && hasHex2;
     },
 
     // Get display name for dual color
     getDisplayName(color) {
         if (this.isDualColor(color)) {
-            return color.name || `${color.hex1} / ${color.hex2}`;
+            const name = color.colorName || color.name;
+            const hex1 = color.colorHex1 || color.hex1 || color.color1;
+            const hex2 = color.colorHex2 || color.hex2 || color.color2;
+            return name || `${hex1} / ${hex2}`;
         }
-        return color.name || color.hex || '';
+        return color.colorName || color.name || color.hex || '';
     }
 };
+
+// Helper function to get color value supporting multiple field names
+function getColorField(color, fieldName) {
+    const possibleNames = [
+        `color${fieldName}`,    // colorHex1, colorHex2, colorName, colorImage
+        fieldName,              // hex1, hex2, name, image
+        fieldName.toLowerCase() // hex1, hex2, name, image
+    ];
+    
+    for (const name of possibleNames) {
+        if (color[name] !== undefined && color[name] !== null) {
+            return color[name];
+        }
+    }
+    return null;
+}
 
 // Extend color selection in product page
 function renderColorOptions(colors, selectedColorName) {
@@ -77,60 +98,50 @@ function renderColorOptions(colors, selectedColorName) {
             </h4>
             <div class="color-options" id="colorOptions">
                 ${colors.map((color, index) => {
-                    const isSelected = selectedColorName === color.name;
+                    // Get color values using flexible field name detection
+                    const colorName = getColorField(color, 'Name');
+                    const hex1 = getColorField(color, 'Hex1');
+                    const hex2 = getColorField(color, 'Hex2');
+                    const image = getColorField(color, 'Image');
                     
-                    // Log ALL properties of the color object
-                    console.log(`Color ${index} JSON:`, JSON.stringify(color, null, 2));
+                    const isSelected = selectedColorName === colorName;
+                    const isDual = DualColorUtils.isDualColor(color);
                     
-                    // Try different possible field names for dual colors
-                    const hex1 = color.hex1 || color.color1 || null;
-                    const hex2 = color.hex2 || color.color2 || null;
-                    
-                    console.log(`Color ${index}: name="${color.name}", hex="${color.hex}", hex1="${color.hex1}", hex2="${color.hex2}", color1="${color.color1}", color2="${color.color2}"`);
-                    console.log(`Color ${index} detected values: hex1="${hex1}", hex2="${hex2}"`);
-                    
-                    const isDual = hex1 && hex2 && 
-                                   String(hex1).trim() !== '' && 
-                                   String(hex2).trim() !== '' &&
-                                   hex1 !== 'null' && hex1 !== 'undefined' &&
-                                   hex2 !== 'null' && hex2 !== 'undefined';
-                    
-                    console.log(`Color ${index} isDual:`, isDual);
+                    console.log(`Color ${index}: name="${colorName}", hex1="${hex1}", hex2="${hex2}", isDual=${isDual}`);
                     
                     if (isDual) {
                         // Dual-color circle (diagonal split)
-                        // Use the detected hex1 and hex2 values
-                        const finalHex1 = hex1 || '#ff0000';
-                        const finalHex2 = hex2 || '#0000ff';
+                        const finalHex1 = String(hex1).trim();
+                        const finalHex2 = String(hex2).trim();
                         
-                        console.log(`Rendering dual color ${index}:`, { finalHex1, finalHex2 });
+                        console.log(`Rendering dual color ${index}: ${finalHex1} / ${finalHex2}`);
                         
                         return `
                             <button type="button" 
                                     class="color-option ${isSelected ? 'selected' : ''}" 
-                                    data-color="${color.name}" 
+                                    data-color="${colorName}" 
                                     data-hex="${finalHex1}"
                                     data-hex2="${finalHex2}"
-                                    data-image="${color.image || ''}"
-                                    onclick="selectProductColor(this, '${color.name}', '${finalHex1}', '${finalHex2}', '${color.image || ''}')"
+                                    data-image="${image || ''}"
+                                    onclick="selectProductColor(this, '${colorName}', '${finalHex1}', '${finalHex2}', '${image || ''}')"
                                     style="background: conic-gradient(${finalHex1} 0deg 180deg, ${finalHex2} 180deg 360deg); border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
-                                    title="${color.name || finalHex1 + ' / ' + finalHex2}">
+                                    title="${colorName || finalHex1 + ' / ' + finalHex2}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
                             </button>
                         `;
                     } else {
-                        // Single-color circle (existing logic)
+                        // Single-color circle
+                        const hex = getColorField(color, 'Hex') || hex1 || '#000000';
+                        
                         return `
                             <button type="button" 
                                     class="color-option ${isSelected ? 'selected' : ''}" 
-                                    data-color="${color.name}" 
-                                    data-hex="${color.hex}"
-                                    data-image="${color.image || ''}"
-                                    onclick="selectProductColor(this, '${color.name}', '${color.hex}', null, '${color.image || ''}')"
-                                    style="background: ${color.hex};
-                                            border-color: ${isSelected ? 'var(--gold)' : '#ddd'};
-                                            ${color.image ? `background-image: url('${color.image}'); background-size: cover; background-position: center;` : ''}"
-                                    title="${color.name}">
+                                    data-color="${colorName}" 
+                                    data-hex="${hex}"
+                                    data-image="${image || ''}"
+                                    onclick="selectProductColor(this, '${colorName}', '${hex}', null, '${image || ''}')"
+                                    style="background: ${hex}; border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
+                                    title="${colorName || hex}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
                             </button>
                         `;
