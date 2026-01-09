@@ -9,8 +9,8 @@
 const DualColorUtils = {
     // Generate CSS for dual-color circle with diagonal split
     generateDualColorCSS(hex1, hex2, isSelected = false) {
-        // Use conic-gradient for diagonal split effect
-        const gradient = `conic-gradient(${hex1} 0deg 180deg, ${hex2} 180deg 360deg)`;
+        // Use linear-gradient for diagonal split effect (45 degrees)
+        const gradient = `linear-gradient(135deg, ${hex1} 50%, ${hex2} 50%)`;
         return {
             background: gradient,
             borderColor: isSelected ? 'var(--gold)' : '#ddd',
@@ -24,7 +24,7 @@ const DualColorUtils = {
         const validHex1 = hex1 && String(hex1).trim() !== '' ? hex1 : '#ff0000';
         const validHex2 = hex2 && String(hex2).trim() !== '' ? hex2 : '#0000ff';
         
-        const gradient = `conic-gradient(${validHex1} 0deg 180deg, ${validHex2} 180deg 360deg)`;
+        const gradient = `linear-gradient(135deg, ${validHex1} 50%, ${validHex2} 50%)`;
         const borderColor = isSelected ? 'var(--gold)' : '#ddd';
         const boxShadow = isSelected ? '0 0 0 3px rgba(212, 175, 55, 0.3)' : 'none';
         
@@ -124,7 +124,7 @@ function renderColorOptions(colors, selectedColorName) {
                                     data-hex2="${finalHex2}"
                                     data-image="${image || ''}"
                                     onclick="selectProductColor(this, '${colorName}', '${finalHex1}', '${finalHex2}', '${image || ''}')"
-                                    style="background: conic-gradient(${finalHex1} 0deg 180deg, ${finalHex2} 180deg 360deg); border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
+                                    style="background: linear-gradient(135deg, ${finalHex1} 50%, ${finalHex2} 50%); border-color: ${isSelected ? 'var(--gold)' : '#ddd'}; ${isSelected ? 'box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);' : ''}"
                                     title="${colorName || finalHex1 + ' / ' + finalHex2}">
                                 ${isSelected ? '<span style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: var(--black); font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</span>' : ''}
                             </button>
