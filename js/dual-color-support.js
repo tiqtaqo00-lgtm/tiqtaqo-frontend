@@ -49,12 +49,20 @@ const DualColorUtils = {
 
     // Get display name for dual color
     getDisplayName(color) {
-        if (this.isDualColor(color)) {
-            const name = color.colorName || color.name;
-            // Return only the name if it exists, otherwise return empty string
-            return name || '';
+        if (!color) return '';
+        
+        const name = getColorField(color, 'Name');
+        if (name && String(name).trim() !== '') {
+            return name;
         }
-        return color.colorName || color.name || color.hex || '';
+        
+        // If it's a dual color and no name exists, return empty string
+        if (this.isDualColor(color)) {
+            return '';
+        }
+        
+        // For single colors without name, return empty string too
+        return '';
     }
 };
 
