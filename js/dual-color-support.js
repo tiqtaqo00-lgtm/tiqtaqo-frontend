@@ -58,8 +58,17 @@ const DualColorUtils = {
 function renderColorOptions(colors, selectedColorName) {
     if (!colors || colors.length === 0) return '';
     
-    console.log('renderColorOptions called with colors:', colors);
-    console.log('First color object keys:', Object.keys(colors[0] || {}));
+    console.log('=== COLOR DEBUG INFO ===');
+    console.log('Total colors:', colors.length);
+    
+    // Log first color with all details visible
+    if (colors.length > 0) {
+        const firstColor = colors[0];
+        console.log('First color JSON:', JSON.stringify(firstColor, null, 2));
+        console.log('First color keys:', Object.keys(firstColor));
+    }
+    
+    console.log('========================');
 
     return `
         <div class="product-colors-section">
@@ -71,13 +80,13 @@ function renderColorOptions(colors, selectedColorName) {
                     const isSelected = selectedColorName === color.name;
                     
                     // Log ALL properties of the color object
-                    console.log(`Color ${index} raw data:`, JSON.parse(JSON.stringify(color)));
-                    console.log(`Color ${index} all values - DIRECT: name="${color.name}", hex="${color.hex}", hex1="${color.hex1}", hex2="${color.hex2}", color1="${color.color1}", color2="${color.color2}"`);
+                    console.log(`Color ${index} JSON:`, JSON.stringify(color, null, 2));
                     
                     // Try different possible field names for dual colors
                     const hex1 = color.hex1 || color.color1 || null;
                     const hex2 = color.hex2 || color.color2 || null;
                     
+                    console.log(`Color ${index}: name="${color.name}", hex="${color.hex}", hex1="${color.hex1}", hex2="${color.hex2}", color1="${color.color1}", color2="${color.color2}"`);
                     console.log(`Color ${index} detected values: hex1="${hex1}", hex2="${hex2}"`);
                     
                     const isDual = hex1 && hex2 && 
