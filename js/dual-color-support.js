@@ -20,7 +20,11 @@ const DualColorUtils = {
 
     // Generate inline style for dual-color circle
     getDualColorStyle(hex1, hex2, isSelected = false) {
-        const gradient = `conic-gradient(${hex1} 0deg 180deg, ${hex2} 180deg 360deg)`;
+        // Validate colors - use fallback if missing
+        const validHex1 = hex1 && hex1.trim() !== '' && hex1 !== 'undefined' ? hex1 : '#ff0000';
+        const validHex2 = hex2 && hex2.trim() !== '' && hex2 !== 'undefined' ? hex2 : '#0000ff';
+        
+        const gradient = `conic-gradient(${validHex1} 0deg 180deg, ${validHex2} 180deg 360deg)`;
         const borderColor = isSelected ? 'var(--gold)' : '#ddd';
         const boxShadow = isSelected ? '0 0 0 3px rgba(212, 175, 55, 0.3)' : 'none';
         
@@ -29,7 +33,12 @@ const DualColorUtils = {
 
     // Check if a color object is dual-color
     isDualColor(color) {
-        return color && color.hex2 && color.hex2 !== '';
+        if (!color) return false;
+        // Check if hex2 exists and is not empty
+        const hasHex2 = color.hex2 && color.hex2.trim() !== '' && color.hex2 !== 'null' && color.hex2 !== 'undefined';
+        // Also check if hex1 exists for dual colors
+        const hasHex1 = color.hex1 && color.hex1.trim() !== '' && color.hex1 !== 'null' && color.hex1 !== 'undefined';
+        return hasHex2 && hasHex1;
     },
 
     // Get display name for dual color
@@ -44,6 +53,8 @@ const DualColorUtils = {
 // Extend color selection in product page
 function renderColorOptions(colors, selectedColorName) {
     if (!colors || colors.length === 0) return '';
+    
+    console.log('renderColorOptions called with colors:', colors);
 
     return `
         <div class="product-colors-section">
@@ -54,6 +65,14 @@ function renderColorOptions(colors, selectedColorName) {
                 ${colors.map((color, index) => {
                     const isSelected = selectedColorName === color.name;
                     const isDual = DualColorUtils.isDualColor(color);
+                    
+                    console.log(`Color ${index}:`, { 
+                        name: color.name, 
+                        isDual, 
+                        hex: color.hex, 
+                        hex1: color.hex1, 
+                        hex2: color.hex2 
+                    });
                     
                     if (isDual) {
                         // Dual-color circle (diagonal split)
