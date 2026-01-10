@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص المنتجات - TiqtaQo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: white; }
+        h1 { color: #d4af37; text-align: center; }
+        .card { background: #16213e; border-radius: 10px; padding: 20px; margin: 20px 0; }
+        .btn { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px 0; }
+        .btn:hover { background: #2980b9; }
+        .log { background: #0f0f23; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; color: #00ff00; margin-top: 20px; }
+        .status { padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center; }
+        .status.success { background: #27ae60; }
+        .status.error { background: #e74c3c; }
+        .status.loading { background: #f39c12; color: black; }
+        .product-item { background: #0f0f23; padding: 10px; margin: 5px 0; border-radius: 5px; border-right: 4px solid #e74c3c; }
+        .product-item.correct { border-right-color: #27ae60; }
+        .product-item.incorrect { border-right-color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <h1>🔍 تشخيص المنتجات</h1>
+    
+    <div class="card">
+        <h2>📋 المنتجات</h2>
+        <button class="btn" onclick="loadProducts()">🔄 إعادة تحميل المنتجات</button>
+        <div id="productsList">
+            <p class="status loading">⏳ اضغط على الزر أعلاه لتحميل المنتجات</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>📝 السجل</h2>
+        <div class="log" id="log">السجل...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+            authDomain: "tiqtaqo-store.firebaseapp.com",
+            projectId: "tiqtaqo-store",
+            storageBucket: "tiqtaqo-store.firebasestorage.app",
+            messagingSenderId: "747111253966",
+            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+        };
+
+        let app, db;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            log('✅ Firebase تم تهيئة بنجاح');
+        } catch (error) {
+            log('❌ خطأ في تهيئة Firebase: ' + error.message);
+        }
+
+        function log(msg) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.textContent += `\n[${time}] ${msg}`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(msg);
+        }
+
+        window.loadProducts = async function() {
+            const listEl = document.getElementById('productsList');
+            listEl.innerHTML = '<p class="status loading">⏳ جاري التحميل...</p>';
+            log('جاري تحميل المنتجات...');
+            
+            if (!db) {
+                log('❌ Firebase غير متصل');
+                listEl.innerHTML = '<p class="status error">❌ Firebase غير متصل</p>';
+                return;
+            }
+            
+            try {
+                const productsRef = collection(db, 'products');
+                log('جاري جلب المنتجات من Firestore...');
+                
+                const snapshot = await getDocs(productsRef);
+                log('تم جلب snapshot');
+                
+                const products = [];
+                snapshot.forEach(doc => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                
+                log(`✅ تم تحميل ${products.length} منتج`);
+                
+                if (products.length === 0) {
+                    listEl.innerHTML = '<p class="status success">لا توجد منتجات في قاعدة البيانات</p>';
+                    return;
+                }
+                
+                let html = '';
+                products.forEach(p => {
+                    const gender = (p.gender || '').trim();
+                    const isCorrect = gender === 'femme' || gender === 'homme';
+                    const statusClass = isCorrect ? 'correct' : 'incorrect';
+                    
+                    html += `
+                        <div class="product-item ${statusClass}">
+                            <strong>${p.name || 'بدون اسم'}</strong><br>
+                            الفئة: ${p.category || 'N/A'} | gender: "${gender}"<br>
+                            ${isCorrect ? '✅ صحيح' : '❌ يحتاج إصلاح'}
+                        </div>
+                    `;
+                });
+                
+                listEl.innerHTML = html;
+                
+            } catch (error) {
+                log(`❌ خطأ: ${error.message}`);
+                log(`Error code: ${error.code}`);
+                listEl.innerHTML = `<p class="status error">❌ خطأ: ${error.message}</p>`;
+            }
+        };
+
+        // Try to load on start
+        log('الصفحة بدأت');
+        setTimeout(loadProducts, 1000);
+    </script>
+</body>
+</html>
