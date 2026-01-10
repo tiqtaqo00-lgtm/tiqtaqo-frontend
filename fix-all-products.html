@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إصلاح جميع المنتجات - TiqtaQo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: white; }
+        h1 { color: #d4af37; text-align: center; }
+        .card { background: #16213e; border-radius: 10px; padding: 20px; margin: 20px 0; }
+        .btn { width: 100%; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; margin: 10px 0; }
+        .btn:hover { background: #c0392b; }
+        .btn:disabled { background: #7f8c8d; cursor: not-allowed; }
+        .log { background: #0f0f23; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; color: #00ff00; }
+        .status { padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center; }
+        .status.success { background: #27ae60; }
+        .status.error { background: #e74c3c; }
+        .status.info { background: #3498db; }
+        .count { display: inline-block; padding: 10px 20px; background: #d4af37; color: black; border-radius: 20px; margin: 5px; font-weight: bold; }
+        .warning { background: #f39c12; color: black; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 إصلاح جميع المنتجات دفعة واحدة</h1>
+    
+    <div class="warning">
+        <strong>⚠️ تحذير هام:</strong><br>
+        هذا سيغيير gender لجميع المنتجات إلى "femme"<br>
+        إذا كان لديك منتجات للرجال، ستحتاج لتغييرها يدوياً لاحقاً
+    </div>
+    
+    <div class="card">
+        <h2>📊 حالة المنتجات</h2>
+        <div id="stats">
+            <p>⏳ جاري تحميل المنتجات...</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>🔧 الإصلاح</h2>
+        <button class="btn" id="fixBtn" onclick="fixAllProducts()">🚀 إصلاح جميع المنتجات الآن</button>
+        <div id="status"></div>
+    </div>
+    
+    <div class="card">
+        <h2>📝 سجل العمليات</h2>
+        <div class="log" id="log">انتظر...</div>
+    </div>
+
+    <script type="module">
+        import { db, collection, getDocs, doc, updateDoc } from './js/firebase-config.js';
+        
+        let allProducts = [];
+        
+        function log(msg) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.textContent += `\n[${time}] ${msg}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        async function loadProducts() {
+            log('جاري الاتصال بـ Firebase...');
+            
+            try {
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                allProducts = [];
+                snapshot.forEach(doc => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                const incorrect = allProducts.filter(p => {
+                    const g = (p.gender || '').trim();
+                    return g !== 'femme' && g !== 'homme';
+                });
+                
+                document.getElementById('stats').innerHTML = `
+                    <p><span class="count">${allProducts.length}</span> إجمالي المنتجات</p>
+                    <p><span class="count" style="background: #e74c3c;">${incorrect.length}</span> منتجات تحتاج إصلاح</p>
+                    <p><span class="count" style="background: #27ae60;">${allProducts.length - incorrect.length}</span> منتجات صحيحة</p>
+                `;
+                
+                log(`✅ تم تحميل ${allProducts.length} منتج`);
+                log(`${incorrect.length} منتج يحتاج إصلاح`);
+                
+                if (incorrect.length === 0) {
+                    document.getElementById('status').innerHTML = '<div class="status success">✅ جميع المنتجات صحيحة! لا حاجة للإصلاح.</div>';
+                    document.getElementById('fixBtn').style.display = 'none';
+                }
+                
+            } catch (error) {
+                log(`❌ خطأ: ${error.message}`);
+                document.getElementById('stats').innerHTML = `<div class="status error">خطأ: ${error.message}</div>`;
+            }
+        }
+        
+        window.fixAllProducts = async function() {
+            const btn = document.getElementById('fixBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ جاري الإصلاح...';
+            status.innerHTML = '<div class="status info">جاري إصلاح جميع المنتجات...</div>';
+            log('🚀 بدأت عملية الإصلاح');
+            
+            let fixed = 0;
+            let errors = [];
+            
+            for (const p of allProducts) {
+                const currentGender = (p.gender || '').trim();
+                
+                // Only fix if gender is not 'femme' or 'homme'
+                if (currentGender !== 'femme' && currentGender !== 'homme') {
+                    try {
+                        await updateDoc(doc(db, 'products', p.id), {
+                            gender: 'femme'
+                        });
+                        
+                        fixed++;
+                        log(`✅ تم إصلاح: ${p.name || p.id} (gender: "${currentGender}" → "femme")`);
+                        
+                    } catch (error) {
+                        errors.push(`${p.name || p.id}: ${error.message}`);
+                        log(`❌ خطأ في ${p.name || p.id}: ${error.message}`);
+                    }
+                }
+            }
+            
+            btn.textContent = '✅ تم الانتهاء';
+            
+            if (errors.length === 0) {
+                status.innerHTML = `<div class="status success">🎉 تم إصلاح ${fixed} منتج بنجاح!</div>`;
+                log(`\n🎉 نجح! تم إصلاح ${fixed} منتج`);
+            } else {
+                status.innerHTML = `
+                    <div class="status error">
+                        <p>✅ تم إصلاح ${fixed} منتج</p>
+                        <p>❌ ${errors.length} خطأ</p>
+                        <p>${errors.join(', ')}</p>
+                    </div>
+                `;
+            }
+            
+            // Refresh after 3 seconds
+            setTimeout(() => location.reload(), 3000);
+        };
+        
+        // Start
+        loadProducts();
+    </script>
+</body>
+</html>
