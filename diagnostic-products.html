@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Produits - TiqtaQo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .diagnostic-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .product-diagnostic { 
+            border: 2px solid #e74c3c; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px;
+            background: #fff5f5;
+        }
+        .product-ok {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+        .product-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .data-item {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .data-label { font-weight: bold; color: #666; }
+        .problem { color: #e74c3c; font-weight: bold; }
+        .ok { color: #27ae60; font-weight: bold; }
+        .section-title {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            margin: 20px 0 10px 0;
+            border-radius: 5px;
+        }
+        .stats-box {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        #loading { text-align: center; padding: 50px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="diagnostic-container">
+        <h1>🔍 Diagnostic des Produits</h1>
+        
+        <div id="loading">⏳ Chargement des produits depuis Firebase...</div>
+        
+        <div id="results" style="display: none;">
+            <div class="stats-box">
+                <h3>📊 Statistiques</h3>
+                <p>Total de produits: <span id="totalProducts">0</span></p>
+                <p>Produits visibles: <span id="visibleProducts">0</span></p>
+                <p>Produits cachés: <span id="hiddenProducts">0</span></p>
+            </div>
+            
+            <h2 class="section-title">📋 Tous les produits dans la base de données</h2>
+            <div id="allProducts"></div>
+            
+            <h2 class="section-title">🔴 Produits avec des problèmes potentiels</h2>
+            <div id="problems"></div>
+            
+            <h2 class="section-title">📍 Répartition par branche</h2>
+            <div id="byBranch"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, collection, getDocs, query, where } from './js/firebase-config.js';
+        
+        async function loadAllProducts() {
+            try {
+                console.log('🔍 Début du diagnostic...');
+                
+                // Wait for Firebase to be ready
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                const products = [];
+                snapshot.forEach(doc => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log(`✅ ${products.length} produits chargés`);
+                
+                displayProducts(products);
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: red; padding: 20px; border: 2px solid red; border-radius: 8px;">
+                        <h3>Erreur de connexion Firebase</h3>
+                        <p>${error.message}</p>
+                        <p>Vérifiez que Firebase est correctement configuré.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function displayProducts(products) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            
+            // Stats
+            const visible = products.filter(p => p.visible !== false);
+            const hidden = products.filter(p => p.visible === false);
+            
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('visibleProducts').textContent = visible.length;
+            document.getElementById('hiddenProducts').textContent = hidden.length;
+            
+            // Display all products
+            const allProductsDiv = document.getElementById('allProducts');
+            allProductsDiv.innerHTML = products.map(p => createProductCard(p)).join('');
+            
+            // Find problems
+            const problems = products.filter(p => {
+                // Check for missing or problematic gender
+                const gender = (p.gender || '').trim();
+                const hasProblem = !gender || gender === '' || (gender !== 'homme' && gender !== 'femme');
+                return hasProblem;
+            });
+            
+            const problemsDiv = document.getElementById('problems');
+            if (problems.length > 0) {
+                problemsDiv.innerHTML = `
+                    <p class="problem">⚠️ ${problems.length} produits ont des valeurs de genre manquantes ou invalides:</p>
+                    ${problems.map(p => createProductCard(p)).join('')}
+                `;
+            } else {
+                problemsDiv.innerHTML = '<p class="ok">✓ Tous les produits ont des valeurs de genre valides</p>';
+            }
+            
+            // Show by branch
+            const byBranchDiv = byBranch.innerHTML;
+            const branches = [
+                { name: 'Packs Homme', category: 'packs', gender: 'homme' },
+                { name: 'Packs Femme', category: 'packs', gender: 'femme' },
+                { name: 'Wallets Homme', category: 'wallets', gender: 'homme' },
+                { name: 'Wallets Femme', category: 'wallets', gender: 'femme' },
+                { name: 'Glasses Homme', category: 'glasses', gender: 'homme' },
+                { name: 'Glasses Femme', category: 'glasses', gender: 'femme' },
+                { name: 'Accessoires Homme', category: 'accessoires', gender: 'homme' },
+                { name: 'Accessoires Femme', category: 'accessoires', gender: 'femme' }
+            ];
+            
+            let branchHTML = '';
+            branches.forEach(branch => {
+                const branchProducts = visible.filter(p => 
+                    p.category === branch.category && 
+                    (p.gender || '').trim() === branch.gender
+                );
+                
+                branchHTML += `
+                    <div style="background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                        <h4 style="margin: 0 0 10px 0;">${branch.name} - ${branchProducts.length} produits</h4>
+                        ${branchProducts.length === 0 
+                            ? '<span class="ok">✓ Vide</span>' 
+                            : branchProducts.map(p => `<span style="background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; margin: 2px;">${p.name}</span>`).join(' ')}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('byBranch').innerHTML = branchHTML;
+        }
+        
+        function createProductCard(p) {
+            const gender = (p.gender || '').trim();
+            const genderStatus = (!gender || gender === '') 
+                ? '<span class="problem">❌ MANQUANT</span>' 
+                : (gender !== 'homme' && gender !== 'femme')
+                    ? `<span class="problem">❌ INVALIDE: "${gender}"</span>`
+                    : `<span class="ok">✓ ${gender}</span>`;
+            
+            const visibility = p.visible === false 
+                ? '<span class="problem">CACHÉ</span>' 
+                : '<span class="ok">VISIBLE</span>';
+            
+            return `
+                <div class="product-diagnostic">
+                    <h3 style="margin: 0 0 10px 0;">${p.name || 'Sans nom'}</h3>
+                    <div class="product-data">
+                        <div class="data-item">
+                            <span class="data-label">ID:</span> ${p.id || 'N/A'}
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Catégorie:</span> ${p.category || 'N/A'}
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Genre:</span> ${genderStatus}
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Prix:</span> ${p.price || 0} DH
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Image:</span> ${p.image ? '✓ Oui' : '❌ Non'}
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Visibilité:</span> ${visibility}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Start
+        loadAllProducts();
+    </script>
+</body>
+</html>

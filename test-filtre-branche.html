@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Filtre Branche - TiqtaQo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .test-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .test-section { 
+            background: #f8f9fa; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px 0; 
+        }
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .test-title { font-size: 18px; font-weight: bold; }
+        .btn-test {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-test:hover { background: #2980b9; }
+        .product-result {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .product-match { border-left: 4px solid #27ae60; }
+        .product-no-match { border-left: 4px solid #e74c3c; opacity: 0.7; }
+        .match-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .match-yes { background: #27ae60; color: white; }
+        .match-no { background: #e74c3c; color: white; }
+        .debug-info {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .filter-test {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de Filtrage par Branche</h1>
+        <p>Cet outil diagnostic affiche quels produits correspondent à chaque branche.</p>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <span class="test-title">Test: Packs Femme</span>
+                <button class="btn-test" onclick="runTest('packs', 'femme')">🔄 Re-tester</button>
+            </div>
+            <div id="test-packs-femme" class="filter-test">Cliquez sur le bouton pour lancer le test...</div>
+            <div id="result-packs-femme"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <span class="test-title">Test: Packs Homme</span>
+                <button class="btn-test" onclick="runTest('packs', 'homme')">🔄 Re-tester</button>
+            </div>
+            <div id="test-packs-homme" class="filter-test">Cliquez sur le bouton pour lancer le test...</div>
+            <div id="result-packs-homme"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <span class="test-title">Test: Accessoires Femme</span>
+                <button class="btn-test" onclick="runTest('accessoires', 'femme')">🔄 Re-tester</button>
+            </div>
+            <div id="test-accessoires-femme" class="filter-test">Cliquez sur le bouton pour lancer le test...</div>
+            <div id="result-accessoires-femme"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <span class="test-title">Test: Accessoires Homme</span>
+                <button class="btn-test" onclick="runTest('accessoires', 'homme')">🔄 Re-tester</button>
+            </div>
+            <div id="test-accessoires-homme" class="filter-test">Cliquez sur le bouton pour lancer le test...</div>
+            <div id="result-accessoires-homme"></div>
+        </div>
+        
+        <div id="all-products-section" class="test-section" style="display: none;">
+            <h3>📋 Debug: Tous les produits chargés</h3>
+            <div id="all-products-debug" class="debug-info"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, collection, getDocs } from './js/firebase-config.js';
+        
+        let allProducts = [];
+        
+        async function loadProducts() {
+            try {
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                allProducts = [];
+                snapshot.forEach(doc => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                document.getElementById('all-products-section').style.display = 'block';
+                document.getElementById('all-products-debug').textContent = JSON.stringify(allProducts, null, 2);
+                
+                console.log(`✅ ${allProducts.length} produits chargés`);
+                console.log('Produits:', allProducts.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    category: p.category,
+                    gender: p.gender,
+                    genderTrimmed: (p.gender || '').trim(),
+                    visible: p.visible
+                })));
+                
+                // Auto-run tests
+                runTest('packs', 'femme');
+                runTest('packs', 'homme');
+                runTest('accessoires', 'femme');
+                runTest('accessoires', 'homme');
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                alert('Erreur: ' + error.message);
+            }
+        }
+        
+        window.runTest = function(category, gender) {
+            const testDiv = document.getElementById(`test-${category}-${gender}`);
+            const resultDiv = document.getElementById(`result-${category}-${gender}`);
+            
+            if (allProducts.length === 0) {
+                testDiv.textContent = '⏳ Chargement des produits...';
+                return;
+            }
+            
+            // Filter products using the same logic as in the HTML pages
+            const matchingProducts = allProducts.filter(p => {
+                const categoryMatch = p.category === category;
+                const genderMatch = (p.gender || '').trim() === gender;
+                const visibleMatch = p.visible !== false;
+                
+                return categoryMatch && genderMatch && visibleMatch;
+            });
+            
+            const notMatchingProducts = allProducts.filter(p => {
+                const categoryMatch = p.category === category;
+                const genderMatch = (p.gender || '').trim() !== gender;
+                const visibleMatch = p.visible !== false;
+                
+                return categoryMatch && genderMatch && visibleMatch;
+            });
+            
+            testDiv.innerHTML = `
+                <strong>Filtre appliqué:</strong><br>
+                category === "${category}" ✓ ${allProducts.filter(p => p.category === category).length} produits<br>
+                (p.gender || "").trim() === "${gender}" ✓ ${matchingProducts.length} produits<br>
+                p.visible !== false ✓ ${allProducts.filter(p => p.visible !== false).length} produits<br><br>
+                <strong>Résultat:</strong> ${matchingProducts.length} produit(s) correspondant(s)
+            `;
+            
+            if (matchingProducts.length === 0) {
+                resultDiv.innerHTML = `
+                    <div class="product-result">
+                        <span class="match-badge match-yes">✓ CORRECT</span>
+                        <p>Aucun produit ne correspond à cette branche - c'est attendu si vous n'avez pas encore ajouté de produits.</p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = matchingProducts.map(p => `
+                    <div class="product-result product-match">
+                        <span class="match-badge match-yes">✓ CORRESPOND</span>
+                        <strong>${p.name}</strong>
+                        <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                            ID: ${p.id}<br>
+                            Catégorie: ${p.category}<br>
+                            Genre: "${p.gender}" → trim = "${(p.gender || '').trim()}"<br>
+                            Visible: ${p.visible !== false ? 'Oui' : 'Non'}
+                        </div>
+                    </div>
+                `).join('');
+            `;
+            
+            if (notMatchingProducts.length > 0) {
+                resultDiv.innerHTML += `
+                    <div style="margin-top: 20px; padding: 10px; background: #fff5f5; border-radius: 5px;">
+                        <strong>🔴 Produits de même catégorie mais NE correspondant PAS à cette branche:</strong>
+                        ${notMatchingProducts.map(p => `
+                            <div style="padding: 5px 0; border-bottom: 1px solid #ddd;">
+                                ${p.name} - genre: "${p.gender}" (recherché: "${gender}")
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        };
+        
+        // Start
+        loadProducts();
+    </script>
+</body>
+</html>
