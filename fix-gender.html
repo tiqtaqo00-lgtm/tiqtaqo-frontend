@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réparer Produits Gender - TiqtaQo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .fix-card {
+            background: white;
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .fix-card-success {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+        .btn-fix {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn-fix:hover { background: #c0392b; }
+        .btn-fix:disabled { background: #95a5a6; cursor: not-allowed; }
+        .result-box {
+            background: #2c3e50;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        h1 { color: #2c3e50; }
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 2px solid #27ae60;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .product-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Réparation du Champ "gender"</h1>
+    
+    <div class="warning">
+        <h3>⚠️ Problème détecté</h3>
+        <p>Le champ "gender" de vos produits contient la valeur de la catégorie ("packs") au lieu du genre réel ("femme" ou "homme").</p>
+        <p>Cela explique pourquoi les produits n'apparaissent pas dans les bonnes branches.</p>
+    </div>
+    
+    <div class="fix-card" id="currentData">
+        <h3>📊 Produits actuels avec gender incorrect:</h3>
+        <div id="productsList">⏳ Chargement...</div>
+    </div>
+    
+    <button class="btn-fix" id="fixButton" onclick="fixAllProducts()">
+        🔧 Corriger TOUS les produits
+    </button>
+    
+    <div id="results"></div>
+    
+    <script type="module">
+        import { db, collection, getDocs, doc, updateDoc } from './js/firebase-config.js';
+        
+        let allProducts = [];
+        let problematicProducts = [];
+        
+        async function loadProducts() {
+            try {
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                allProducts = [];
+                snapshot.forEach(doc => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log(`✅ ${allProducts.length} produits chargés`);
+                
+                // Find products with incorrect gender
+                problematicProducts = allProducts.filter(p => {
+                    const gender = (p.gender || '').trim();
+                    // Check if gender equals category name (incorrect)
+                    return gender === 'packs' || gender === 'wallets' || 
+                           gender === 'glasses' || gender === 'accessoires' ||
+                           gender === '';
+                });
+                
+                displayProducts();
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('productsList').innerHTML = `<p style="color: red;">Erreur: ${error.message}</p>`;
+            }
+        }
+        
+        function displayProducts() {
+            const listDiv = document.getElementById('productsList');
+            
+            if (problematicProducts.length === 0) {
+                document.getElementById('currentData').className = 'fix-card fix-card-success';
+                listDiv.innerHTML = '<p class="success">✅ Tous les produits ont un gender correct!</p>';
+                document.getElementById('fixButton').style.display = 'none';
+                return;
+            }
+            
+            listDiv.innerHTML = problematicProducts.map(p => `
+                <div class="product-item">
+                    <strong>${p.name}</strong><br>
+                    Category: ${p.category} | Gender actuel: "${p.gender}"<br>
+                    <em>Devrait être: "${p.category === 'packs' ? 'femme' : p.category === 'wallets' ? 'femme' : 'femme'}"</em>
+                </div>
+            `).join('');
+        }
+        
+        window.fixAllProducts = async function() {
+            const button = document.getElementById('fixButton');
+            button.disabled = true;
+            button.textContent = '⏳ Correction en cours...';
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            let fixed = 0;
+            let errors = [];
+            
+            for (const p of problematicProducts) {
+                try {
+                    // Determine correct gender based on page context
+                    // For now, set all to 'femme' as default
+                    // User can change individual products later
+                    await updateDoc(doc(db, 'products', p.id), {
+                        gender: 'femme'
+                    });
+                    
+                    fixed++;
+                    resultsDiv.innerHTML += `<div class="result-box">✓ Corrigé: ${p.name} (ID: ${p.id}) → gender: "femme"</div>`;
+                    
+                } catch (error) {
+                    errors.push(`${p.name}: ${error.message}`);
+                    resultsDiv.innerHTML += `<div class="result-box" style="color: #e74c3c;">❌ Erreur: ${p.name} - ${error.message}</div>`;
+                }
+            }
+            
+            button.textContent = `🔄 Recharger pour voir les résultats`;
+            
+            if (errors.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Correction terminée!</h3>
+                        <p>${fixed} produits ont été corrigés.</p>
+                        <p><strong>Important:</strong> Tous les produits ont été définis avec gender = "femme"</p>
+                        <p>Si certains produits doivent être dans la section "homme", vous devrez les modifier manuellement dans Firebase Console.</p>
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML += `
+                    <div style="color: #e74c3c; padding: 15px;">
+                        <h3>⚠️ ${errors.length} erreurs survenues</h3>
+                        ${errors.join('<br>')}
+                    </div>
+                `;
+            }
+        };
+        
+        // Start
+        loadProducts();
+    </script>
+</body>
+</html>
