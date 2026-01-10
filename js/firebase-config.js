@@ -164,7 +164,7 @@ export const ProductAPI = {
                 if (category && (product.category || '').trim() !== category) return false;
                 
                 // Gender filter - use trim() to handle trailing spaces
-                if (gender) {
+                if (gender && gender !== '') {
                     const genderCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
                     if (genderCategories.includes(category)) {
                         if ((product.gender || '').trim() !== gender) return false;

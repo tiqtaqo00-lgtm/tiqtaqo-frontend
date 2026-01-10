@@ -286,7 +286,7 @@ async function getProducts(options = {}) {
         if (category) {
             products = products.filter(p => p.category === category);
         }
-        if (gender) {
+        if (gender && gender !== '') {
             products = products.filter(p => p.gender === gender);
         }
         if (searchTerm) {
