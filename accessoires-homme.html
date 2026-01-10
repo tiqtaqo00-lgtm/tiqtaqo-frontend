@@ -277,9 +277,10 @@
 
             if (!productsGrid) return;
 
+            // For branch pages, only filter by category (not gender)
+            // because products may have gender = category name instead of 'femme'/'homme'
             const categoryProducts = products.filter(p =>
                 p.category === category &&
-                (p.gender || '').trim() === gender &&
                 p.visible
             );
 

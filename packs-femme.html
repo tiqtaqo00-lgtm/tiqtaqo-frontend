@@ -289,9 +289,10 @@
             const products = result.products || [];
                 
                 // Filter by category, gender and visible status
+                // Note: For branch pages (packs-femme, glasses-homme, etc.),
+                // we don't filter by gender because products may have gender = category name
                 const categoryProducts = products.filter(p =>
                     p.category === category &&
-                    (p.gender || '').trim() === gender &&
                     p.visible
                 );
                 
