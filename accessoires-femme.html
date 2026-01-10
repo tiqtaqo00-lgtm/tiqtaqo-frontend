@@ -279,7 +279,7 @@
 
             const categoryProducts = products.filter(p =>
                 p.category === category &&
-                p.gender === gender &&
+                (p.gender || '').trim() === gender &&
                 p.visible
             );
 

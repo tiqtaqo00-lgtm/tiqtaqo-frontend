@@ -288,8 +288,12 @@
                 const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
                 
-                // Filter by visible status
-                const categoryProducts = products.filter(p => p.visible !== false);
+                // Filter by category, gender and visible status
+                const categoryProducts = products.filter(p =>
+                    p.category === category &&
+                    (p.gender || '').trim() === gender &&
+                    p.visible
+                );
                 
                 if (categoryProducts.length === 0) {
                     productsGrid.innerHTML = `
