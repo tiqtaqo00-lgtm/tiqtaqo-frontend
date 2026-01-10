@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Gender Exact - TiqtaQo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .product-card { 
+            background: white; 
+            border: 2px solid #ddd; 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin: 20px 0;
+        }
+        .product-match { border-color: #27ae60; background: #f0fff4; }
+        .product-no-match { border-color: #e74c3c; background: #fff5f5; }
+        .product-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+        .debug-section { 
+            background: #2c3e50; 
+            color: #00ff00; 
+            padding: 15px; 
+            border-radius: 8px; 
+            font-family: monospace; 
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .filter-explanation {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover { background: #2980b9; }
+        .result-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px solid #3498db;
+        }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnostic Exact des Produits</h1>
+    <p>Cet outil va montrer EXACTEMENT quelle valeur de "gender" est stockée dans Firebase pour chaque produit.</p>
+    
+    <div class="filter-explanation">
+        <strong>Comment fonctionne le filtrage dans les pages de branche:</strong>
+        <pre style="background: #2c3e50; color: white; padding: 10px; border-radius: 5px; margin-top: 10px;">
+const categoryProducts = products.filter(p =>
+    p.category === category &&                    // Ex: category = 'packs'
+    (p.gender || '').trim() === gender &&        // Ex: gender = 'femme'
+    p.visible
+);</pre>
+    </div>
+    
+    <h2>🧪 Tests par Branche</h2>
+    <div>
+        <button class="test-button" onclick="testBranch('packs', 'femme')">Test Packs Femme</button>
+        <button class="test-button" onclick="testBranch('packs', 'homme')">Test Packs Homme</button>
+        <button class="test-button" onclick="testBranch('accessoires', 'femme')">Test Accessoires Femme</button>
+        <button class="test-button" onclick="testBranch('accessoires', 'homme')">Test Accessoires Homme</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script type="module">
+        import { db, collection, getDocs } from './js/firebase-config.js';
+        
+        let allProducts = [];
+        
+        async function loadAllProducts() {
+            try {
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                allProducts = [];
+                snapshot.forEach(doc => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log('✅ Produits chargés:', allProducts.length);
+                console.table(allProducts.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    category: p.category,
+                    gender: JSON.stringify(p.gender),
+                    genderTrimmed: JSON.stringify((p.gender || '').trim()),
+                    visible: p.visible
+                })));
+                
+                // Auto-run a test
+                testBranch('packs', 'femme');
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="product-card" style="border-color: #e74c3c;">
+                        <h3 style="color: #e74c3c;">Erreur de connexion</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        window.testBranch = function(category, gender) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (allProducts.length === 0) {
+                resultsDiv.innerHTML = '<p>⏳ Chargement...</p>';
+                return;
+            }
+            
+            // Products in the requested category
+            const categoryProducts = allProducts.filter(p => p.category === category);
+            
+            // Products that MATCH the gender filter
+            const matchingProducts = categoryProducts.filter(p => 
+                (p.gender || '').trim() === gender && p.visible !== false
+            );
+            
+            // Products in category but with DIFFERENT gender
+            const otherGenderProducts = categoryProducts.filter(p => 
+                (p.gender || '').trim() !== gender && p.visible !== false
+            );
+            
+            let html = `
+                <div class="result-box">
+                    <h2 style="margin-top: 0;">📍 Test: ${category} - ${gender}</h2>
+                    <p><strong>Produits dans la catégorie "${category}":</strong> ${categoryProducts.length}</p>
+                    <p><strong>Produits CORRESPONDANT à "${gender}":</strong> ${matchingProducts.length}</p>
+                    <p><strong>Produits de même catégorie mais genre différent:</strong> ${otherGenderProducts.length}</p>
+                </div>
+            `;
+            
+            // Show MATCHING products
+            if (matchingProducts.length > 0) {
+                html += `<h3>✅ Produits qui DEVRAIENT apparaître (${matchingProducts.length}):</h3>`;
+                matchingProducts.forEach(p => {
+                    html += createProductCard(p, true, category, gender);
+                });
+            } else {
+                html += `<div class="product-card product-no-match">
+                    <div class="product-title">✓ Aucun produit ne correspond</div>
+                    <p>Aucun produit dans la catégorie "${category}" n'a gender = "${gender}"</p>
+                </div>`;
+            }
+            
+            // Show NON-MATCHING products (same category, different gender)
+            if (otherGenderProducts.length > 0) {
+                html += `<h3>❌ Produits qui ne devraient PAS apparaître sur cette page (${otherGenderProducts.length}):</h3>`;
+                otherGenderProducts.forEach(p => {
+                    html += createProductCard(p, false, category, gender);
+                });
+            }
+            
+            resultsDiv.innerHTML = html;
+        };
+        
+        function createProductCard(p, isMatching, targetCategory, targetGender) {
+            const genderValue = p.gender;
+            const genderTrimmed = (p.gender || '').trim();
+            const willShow = genderTrimmed === targetGender && p.visible !== false;
+            
+            return `
+                <div class="product-card ${willShow ? 'product-match' : 'product-no-match'}">
+                    <div class="product-title">
+                        ${willShow ? '✅' : '❌'} ${p.name || 'Sans nom'}
+                    </div>
+                    
+                    <div class="debug-section">
+                        <strong>DÉTAILS EXACTS DU PRODUIT:</strong><br><br>
+                        p.id = "${p.id}"<br>
+                        p.name = "${p.name}"<br>
+                        p.category = "${p.category}"<br>
+                        p.gender = ${JSON.stringify(genderValue)}<br>
+                        (p.gender || '') = ${JSON.stringify(p.gender || '')}<br>
+                        (p.gender || '').trim() = "${genderTrimmed}"<br>
+                        p.visible = ${p.visible}<br>
+                        <br>
+                        <strong>VÉRIFICATION:</strong><br>
+                        p.category === "${targetCategory}" → ${p.category === targetCategory ? '✓ OUI' : '✗ NON'}<br>
+                        "${genderTrimmed}" === "${targetGender}" → ${genderTrimmed === targetGender ? '✓ OUI' : '✗ NON'}<br>
+                        p.visible !== false → ${p.visible !== false ? '✓ OUI' : '✗ NON'}<br>
+                        <br>
+                        <strong>RÉSULTAT:</strong> ${willShow ? '🟢 AFFICHERA sur la page' : '🔴 NE s\'affichera PAS'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Start
+        loadAllProducts();
+    </script>
+</body>
+</html>
