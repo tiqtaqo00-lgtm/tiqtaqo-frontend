@@ -289,11 +289,15 @@
             const products = result.products || [];
                 
                 // Filter by category, gender and visible status
-                // Note: For branch pages (packs-femme, glasses-homme, etc.),
-                // we don't filter by gender because products may have gender = category name
+                // Smart filter: works with both old data (gender = category or empty) and new data (gender = femme/homme)
                 const categoryProducts = products.filter(p =>
                     p.category === category &&
-                    p.visible
+                    (p.visible === true || p.visible === undefined) &&
+                    // New products: gender should match the branch (femme)
+                    // Old products: gender might be category name or empty
+                    ((p.gender || '').trim() === gender || 
+                     (p.gender || '').trim() === '' || 
+                     (p.gender || '').trim() === category)
                 );
                 
                 if (categoryProducts.length === 0) {

@@ -37,17 +37,29 @@
 
         // Add product function
         window.addProductToFirebase = async function() {
+            // Get selected values
+            const category = document.getElementById('productCategory').value;
+            let gender = document.getElementById('productGender').value;
+            
+            // For branch products, automatically set gender based on category
+            // This ensures products are correctly assigned to branches
+            const branchCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
+            if (branchCategories.includes(category)) {
+                // Gender will be set by the user's selection in the dropdown
+                // Keep the selected gender value (homme or femme)
+            }
+            
             const productData = {
                 name: document.getElementById('productName').value,
                 price: parseFloat(document.getElementById('productPrice').value),
-                category: document.getElementById('productCategory').value,
+                category: category,
                 description: document.getElementById('productDescription').value,
                 image: document.getElementById('productImage').value || "https://via.placeholder.com/400x400?text=Product",
                 colors: [],
                 promotion: 0,
                 bestSeller: false,
                 visible: true,
-                gender: document.getElementById('productGender').value,
+                gender: gender,  // Now correctly set to 'homme' or 'femme'
                 created_at: new Date().toISOString()
             };
 

@@ -364,11 +364,13 @@
 
             if (!productsGrid) return;
 
-            // For branch pages, only filter by category (not gender)
-            // because products may have gender = category name instead of 'femme'/'homme'
+            // Smart filter: works with both old data (gender = category or empty) and new data (gender = femme/homme)
             const categoryProducts = products.filter(p =>
                 p.category === category &&
-                p.visible
+                (p.visible === true || p.visible === undefined) &&
+                ((p.gender || '').trim() === gender || 
+                 (p.gender || '').trim() === '' || 
+                 (p.gender || '').trim() === category)
             );
 
             if (categoryProducts.length === 0) {
