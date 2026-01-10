@@ -163,12 +163,15 @@ export const ProductAPI = {
                 // Category filter - use trim() to handle trailing spaces
                 if (category && (product.category || '').trim() !== category) return false;
                 
-                // Gender filter - use trim() to handle trailing spaces
-                if (gender && gender !== '') {
-                    const genderCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
-                    if (genderCategories.includes(category)) {
-                        if ((product.gender || '').trim() !== gender) return false;
-                    }
+                // Gender filter - ONLY apply when explicitly provided
+                // For branch pages (packs-femme.html, glasses-homme.html, etc.),
+                // the gender parameter is used for filtering AFTER fetching by category
+                // We should NOT filter by gender at the Firebase level because
+                // the product.gender field contains category names (e.g., 'packs')
+                // instead of actual gender values (e.g., 'femme', 'homme')
+                // The actual gender filtering is done client-side in the HTML pages
+                if (gender && gender !== '' && !['packs', 'wallets', 'glasses', 'accessoires', 'belts'].includes(gender)) {
+                    if ((product.gender || '').trim() !== gender) return false;
                 }
                 
                 return true;
