@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص وإصلاح المنتجات - TiqtaQo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .card { background: white; border-radius: 10px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card h2 { margin-top: 0; color: #333; }
+        .product-item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-right: 4px solid #e74c3c; }
+        .product-item.correct { border-right-color: #27ae60; }
+        .product-item.incorrect { border-right-color: #e74c3c; }
+        .product-name { font-weight: bold; font-size: 16px; }
+        .product-detail { margin: 5px 0; color: #666; }
+        .product-detail span { font-weight: bold; color: #333; }
+        .btn { background: #3498db; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px 5px; }
+        .btn:hover { background: #2980b9; }
+        .btn.fix { background: #e74c3c; }
+        .btn.fix:hover { background: #c0392b; }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .status { padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .status.loading { background: #fff3cd; color: #856404; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .log-box { background: #2c3e50; color: #00ff00; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+        .count-box { display: inline-block; background: #3498db; color: white; padding: 5px 15px; border-radius: 20px; margin: 5px; }
+        .count-box.incorrect { background: #e74c3c; }
+        .count-box.correct { background: #27ae60; }
+    </style>
+</head>
+<body>
+    <h1>🔧 تشخيص وإصلاح المنتجات</h1>
+    
+    <div class="card">
+        <h2>📊 حالة المنتجات</h2>
+        <div id="stats">
+            <span class="count-box loading">⏳ جاري التحميل...</span>
+        </div>
+    </div>
+    
+    <div class="card" id="productsCard" style="display: none;">
+        <h2>📋 قائمة المنتجات</h2>
+        <div id="productsList"></div>
+    </div>
+    
+    <div class="card">
+        <h2>🔧 إصلاح</h2>
+        <p id="fixDescription">اضغط على الزر أدناه لتغيير gender لجميع المنتجات إلى "femme"</p>
+        <button class="btn fix" id="fixBtn" onclick="fixProducts()">🔧 إصلاح جميع المنتجات</button>
+        <div id="fixStatus"></div>
+    </div>
+    
+    <div class="card">
+        <h2>📝 سجل العمليات</h2>
+        <div class="log-box" id="logBox">انتظر... جاري تحميل المنتجات</div>
+    </div>
+
+    <script type="module">
+        import { db, collection, getDocs, doc, updateDoc } from './js/firebase-config.js';
+        
+        let allProducts = [];
+        
+        function log(message) {
+            const logBox = document.getElementById('logBox');
+            const time = new Date().toLocaleTimeString();
+            logBox.textContent += `\n[${time}] ${message}`;
+            logBox.scrollTop = logBox.scrollHeight;
+            console.log(message);
+        }
+        
+        async function loadProducts() {
+            log('جاري الاتصال بـ Firebase...');
+            
+            try {
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+                
+                allProducts = [];
+                snapshot.forEach(doc => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                log(`✅ تم تحميل ${allProducts.length} منتج`);
+                displayProducts();
+                
+            } catch (error) {
+                log(`❌ خطأ: ${error.message}`);
+                document.getElementById('stats').innerHTML = `<div class="status error">خطأ في الاتصال: ${error.message}</div>`;
+            }
+        }
+        
+        function displayProducts() {
+            const statsDiv = document.getElementById('stats');
+            const productsListDiv = document.getElementById('productsList');
+            const productsCard = document.getElementById('productsCard');
+            
+            // Count correct vs incorrect
+            let correct = 0;
+            let incorrect = 0;
+            
+            const productsHTML = allProducts.map(p => {
+                const gender = (p.gender || '').trim();
+                const isCorrect = gender === 'femme' || gender === 'homme';
+                
+                if (isCorrect) correct++;
+                else incorrect++;
+                
+                return `
+                    <div class="product-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <div class="product-name">${p.name || 'بدون اسم'}</div>
+                        <div class="product-detail">الفئة: <span>${p.category || 'N/A'}</span></div>
+                        <div class="product-detail">gender الحالي: <span style="color: ${isCorrect ? '#27ae60' : '#e74c3c'}">"${p.gender}"</span></div>
+                        <div class="product-detail">المشكلة: ${isCorrect ? '✅ صحيح' : '❌ gender يجب أن يكون "femme" أو "homme"'}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            statsDiv.innerHTML = `
+                <span class="count-box">المجموع: ${allProducts.length}</span>
+                <span class="count-box correct">صحيح: ${correct}</span>
+                <span class="count-box incorrect">يحتاج إصلاح: ${incorrect}</span>
+            `;
+            
+            productsListDiv.innerHTML = productsHTML;
+            productsCard.style.display = 'block';
+            
+            log(`صحيح: ${correct} | يحتاج إصلاح: ${incorrect}`);
+        }
+        
+        window.fixProducts = async function() {
+            const fixBtn = document.getElementById('fixBtn');
+            const fixStatus = document.getElementById('fixStatus');
+            
+            fixBtn.disabled = true;
+            fixBtn.textContent = '⏳ جاري الإصلاح...';
+            
+            fixStatus.innerHTML = '<div class="status loading">جاري إصلاح المنتجات...</div>';
+            log('بدأ عملية الإصلاح...');
+            
+            let fixed = 0;
+            let errors = [];
+            
+            for (const p of allProducts) {
+                const gender = (p.gender || '').trim();
+                
+                // Only fix if gender is not 'femme' or 'homme'
+                if (gender !== 'femme' && gender !== 'homme') {
+                    try {
+                        await updateDoc(doc(db, 'products', p.id), {
+                            gender: 'femme'
+                        });
+                        
+                        fixed++;
+                        log(`✅ تم إصلاح: ${p.name}`);
+                        
+                    } catch (error) {
+                        errors.push(`${p.name}: ${error.message}`);
+                        log(`❌ خطأ في ${p.name}: ${error.message}`);
+                    }
+                }
+            }
+            
+            fixBtn.textContent = '🔄 إعادة تحميل الصفحة';
+            fixBtn.disabled = false;
+            fixBtn.onclick = () => location.reload();
+            
+            if (errors.length === 0) {
+                fixStatus.innerHTML = `<div class="status success">✅ تم إصلاح ${fixed} منتج بنجاح!</div>`;
+                log(`🎉 تم إصلاح ${fixed} منتج بنجاح!`);
+            } else {
+                fixStatus.innerHTML = `
+                    <div class="status error">
+                        <p>تم إصلاح ${fixed} منتج</p>
+                        <p>أخطاء: ${errors.length}</p>
+                        <p>${errors.join('<br>')}</p>
+                    </div>
+                `;
+            }
+        };
+        
+        // Start loading
+        loadProducts();
+    </script>
+</body>
+</html>
