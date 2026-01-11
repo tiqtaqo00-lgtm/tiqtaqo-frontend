@@ -380,7 +380,20 @@ async function editProduct(id) {
         document.getElementById('productId').value = product.id;
         document.getElementById('productName').value = product.name;
         document.getElementById('productPrice').value = product.price;
-        document.getElementById('productCategory').value = product.category;
+        
+        // Load category options FIRST, then set the value
+        loadCategoryOptions();
+        
+        // Set category - only if product has a valid category
+        const categorySelect = document.getElementById('productCategory');
+        if (product.category && categorySelect.querySelector(`option[value="${product.category}"]`)) {
+            categorySelect.value = product.category;
+        } else {
+            // Product doesn't have a category or it's invalid - select first valid option
+            console.warn('Product', id, 'has invalid or missing category:', product.category);
+            // Don't auto-select - let user choose
+        }
+        
         document.getElementById('productDescription').value = product.description || '';
         document.getElementById('productPromotion').value = product.promotion || 0;
         document.getElementById('productBestSeller').checked = product.bestSeller || false;
@@ -422,7 +435,9 @@ async function editProduct(id) {
         // Load colors
         loadProductColors(product.colors || []);
         
-        loadCategoryOptions();
+        // Trigger category change handler to update gender visibility
+        handleCategoryChange();
+        
         document.getElementById('productModal').style.display = 'flex';
     }
 }
@@ -812,21 +827,30 @@ async function saveProduct(event) {
     const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
     const selectedCategory = document.getElementById('productCategory').value;
     
+    // Get existing product if editing
+    const existingProduct = id ? products.find(p => p.id === id) : null;
+    
+    // For editing: if no category is selected AND product already has a category, keep the original
+    // For new products: category is required
+    const finalCategory = (id && (!selectedCategory || selectedCategory === '')) 
+        ? (existingProduct?.category || 'wallets')  // Default to 'wallets' if no category found
+        : (selectedCategory || 'wallets');  // Default to 'wallets' for new products
+    
     const productData = {
         name: document.getElementById('productName').value,
         price: parseFloat(document.getElementById('productPrice').value),
-        category: selectedCategory,
+        category: finalCategory,
         description: document.getElementById('productDescription').value,
         promotion: parseInt(document.getElementById('productPromotion').value) || 0,
         bestSeller: document.getElementById('productBestSeller').checked,
         visible: document.getElementById('productVisible').checked,
         showInCanOffers: document.getElementById('productCanOffer').checked,
-        created_at: new Date().toISOString()
+        created_at: existingProduct?.created_at || new Date().toISOString()
     };
     
     // Handle gender for branched categories (use trim() to handle any whitespace issues)
-    if (branchedCategories.includes(selectedCategory)) {
-        productData.gender = document.getElementById('productGender').value.trim();
+    if (branchedCategories.includes(finalCategory)) {
+        productData.gender = document.getElementById('productGender').value.trim() || existingProduct?.gender || 'homme';
     } else {
         productData.gender = null;
     }
@@ -840,17 +864,15 @@ async function saveProduct(event) {
     if (images.length > 0) {
         productData.image = images[0]; // Main image for backward compatibility
         productData.images = images;   // All images as array
-    } else if (id) {
+    } else if (existingProduct) {
         // Keep existing images if editing and no new images added
-        const existingProduct = products.find(p => p.id === id);
-        if (existingProduct) {
-            productData.image = existingProduct.image;
-            productData.images = existingProduct.images || (existingProduct.image ? [existingProduct.image] : []);
-        }
+        productData.image = existingProduct.image;
+        productData.images = existingProduct.images || (existingProduct.image ? [existingProduct.image] : []);
     }
     
-    // Get colors
-    productData.colors = getProductColors();
+    // Get colors - preserve existing if empty
+    const newColors = getProductColors();
+    productData.colors = newColors.length > 0 ? newColors : (existingProduct?.colors || []);
     
     // Save product with Firebase
     try {

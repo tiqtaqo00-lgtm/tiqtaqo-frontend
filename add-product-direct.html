@@ -41,12 +41,15 @@
             const category = document.getElementById('productCategory').value;
             let gender = document.getElementById('productGender').value;
             
-            // For branch products, automatically set gender based on category
-            // This ensures products are correctly assigned to branches
-            const branchCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
-            if (branchCategories.includes(category)) {
-                // Gender will be set by the user's selection in the dropdown
-                // Keep the selected gender value (homme or femme)
+            // Validate that a category is selected
+            if (!category) {
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #f8d7da; color: #721c24; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h3>⚠️ خطأ!</h3>
+                        <p>الرجاء اختيار تصنيف صحيح!</p>
+                    </div>
+                `;
+                return;
             }
             
             const productData = {
@@ -59,7 +62,7 @@
                 promotion: 0,
                 bestSeller: false,
                 visible: true,
-                gender: gender,  // Now correctly set to 'homme' or 'femme'
+                gender: gender,
                 created_at: new Date().toISOString()
             };
 
@@ -73,6 +76,13 @@
                         <p>الاسم: ${productData.name}</p>
                         <p>السعر: ${productData.price} درهم</p>
                         <p>التصنيف: ${productData.category}</p>
+                        <p>الجنس: ${productData.gender === 'homme' ? 'رجالي' : 'نسائي'}</p>
+                        <a href="wallets-homme.html" style="display: inline-block; margin-top: 10px; margin-right: 10px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px;">
+                            عرض محفظة رجالي
+                        </a>
+                        <a href="wallets-femme.html" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #e91e63; color: white; text-decoration: none; border-radius: 5px;">
+                            عرض محفظة نسائي
+                        </a>
                         <a href="https://console.firebase.google.com/project/tiqtaqo-store/firestore/databases" 
                            target="_blank" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">
                             تحقق من Firebase
@@ -186,14 +196,14 @@
     
     <div class="form-group">
         <label>التصنيف:</label>
-        <select id="productCategory">
-            <option value="homme">Homme - رجالي</option>
-            <option value="femme">Femme - نسائي</option>
-            <option value="packs">Packs - مجموعات</option>
+        <select id="productCategory" required>
+            <option value="">-- اختر التصنيف --</option>
             <option value="wallets">Wallets - محافظ</option>
             <option value="glasses">Glasses - نظارات</option>
             <option value="accessoires">Accessoires - إكسسوارات</option>
             <option value="belts">Belts - أحزمة</option>
+            <option value="packs">Packs - مجموعات</option>
+            <option value="boite">Boite - علب الهدايا</option>
         </select>
     </div>
     
