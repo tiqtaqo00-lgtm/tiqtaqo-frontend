@@ -427,14 +427,14 @@
             });
             
             // Show debug info
-            const femmeProducts = products.filter(p => p.gender === 'femme' && p.category === 'packs');
-            const hommeProducts = products.filter(p => p.gender === 'homme' && p.category === 'packs');
-            const noGenderProducts = products.filter(p => !p.gender && p.category === 'packs');
+            const filteredFemme = products.filter(p => p.gender === 'femme' && p.category === 'packs');
+            const filteredHomme = products.filter(p => p.gender === 'homme' && p.category === 'packs');
+            const filteredNoGender = products.filter(p => !p.gender && p.category === 'packs');
             
             console.log('=== DEBUG PACKS-HOMME ===');
-            console.log('Femme products:', femmeProducts.length);
-            console.log('Homme products:', hommeProducts.length);
-            console.log('Old products (no gender):', noGenderProducts.length);
+            console.log('Femme products:', filteredFemme.length);
+            console.log('Homme products:', filteredHomme.length);
+            console.log('Old products (no gender):', filteredNoGender.length);
             console.log('Final filtered count:', categoryProducts.length);
             console.log('===========================');
 
