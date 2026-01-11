@@ -854,6 +854,9 @@ async function saveProduct(event) {
     
     // Save product with Firebase
     try {
+        // Debug: Log the product data before saving
+        console.log('Saving product data:', JSON.stringify(productData, null, 2));
+        
         // Ensure Firebase is initialized
         const db = await getDb();
         
@@ -864,11 +867,13 @@ async function saveProduct(event) {
             if (id) {
                 // Update existing product
                 await updateDoc(doc(db, 'products', id), productData);
+                console.log('Product updated successfully:', productData);
             } else {
                 // Add new product with auto-generated ID
                 const docRef = await addDoc(collection(db, 'products'), productData);
                 productData.id = docRef.id;
                 products.push(productData);
+                console.log('Product added successfully:', productData);
             }
             
             // Also save to localStorage as backup
