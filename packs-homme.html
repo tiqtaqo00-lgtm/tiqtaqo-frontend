@@ -364,13 +364,13 @@
 
             if (!productsGrid) return;
 
-            // Smart filter: works with both old data (gender = category or empty) and new data (gender = femme/homme)
+        // STRICT FILTER: Only show products that match the specific gender for this branch
+            // femme products -> packs-femme.html
+            // homme products -> packs-homme.html
             const categoryProducts = products.filter(p =>
                 p.category === category &&
-                (p.visible === true || p.visible === undefined) &&
-                ((p.gender || '').trim() === gender || 
-                 (p.gender || '').trim() === '' || 
-                 (p.gender || '').trim() === category)
+                p.gender === gender &&
+                (p.visible === true || p.visible === undefined)
             );
 
             if (categoryProducts.length === 0) {
