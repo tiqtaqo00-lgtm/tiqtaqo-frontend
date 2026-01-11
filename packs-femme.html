@@ -288,14 +288,19 @@
                 const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
             const products = result.products || [];
                 
+                console.log('packs-femme.html: Total products from Firebase:', products.length);
+                console.log('packs-femme.html: Looking for gender=femme, category=packs');
+                
                 // STRICT FILTER: Only show products that match the specific gender for this branch
                 // femme products -> packs-femme.html
                 // homme products -> packs-homme.html
-                const categoryProducts = products.filter(p =>
-                    p.category === category &&
-                    p.gender === gender &&
-                    (p.visible === true || p.visible === undefined)
-                );
+                const categoryProducts = products.filter(p => {
+                    const match = p.category === category && p.gender === gender && (p.visible === true || p.visible === undefined);
+                    console.log('Product:', p.name, '| gender:', p.gender, '| category:', p.category, '| MATCH:', match);
+                    return match;
+                });
+                
+                console.log('packs-femme.html: Filtered products count:', categoryProducts.length);
                 
                 if (categoryProducts.length === 0) {
                     productsGrid.innerHTML = `
