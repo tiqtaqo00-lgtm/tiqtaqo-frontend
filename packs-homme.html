@@ -100,6 +100,15 @@
             font-size: 1.2rem;
             color: rgba(255, 255, 255, 0.7);
         }
+        .product-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .product-card-link:hover .product-card {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -455,28 +464,30 @@
                     : product.price;
 
                 return `
-                    <div class="product-card">
-                        ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
-                        <div class="product-image">
-                            <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
-                        </div>
-                        <div class="product-info">
-                            <h3>${product.name}</h3>
-                            <p>${product.description || ''}</p>
-                            <div class="product-price">
-                                ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                                <span class="price">${Math.round(finalPrice)} DH</span>
+                    <a href="product.html?id=${product.id}" class="product-card-link">
+                        <div class="product-card">
+                            ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
+                            <div class="product-image">
+                                <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage%3C/text%3E%3C/svg%3E'">
                             </div>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn-primary" style="flex: 1;" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
-                                    <i class="fab fa-whatsapp"></i> Commander
-                                </button>
-                                <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </button>
+                            <div class="product-info">
+                                <h3>${product.name}</h3>
+                                <p>${product.description || ''}</p>
+                                <div class="product-price">
+                                    ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                                    <span class="price">${Math.round(finalPrice)} DH</span>
+                                </div>
+                                <div style="display: flex; gap: 10px;" onclick="event.preventDefault(); event.stopPropagation();">
+                                    <button class="btn-primary" style="flex: 1;" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
+                                        <i class="fab fa-whatsapp"></i> Commander
+                                    </button>
+                                    <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 `;
             }).join('');
         }
