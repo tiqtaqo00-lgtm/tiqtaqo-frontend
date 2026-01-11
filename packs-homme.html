@@ -408,30 +408,26 @@
                 console.log(`  - ${p.name}: gender="${p.gender}", category="${p.category}"`);
             });
 
-        // STRICT FILTER: Only show products that match the specific gender for this branch
-            // femme products -> packs-femme.html
-            // homme products -> packs-homme.html
-            const categoryProducts = products.filter(p =>
-                p.category === category &&
-                p.gender === gender &&
-                (p.visible === true || p.visible === undefined)
-            );
+            // FILTER: Show products that match homme OR have no gender (old products)
+            const categoryProducts = products.filter(p => {
+                const match = p.category === category;
+                const isHomme = p.gender === 'homme';
+                const hasNoGender = !p.gender || p.gender === '' || p.gender === undefined;
+                const isVisible = p.visible === true || p.visible === undefined;
+                
+                return match && isVisible && (isHomme || hasNoGender);
+            });
             
-            // DEBUG: Check for products without gender that might cause issues
-            const productsWithoutGender = products.filter(p => 
-                p.category === 'packs' && 
-                (!p.gender || p.gender === '' || p.gender === undefined)
-            );
+            // Show debug info
+            const femmeProducts = products.filter(p => p.gender === 'femme' && p.category === 'packs');
+            const hommeProducts = products.filter(p => p.gender === 'homme' && p.category === 'packs');
+            const noGenderProducts = products.filter(p => !p.gender && p.category === 'packs');
             
-            if (productsWithoutGender.length > 0) {
-                console.warn('⚠️ Found', productsWithoutGender.length, 'products WITHOUT gender field!');
-                console.warn('These products will NOT appear in any branch until gender is set.');
-                productsWithoutGender.forEach(p => {
-                    console.warn(`  - ${p.name} (ID: ${p.id})`);
-                });
-            }
-            
-            console.log('Filtered products count:', categoryProducts.length);
+            console.log('=== DEBUG PACKS-HOMME ===');
+            console.log('Femme products:', femmeProducts.length);
+            console.log('Homme products:', hommeProducts.length);
+            console.log('Old products (no gender):', noGenderProducts.length);
+            console.log('Final filtered count:', categoryProducts.length);
             console.log('===========================');
 
             if (categoryProducts.length === 0) {

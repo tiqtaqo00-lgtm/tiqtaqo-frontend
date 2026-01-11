@@ -278,11 +278,14 @@
             if (!productsGrid) return;
             
             // STRICT FILTER: Only show products that match the specific gender for this branch
-            const categoryProducts = products.filter(p =>
-                p.category === category &&
-                p.gender === gender &&
-                (p.visible === true || p.visible === undefined)
-            );
+            const categoryProducts = products.filter(p => {
+                const match = p.category === category;
+                const hasGender = p.gender === gender;
+                const hasNoGender = !p.gender || p.gender === '' || p.gender === undefined;
+                const isVisible = p.visible === true || p.visible === undefined;
+                
+                return match && isVisible && (hasGender || hasNoGender);
+            });
             
             if (categoryProducts.length === 0) {
                 productsGrid.innerHTML = `
