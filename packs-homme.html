@@ -391,7 +391,9 @@
         };
         
         async function loadCategoryProducts(category, gender) {
-            const result = await window.getProducts({ category: 'packs', gender: 'homme', pageSize: 50, forceRefresh: true });
+            // Get ALL packs products from Firebase (without gender filter)
+            // Then filter locally to support products without gender field
+            const result = await window.getProducts({ category: 'packs', pageSize: 50, forceRefresh: true });
             const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
 
