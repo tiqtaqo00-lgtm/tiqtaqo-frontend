@@ -217,11 +217,6 @@
             try {
                 console.log('packs-femme.html: Starting initialization...');
                 
-                // Wait for main.js functions to be available (up to 15 seconds)
-                console.log('Waiting for loadCategoryProducts...');
-                await waitForFunction('loadCategoryProducts');
-                console.log('main.js functions ready');
-                
                 // Wait for Firebase to be available
                 console.log('Waiting for initFirebase...');
                 await waitForFunction('initFirebase');
@@ -252,10 +247,20 @@
                     console.log('packs-femme.html: Filter sidebar initialized');
                 }
                 
-                // Load products
-                if (typeof window.loadCategoryProducts === 'function') {
-                    await window.loadCategoryProducts('packs', 'femme');
+                // Load products directly (loadCategoryProducts is defined in this same module)
+                if (typeof loadCategoryProducts === 'function') {
+                    await loadCategoryProducts('packs', 'femme');
                     console.log('packs-femme.html: Products loaded');
+                } else if (typeof window.loadCategoryProducts === 'function') {
+                    await window.loadCategoryProducts('packs', 'femme');
+                    console.log('packs-femme.html: Products loaded via window');
+                } else {
+                    console.warn('loadCategoryProducts not found, will retry...');
+                    // Try one more time after a short delay
+                    await new Promise(r => setTimeout(r, 500));
+                    if (typeof loadCategoryProducts === 'function') {
+                        await loadCategoryProducts('packs', 'femme');
+                    }
                 }
             } catch (error) {
                 console.error('packs-femme.html: Error:', error);

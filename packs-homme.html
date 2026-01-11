@@ -304,11 +304,6 @@
             try {
                 console.log('packs-homme.html: Starting initialization...');
                 
-                // Wait for main.js functions to be available (up to 15 seconds)
-                console.log('Waiting for loadCategoryProducts...');
-                await waitForFunction('loadCategoryProducts');
-                console.log('main.js functions ready');
-                
                 // Wait for Firebase to be available
                 console.log('Waiting for initFirebase...');
                 await waitForFunction('initFirebase');
@@ -339,10 +334,21 @@
                     console.log('packs-homme.html: Filter sidebar initialized');
                 }
                 
-                // Load products
-                if (typeof window.loadCategoryProducts === 'function') {
-                    await window.loadCategoryProducts('packs', 'homme');
+                // Load products directly (loadCategoryProducts is defined in this same module)
+                // Use try-catch to handle the case where loadCategoryProducts is defined later in the file
+                if (typeof loadCategoryProducts === 'function') {
+                    await loadCategoryProducts('packs', 'homme');
                     console.log('packs-homme.html: Products loaded');
+                } else if (typeof window.loadCategoryProducts === 'function') {
+                    await window.loadCategoryProducts('packs', 'homme');
+                    console.log('packs-homme.html: Products loaded via window');
+                } else {
+                    console.warn('loadCategoryProducts not found, will retry...');
+                    // Try one more time after a short delay
+                    await new Promise(r => setTimeout(r, 500));
+                    if (typeof loadCategoryProducts === 'function') {
+                        await loadCategoryProducts('packs', 'homme');
+                    }
                 }
             } catch (error) {
                 console.error('packs-homme.html: Error:', error);
