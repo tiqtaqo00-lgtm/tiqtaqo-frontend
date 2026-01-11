@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص Firebase - TiqtaQo</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; background: #1a1a2e; color: white; }
+        h1 { color: #d4af37; text-align: center; }
+        .card { background: #16213e; border-radius: 10px; padding: 20px; margin: 20px 0; }
+        .btn { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px 0; }
+        .btn:hover { background: #2980b9; }
+        .log { background: #0f0f23; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; color: #00ff00; }
+        .status { padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center; font-weight: bold; }
+        .status.loading { background: #f39c12; color: black; }
+        .status.success { background: #27ae60; }
+        .status.error { background: #e74c3c; }
+        .product-item { background: #0f0f23; padding: 10px; margin: 5px 0; border-radius: 5px; border-right: 4px solid #e74c3c; }
+        .product-item.correct { border-right-color: #27ae60; }
+    </style>
+</head>
+<body>
+    <h1>🔍 تشخيص Firebase</h1>
+    
+    <div class="card" id="connectionCard">
+        <h2>📡 حالة الاتصال</h2>
+        <div id="connectionStatus" class="status loading">⏳ جاري الاتصال...</div>
+    </div>
+    
+    <div class="card" id="productsCard" style="display: none;">
+        <h2>📦 المنتجات</h2>
+        <p>عدد المنتجات: <span id="productCount">0</span></p>
+        <div id="productsList"></div>
+    </div>
+    
+    <button class="btn" onclick="testConnection()">🔄 إعادة الاختبار</button>
+    
+    <div class="card">
+        <h2>📝 السجل</h2>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+            authDomain: "tiqtaqo-store.firebaseapp.com",
+            projectId: "tiqtaqo-store",
+            storageBucket: "tiqtaqo-store.firebasestorage.app",
+            messagingSenderId: "747111253966",
+            appId: "1:747111253966:web:84c265ac397b644fe28d9f"
+        };
+
+        let db = null;
+        let app = null;
+
+        function log(msg) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.textContent += `[${time}] ${msg}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(msg);
+        }
+
+        function logError(msg) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.textContent += `[${time}] ❌ ${msg}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.error(msg);
+        }
+
+        async function testConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            const productsCard = document.getElementById('productsCard');
+            
+            statusEl.className = 'status loading';
+            statusEl.innerHTML = '⏳ جاري الاتصال بـ Firebase...';
+            log('بدء اختبار الاتصال...');
+            
+            try {
+                // Initialize Firebase
+                log('جاري تهيئة Firebase...');
+                app = firebase.initializeApp(firebaseConfig);
+                log('Firebase app initialized');
+                
+                // Initialize Firestore
+                log('جاري تهيئة Firestore...');
+                db = firebase.firestore();
+                log('Firestore initialized');
+                
+                // Test connection
+                log('جاري اختبار الاتصال...');
+                statusEl.className = 'status success';
+                statusEl.innerHTML = '✅ Firebase متصل بنجاح!';
+                log('✅ Firebase متصل بنجاح!');
+                
+                // Load products
+                await loadProducts();
+                
+            } catch (error) {
+                logError('خطأ: ' + error.message);
+                logError('Error code: ' + error.code);
+                statusEl.className = 'status error';
+                statusEl.innerHTML = '❌ خطأ في الاتصال: ' + error.message;
+                
+                // Show more details
+                if (error.code === 'app/duplicate-app') {
+                    log('App already exists, using existing app');
+                    if (firebase.firestore()) {
+                        statusEl.className = 'status success';
+                        statusEl.innerHTML = '✅ Firebase متصل (تطبيق موجود مسبقاً)';
+                        await loadProducts();
+                    }
+                }
+            }
+        }
+
+        async function loadProducts() {
+            if (!db) {
+                log('DB is null, cannot load products');
+                return;
+            }
+            
+            log('جاري تحميل المنتجات...');
+            
+            try {
+                const productsRef = db.collection('products');
+                const snapshot = await productsRef.get();
+                
+                log('تم جلب snapshot بنجاح');
+                log('عدد المستندات: ' + snapshot.size);
+                
+                const products = [];
+                snapshot.forEach(doc => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                
+                document.getElementById('productCount').textContent = products.length;
+                
+                if (products.length === 0) {
+                    document.getElementById('productsList').innerHTML = '<p>لا توجد منتجات</p>';
+                    log('لا توجد منتجات في قاعدة البيانات');
+                    return;
+                }
+                
+                let html = '';
+                products.forEach(p => {
+                    const gender = (p.gender || '').trim();
+                    const isCorrect = gender === 'femme' || gender === 'homme';
+                    const statusClass = isCorrect ? 'correct' : 'incorrect';
+                    
+                    html += `
+                        <div class="product-item ${statusClass}">
+                            <strong>${p.name || 'بدون اسم'}</strong><br>
+                            category: "${p.category}" | gender: "${gender}"<br>
+                            ${isCorrect ? '✅' : '❌ يحتاج gender = "femme" أو "homme"'}
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('productsList').innerHTML = html;
+                productsCard.style.display = 'block';
+                
+                log(`✅ تم عرض ${products.length} منتج`);
+                
+            } catch (error) {
+                logError('خطأ في تحميل المنتجات: ' + error.message);
+            }
+        }
+
+        // Test on load
+        log('الصفحة بدأت');
+        setTimeout(testConnection, 500);
+    </script>
+</body>
+</html>
