@@ -833,6 +833,104 @@ async function initFilterSidebar() {
     addFilterStyles();
 }
 
+// Add CSS styles for filter sidebar dynamically
+function addFilterStyles() {
+    // Check if styles already added
+    if (document.getElementById('filter-sidebar-styles')) return;
+    
+    const styles = document.createElement('style');
+    styles.id = 'filter-sidebar-styles';
+    styles.textContent = `
+        .filter-sidebar {
+            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .filter-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 18px;
+        }
+        .reset-filters-btn {
+            background: none;
+            border: none;
+            color: #d4af37;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        .filter-group h4 {
+            margin: 0 0 12px 0;
+            color: #555;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .price-inputs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .price-inputs input {
+            width: 70px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .filter-hint {
+            margin: 8px 0 0 0;
+            font-size: 11px;
+            color: #999;
+        }
+        .filter-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+        }
+        .filter-checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #d4af37;
+        }
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+        }
+        .apply-filters-btn {
+            width: 100%;
+            padding: 12px;
+            background: #d4af37;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .apply-filters-btn:hover {
+            background: #c4a030;
+        }
+    `;
+    document.head.appendChild(styles);
+}
+
 // Apply filters and reload products
 async function applyFilters() {
     productsState.lastDoc = null;
