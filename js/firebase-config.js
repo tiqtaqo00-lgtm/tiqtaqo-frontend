@@ -163,16 +163,19 @@ export const ProductAPI = {
                 // Category filter - use trim() to handle trailing spaces
                 if (category && (product.category || '').trim() !== category) return false;
                 
-                // Gender filter - Apply strict filtering for branch pages
-                // For packs-femme.html: only show products where gender = 'femme'
-                // For packs-homme.html: only show products where gender = 'homme'
-                // This prevents products from appearing in both branches
+                // Gender filter - Allow old products (without gender) to appear in both branches
+                // For packs-femme.html: show products where gender = 'femme' OR no gender
+                // For packs-homme.html: show products where gender = 'homme' OR no gender
+                // This ensures backward compatibility with old products
                 if (gender && gender !== '') {
-                    // For branch pages, require exact gender match
                     const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
                     if (branchedCategories.includes(category)) {
-                        // Strict filter: product.gender must exactly match the requested gender
-                        if ((product.gender || '').trim() !== gender) return false;
+                        // Allow products without gender to pass through (backward compatibility)
+                        // Only filter out if product HAS a gender that doesn't match
+                        const productGender = (product.gender || '').trim();
+                        if (productGender !== '' && productGender !== gender) {
+                            return false;
+                        }
                     }
                 }
                 

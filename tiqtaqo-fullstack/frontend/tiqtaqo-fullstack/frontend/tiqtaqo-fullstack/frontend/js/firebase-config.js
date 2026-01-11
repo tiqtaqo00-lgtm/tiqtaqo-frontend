@@ -178,11 +178,15 @@ window.ProductAPI = {
                 // Category filter
                 if (category && product.category !== category) return false;
                 
-                // Gender filter
+                // Gender filter - Allow old products (without gender) to appear in both branches
                 if (gender) {
                     const genderCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
                     if (genderCategories.includes(category)) {
-                        if (product.gender !== gender) return false;
+                        // Allow products without gender to pass through (backward compatibility)
+                        const productGender = (product.gender || '').trim();
+                        if (productGender !== '' && productGender !== gender) {
+                            return false;
+                        }
                     }
                 }
                 

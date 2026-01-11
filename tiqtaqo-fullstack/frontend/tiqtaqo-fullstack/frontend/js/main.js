@@ -248,7 +248,10 @@ async function getProducts(options = {}) {
             products = products.filter(p => p.category === category);
         }
         if (gender) {
-            products = products.filter(p => p.gender === gender);
+            products = products.filter(p => {
+                const hasGender = p.gender && p.gender !== '';
+                return !hasGender || p.gender === gender;
+            });
         }
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase();
@@ -364,11 +367,13 @@ function filterProducts(products, filters) {
             }
         }
         
-        // Gender filter
+        // Gender filter - Allow old products (without gender) to appear in both branches
         if (filters.genders && filters.genders.length > 0) {
             const genderBranches = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
             if (genderBranches.includes(product.category)) {
-                if (!filters.genders.includes(product.gender || 'homme')) {
+                // Allow products without gender to appear in both branches
+                const productGender = product.gender || '';
+                if (productGender !== '' && !filters.genders.includes(productGender)) {
                     return false;
                 }
             } else {

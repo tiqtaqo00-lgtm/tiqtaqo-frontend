@@ -153,11 +153,15 @@ window.ProductAPI = {
                 // Category filter - use trim() to handle trailing spaces
                 if (category && (product.category || '').trim() !== category) return false;
                 
-                // Gender filter - use trim() to handle trailing spaces
+                // Gender filter - Allow old products (without gender) to appear in both branches
                 if (gender) {
                     const genderCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
                     if (genderCategories.includes(category)) {
-                        if ((product.gender || '').trim() !== gender) return false;
+                        // Allow products without gender to pass through (backward compatibility)
+                        const productGender = (product.gender || '').trim();
+                        if (productGender !== '' && productGender !== gender) {
+                            return false;
+                        }
                     }
                 }
                 

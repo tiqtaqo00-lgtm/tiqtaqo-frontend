@@ -179,11 +179,12 @@
 
             if (!productsGrid) return;
 
-            const categoryProducts = products.filter(p =>
-                p.category === category &&
-                p.gender === gender &&
-                p.visible
-            );
+            const categoryProducts = products.filter(p => {
+                const hasNoGender = !p.gender || p.gender === '';
+                return p.category === category &&
+                       (hasNoGender || p.gender === gender) &&
+                       p.visible;
+            });
 
             if (categoryProducts.length === 0) {
                 productsGrid.innerHTML = `
