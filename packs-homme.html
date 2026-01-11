@@ -417,6 +417,20 @@
                 (p.visible === true || p.visible === undefined)
             );
             
+            // DEBUG: Check for products without gender that might cause issues
+            const productsWithoutGender = products.filter(p => 
+                p.category === 'packs' && 
+                (!p.gender || p.gender === '' || p.gender === undefined)
+            );
+            
+            if (productsWithoutGender.length > 0) {
+                console.warn('⚠️ Found', productsWithoutGender.length, 'products WITHOUT gender field!');
+                console.warn('These products will NOT appear in any branch until gender is set.');
+                productsWithoutGender.forEach(p => {
+                    console.warn(`  - ${p.name} (ID: ${p.id})`);
+                });
+            }
+            
             console.log('Filtered products count:', categoryProducts.length);
             console.log('===========================');
 
