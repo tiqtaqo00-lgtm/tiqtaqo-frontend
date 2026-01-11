@@ -358,11 +358,28 @@
         setTimeout(initPage, 100);
 
         async function loadCategoryProducts(category, gender) {
-            const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
+            const result = await window.getProducts({ category: 'packs', gender: 'homme', pageSize: 50, forceRefresh: true });
             const products = result.products || [];
             const productsGrid = document.getElementById('productsGrid');
 
             if (!productsGrid) return;
+
+            console.log('=== DEBUG PACKS-HOMME ===');
+            console.log('Total products from Firebase:', products.length);
+            
+            // Count by gender
+            const femmeProducts = products.filter(p => p.gender === 'femme');
+            const hommeProducts = products.filter(p => p.gender === 'homme');
+            const noGenderProducts = products.filter(p => !p.gender || p.gender === '');
+            
+            console.log('Products with gender=femme:', femmeProducts.length);
+            console.log('Products with gender=homme:', hommeProducts.length);
+            console.log('Products with NO gender:', noGenderProducts.length);
+            
+            // Show each product
+            products.forEach(p => {
+                console.log(`  - ${p.name}: gender="${p.gender}", category="${p.category}"`);
+            });
 
         // STRICT FILTER: Only show products that match the specific gender for this branch
             // femme products -> packs-femme.html
@@ -372,6 +389,9 @@
                 p.gender === gender &&
                 (p.visible === true || p.visible === undefined)
             );
+            
+            console.log('Filtered products count:', categoryProducts.length);
+            console.log('===========================');
 
             if (categoryProducts.length === 0) {
                 productsGrid.innerHTML = `

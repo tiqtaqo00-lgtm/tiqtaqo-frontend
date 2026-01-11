@@ -285,22 +285,34 @@
             
             try {
                 // Get products from Firebase with filters
-                const result = await window.getProducts({ category, gender, pageSize: 50, forceRefresh: true });
-            const products = result.products || [];
+                const result = await window.getProducts({ category: 'packs', gender: 'femme', pageSize: 50, forceRefresh: true });
+                const products = result.products || [];
                 
-                console.log('packs-femme.html: Total products from Firebase:', products.length);
-                console.log('packs-femme.html: Looking for gender=femme, category=packs');
+                console.log('=== DEBUG PACKS-FEMME ===');
+                console.log('Total products from Firebase:', products.length);
                 
-                // STRICT FILTER: Only show products that match the specific gender for this branch
-                // femme products -> packs-femme.html
-                // homme products -> packs-homme.html
+                // Count by gender
+                const femmeProducts = products.filter(p => p.gender === 'femme');
+                const hommeProducts = products.filter(p => p.gender === 'homme');
+                const noGenderProducts = products.filter(p => !p.gender || p.gender === '');
+                
+                console.log('Products with gender=femme:', femmeProducts.length);
+                console.log('Products with gender=homme:', hommeProducts.length);
+                console.log('Products with NO gender:', noGenderProducts.length);
+                
+                // Show each product
+                products.forEach(p => {
+                    console.log(`  - ${p.name}: gender="${p.gender}", category="${p.category}"`);
+                });
+                
+                // STRICT FILTER: Only show products that match femme
                 const categoryProducts = products.filter(p => {
-                    const match = p.category === category && p.gender === gender && (p.visible === true || p.visible === undefined);
-                    console.log('Product:', p.name, '| gender:', p.gender, '| category:', p.category, '| MATCH:', match);
+                    const match = p.category === 'packs' && p.gender === 'femme' && (p.visible === true || p.visible === undefined);
                     return match;
                 });
                 
-                console.log('packs-femme.html: Filtered products count:', categoryProducts.length);
+                console.log('Filtered products count:', categoryProducts.length);
+                console.log('===========================');
                 
                 if (categoryProducts.length === 0) {
                     productsGrid.innerHTML = `
