@@ -270,8 +270,8 @@
         // Start initialization after a small delay to ensure scripts are loaded
         setTimeout(initPage, 100);
 
-        // Define addFilterStyles locally to prevent ReferenceError
-        function addFilterStyles() {
+        // Define addFilterStyles globally to prevent ReferenceError
+        window.addFilterStyles = function() {
             try {
                 if (document.getElementById('filter-sidebar-styles')) return;
                 const styles = document.createElement('style');
@@ -293,8 +293,9 @@
                     .apply-filters-btn:hover { background: #c4a030; }
                 `;
                 document.head.appendChild(styles);
+                console.log('addFilterStyles executed successfully');
             } catch(e) { console.log('addFilterStyles error:', e); }
-        }
+        };
 
         async function loadCategoryProducts(category, gender) {
             const productsGrid = document.getElementById('productsGrid');
