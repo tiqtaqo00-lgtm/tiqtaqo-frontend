@@ -153,7 +153,7 @@ async function loadProductsTable() {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" style="text-align: center; padding: 40px; color: #666;">
+                <td colspan="10" style="text-align: center; padding: 40px; color: #666;">
                     <i class="fas fa-box-open" style="font-size: 48px; color: var(--gold); display: block; margin-bottom: 15px;"></i>
                     Aucun produit disponible. Cliquez sur "Ajouter un Produit" pour commencer.
                 </td>
@@ -163,7 +163,7 @@ async function loadProductsTable() {
     }
     
     tbody.innerHTML = products.map(product => `
-        <tr style="color: #000;">
+        <tr style="color: #000;" data-product-name="${(product.name || '').toLowerCase()}">
             <td style="color: #000;">${product.id}</td>
             <td style="color: #000;">
                 ${product.image ? `<img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">` : 'Pas d\'image'}
@@ -196,6 +196,80 @@ async function loadProductsTable() {
             </td>
         </tr>
     `).join('');
+}
+
+// Search products by name
+function searchProducts() {
+    const searchInput = document.getElementById('productSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const tbody = document.getElementById('productsTableBody');
+    const noResults = document.getElementById('noSearchResults');
+    
+    if (!searchInput || !tbody) return;
+    
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    // Show/hide clear button
+    if (clearBtn) {
+        clearBtn.style.display = searchTerm ? 'block' : 'none';
+    }
+    
+    const rows = tbody.querySelectorAll('tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const productName = row.dataset.productName || '';
+        const nameCell = row.querySelector('td:nth-child(3)');
+        const nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
+        const idCell = row.querySelector('td:nth-child(1)');
+        const idText = idCell ? idCell.textContent.toLowerCase() : '';
+        
+        // Search in product name and ID
+        if (productName.includes(searchTerm) || nameText.includes(searchTerm) || idText.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show/hide no results message
+    if (noResults) {
+        noResults.style.display = visibleCount === 0 && searchTerm ? 'block' : 'none';
+    }
+    
+    // Hide table if no results
+    if (tbody) {
+        tbody.style.display = visibleCount === 0 && searchTerm ? 'none' : '';
+    }
+}
+
+// Clear product search
+function clearProductSearch() {
+    const searchInput = document.getElementById('productSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const tbody = document.getElementById('productsTableBody');
+    const noResults = document.getElementById('noSearchResults');
+    
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    if (clearBtn) {
+        clearBtn.style.display = 'none';
+    }
+    
+    if (noResults) {
+        noResults.style.display = 'none';
+    }
+    
+    if (tbody) {
+        tbody.style.display = '';
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+    }
 }
 
 // Load categories table
@@ -1124,6 +1198,8 @@ window.finalizeSaveProduct = finalizeSaveProduct;
 window.saveCategory = saveCategory;
 window.closeProductModal = closeProductModal;
 window.closeCategoryModal = closeCategoryModal;
+window.searchProducts = searchProducts;
+window.clearProductSearch = clearProductSearch;
 
 // Firebase Configuration
 const firebaseConfig = {
