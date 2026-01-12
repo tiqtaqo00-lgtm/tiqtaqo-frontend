@@ -161,7 +161,12 @@ export const ProductAPI = {
                 if (price < minPrice || price > maxPrice) return false;
                 
                 // Category filter - use trim() to handle trailing spaces
-                if (category && (product.category || '').trim() !== category) return false;
+                // Also check secondaryCategory to support products in multiple categories
+                if (category) {
+                    const primaryCategory = (product.category || '').trim();
+                    const secondaryCategory = (product.secondaryCategory || '').trim();
+                    if (primaryCategory !== category && secondaryCategory !== category) return false;
+                }
                 
                 // Gender filter - Allow old products (without gender) to appear in both branches
                 // For packs-femme.html: show products where gender = 'femme' OR no gender
@@ -170,10 +175,16 @@ export const ProductAPI = {
                 if (gender && gender !== '') {
                     const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
                     if (branchedCategories.includes(category)) {
-                        // Allow products without gender to pass through (backward compatibility)
-                        // Only filter out if product HAS a gender that doesn't match
+                        // Check both primary and secondary gender
                         const productGender = (product.gender || '').trim();
-                        if (productGender !== '' && productGender !== gender) {
+                        const secondaryGender = (product.secondaryGender || '').trim();
+                        
+                        // Allow products without gender OR if gender matches
+                        // OR if secondary gender matches (for products in secondary category)
+                        const primaryMatch = productGender === '' || productGender === gender;
+                        const secondaryMatch = secondaryGender === '' || secondaryGender === gender;
+                        
+                        if (!primaryMatch && !secondaryMatch) {
                             return false;
                         }
                     }
