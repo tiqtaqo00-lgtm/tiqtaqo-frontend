@@ -378,7 +378,7 @@
                         : product.price;
                     
                     return `
-                        <a href="product.html?id=${product.id}" class="product-card-link">
+                        <a href="product.html?id=${product.id}" class="product-card-link" onclick="event.stopPropagation();">
                             <div class="product-card">
                                 ${hasPromotion ? `<div class="product-badge">-${product.promotion}%</div>` : ''}
                                 ${product.bestSeller ? `<div class="best-seller-badge"><i class="fas fa-fire"></i> Best-Seller</div>` : ''}
@@ -392,9 +392,9 @@
                                         ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
                                         <span class="price">${Math.round(finalPrice)} DH</span>
                                     </div>
-                                    <div style="display: flex; gap: 10px; margin-top: 15px;" onclick="event.preventDefault(); event.stopPropagation();">
-                                        <button class="btn-primary" style="flex: 1;" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
-                                            <i class="fab fa-whatsapp"></i> Commander
+                                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                                            <i class="fas fa-shopping-cart"></i> Commander
                                         </button>
                                         <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
                                             <i class="fas fa-shopping-bag"></i>

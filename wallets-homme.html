@@ -328,8 +328,8 @@
                                     <span class="price">${Math.round(finalPrice)} DH</span>
                                 </div>
                                 <div style="display: flex; gap: 10px;" onclick="event.preventDefault(); event.stopPropagation();">
-                                    <button class="btn-primary" style="flex: 1;" onclick="contactWhatsApp('${product.name}', ${Math.round(finalPrice)})">
-                                        <i class="fab fa-whatsapp"></i> Commander
+                                    <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                                        <i class="fas fa-shopping-cart"></i> Commander
                                     </button>
                                     <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
                                         <i class="fas fa-shopping-bag"></i>
