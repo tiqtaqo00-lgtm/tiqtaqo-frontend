@@ -358,6 +358,55 @@ function handleCategoryChange() {
     }
 }
 
+// Toggle secondary category section
+function toggleSecondaryCategory() {
+    const checkbox = document.getElementById('enableSecondaryCategory');
+    const container = document.getElementById('secondaryCategoryContainer');
+    
+    if (checkbox.checked) {
+        container.style.display = 'block';
+        // Load secondary category options
+        loadSecondaryCategoryOptions();
+    } else {
+        container.style.display = 'none';
+        // Clear secondary category values
+        document.getElementById('productSecondaryCategory').value = '';
+        document.getElementById('secondaryGenderFormGroup').style.display = 'none';
+    }
+}
+
+// Handle secondary category change - show/hide gender selection
+function handleSecondaryCategoryChange() {
+    const categorySelect = document.getElementById('productSecondaryCategory');
+    const genderFormGroup = document.getElementById('secondaryGenderFormGroup');
+    const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
+    
+    if (branchedCategories.includes(categorySelect.value)) {
+        genderFormGroup.style.display = 'block';
+    } else {
+        genderFormGroup.style.display = 'none';
+    }
+}
+
+// Load secondary category options
+function loadSecondaryCategoryOptions() {
+    const categories = getCategories();
+    const select = document.getElementById('productSecondaryCategory');
+    
+    // Get current primary category to exclude it from secondary
+    const primaryCategory = document.getElementById('productCategory').value;
+    
+    select.innerHTML = '<option value="">Sélectionnez une catégorie</option>' + 
+        categories.map(cat => {
+            // Don't allow same category as primary
+            if (cat.id === primaryCategory) return '';
+            return `<option value="${cat.id}">${cat.name}</option>`;
+        }).join('');
+    
+    // Trigger category change handler to update gender visibility
+    handleSecondaryCategoryChange();
+}
+
 // Load category options in product form
 function loadCategoryOptions() {
     const categories = getCategories();
@@ -409,6 +458,27 @@ async function editProduct(id) {
         } else {
             document.getElementById('genderFormGroup').style.display = 'none';
             document.getElementById('productGender').removeAttribute('required');
+        }
+        
+        // Handle secondary category
+        if (product.secondaryCategory) {
+            document.getElementById('enableSecondaryCategory').checked = true;
+            document.getElementById('secondaryCategoryContainer').style.display = 'block';
+            loadSecondaryCategoryOptions();
+            const secondaryCategorySelect = document.getElementById('productSecondaryCategory');
+            if (secondaryCategorySelect.querySelector(`option[value="${product.secondaryCategory}"]`)) {
+                secondaryCategorySelect.value = product.secondaryCategory;
+            }
+            handleSecondaryCategoryChange();
+            if (branchedCategories.includes(product.secondaryCategory)) {
+                document.getElementById('secondaryGenderFormGroup').style.display = 'block';
+                document.getElementById('productSecondaryGender').value = product.secondaryGender || 'homme';
+            } else {
+                document.getElementById('secondaryGenderFormGroup').style.display = 'none';
+            }
+        } else {
+            document.getElementById('enableSecondaryCategory').checked = false;
+            document.getElementById('secondaryCategoryContainer').style.display = 'none';
         }
         
         if (product.image || (product.images && product.images.length > 0)) {
@@ -855,6 +925,27 @@ async function saveProduct(event) {
         productData.gender = null;
     }
     
+    // Handle secondary category
+    const enableSecondaryCategory = document.getElementById('enableSecondaryCategory').checked;
+    if (enableSecondaryCategory) {
+        const secondaryCategory = document.getElementById('productSecondaryCategory').value;
+        if (secondaryCategory) {
+            productData.secondaryCategory = secondaryCategory;
+            if (branchedCategories.includes(secondaryCategory)) {
+                productData.secondaryGender = document.getElementById('productSecondaryGender').value.trim() || 'homme';
+            } else {
+                productData.secondaryGender = null;
+            }
+        } else {
+            productData.secondaryCategory = null;
+            productData.secondaryGender = null;
+        }
+    } else {
+        // If secondary category is disabled, clear existing secondary category
+        productData.secondaryCategory = null;
+        productData.secondaryGender = null;
+    }
+    
     // Get all images from preview container
     const previewContainer = document.getElementById('imagePreviewContainer');
     const previewImages = previewContainer.querySelectorAll('.preview-image img');
@@ -1010,6 +1101,8 @@ window.showAddProductModal = showAddProductModal;
 window.showAddCategoryModal = showAddCategoryModal;
 window.handleCategoryChange = handleCategoryChange;
 window.loadCategoryOptions = loadCategoryOptions;
+window.toggleSecondaryCategory = toggleSecondaryCategory;
+window.handleSecondaryCategoryChange = handleSecondaryCategoryChange;
 window.editProduct = editProduct;
 window.loadProductColors = loadProductColors;
 window.addColorRow = addColorRow;
