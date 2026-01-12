@@ -1643,9 +1643,10 @@ function addToCart(product, selectedColor = null, selectedColorHex = null) {
     } else {
         let productImage = product.image;
         if (selectedColor && product.colors) {
-            const colorObj = product.colors.find(c => c.name === selectedColor);
-            if (colorObj && colorObj.image) {
-                productImage = colorObj.image;
+            // Support both old format and new format
+            const colorObj = product.colors.find(c => (c.colorName || c.name) === selectedColor);
+            if (colorObj && (colorObj.colorImage || colorObj.image)) {
+                productImage = colorObj.colorImage || colorObj.image;
             }
         } else if (product.images && product.images.length > 0) {
             productImage = product.images[0];
@@ -2070,9 +2071,10 @@ async function openOrderModal(productId, selectedColor = null, selectedColorHex 
     
     let displayImage = product.image;
     if (selectedColor && product.colors) {
-        const colorObj = product.colors.find(c => c.name === selectedColor);
-        if (colorObj && colorObj.image) {
-            displayImage = colorObj.image;
+        // Support both old format and new format
+        const colorObj = product.colors.find(c => (c.colorName || c.name) === selectedColor);
+        if (colorObj && (colorObj.colorImage || colorObj.image)) {
+            displayImage = colorObj.colorImage || colorObj.image;
         }
     } else if (product.images && product.images.length > 0) {
         displayImage = product.images[0];
