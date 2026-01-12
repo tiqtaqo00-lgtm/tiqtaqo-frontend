@@ -2158,7 +2158,7 @@ function selectOrderColor(btn, colorName, colorHex, colorImage) {
         }
     }
     
-    if (colorImage) {
+    if (colorImage && colorImage !== 'null' && colorImage !== 'undefined' && colorImage.trim() !== '') {
         const productImg = orderModal.querySelector('.order-product-image img');
         if (productImg) {
             productImg.src = colorImage;
