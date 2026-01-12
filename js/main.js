@@ -2084,26 +2084,32 @@ async function openOrderModal(productId, selectedColor = null, selectedColorHex 
             <div class="order-product-colors" style="margin-top: 10px;">
                 <span style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;">Couleur:</span>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    ${product.colors.map(color => `
-                        <button type="button" 
-                                class="order-color-btn ${selectedColor === color.name ? 'selected' : ''}"
-                                data-color="${color.name}"
-                                data-hex="${color.hex}"
-                                data-image="${color.image || ''}"
-                                style="
-                                    width: 32px;
-                                    height: 32px;
-                                    border-radius: 50%;
-                                    border: 3px solid ${selectedColor === color.name ? color.hex : '#ddd'};
-                                    background: ${color.hex};
-                                    cursor: pointer;
-                                    transition: all 0.3s ease;
-                                    padding: 0;
-                                "
-                                onclick="selectOrderColor(this, '${color.name}', '${color.hex}', '${color.image || ''}')">
-                            ${color.image ? `<img src="${color.image}" alt="${color.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : ''}
-                        </button>
-                    `).join('')}
+                    ${product.colors.map(color => {
+                        // Support both old format (name, hex, image) and new format (colorName, colorHex1, colorImage)
+                        const colorName = color.colorName || color.name || '';
+                        const colorHex = color.colorHex1 || color.hex || '#cccccc';
+                        const colorImage = color.colorImage || color.image || '';
+                        return `
+                            <button type="button" 
+                                    class="order-color-btn ${selectedColor === colorName ? 'selected' : ''}"
+                                    data-color="${colorName}"
+                                    data-hex="${colorHex}"
+                                    data-image="${colorImage}"
+                                    style="
+                                        width: 32px;
+                                        height: 32px;
+                                        border-radius: 50%;
+                                        border: 3px solid ${selectedColor === colorName ? colorHex : '#ddd'};
+                                        background: ${colorHex};
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                        padding: 0;
+                                    "
+                                    onclick="selectOrderColor(this, '${colorName}', '${colorHex}', '${colorImage}')">
+                                ${colorImage ? `<img src="${colorImage}" alt="${colorName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : ''}
+                            </button>
+                        `;
+                    }).join('')}
                 </div>
                 ${selectedColor ? `<span id="selectedColorName" style="font-size: 13px; color: #333; margin-top: 5px; display: block;">${selectedColor}</span>` : ''}
             </div>
