@@ -796,6 +796,8 @@
                 console.log('changeImage called successfully');
             } else {
                 console.log('No valid color image provided, skipping image change');
+                // Show notification that no specific image is available for this color
+                showNotification('Pas d\'image spécifique pour cette couleur', 'warning');
             }
 
             // Store selected color globally
