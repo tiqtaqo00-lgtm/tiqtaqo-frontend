@@ -284,13 +284,16 @@ async function getProducts(options = {}) {
 
         // Apply filters locally
         if (category) {
-            products = products.filter(p => p.category === category);
+            products = products.filter(p => p.category === category || p.secondaryCategory === category);
         }
         if (gender && gender !== '') {
             products = products.filter(p => {
                 const hasGender = p.gender && p.gender !== '';
-                const match = !hasGender || p.gender === gender;
-                return match;
+                // Check both primary and secondary category gender
+                const secondaryHasGender = p.secondaryGender && p.secondaryGender !== '';
+                const primaryMatch = !hasGender || p.gender === gender;
+                const secondaryMatch = !secondaryHasGender || p.secondaryGender === gender;
+                return primaryMatch || secondaryMatch;
             });
         }
         if (searchTerm) {
@@ -408,9 +411,11 @@ function filterProducts(products, filters) {
             return false;
         }
         
-        // Category filter
+        // Category filter - check both primary and secondary category
         if (filters.categories && filters.categories.length > 0) {
-            if (!filters.categories.includes(product.category)) {
+            const primaryMatch = filters.categories.includes(product.category);
+            const secondaryMatch = product.secondaryCategory && filters.categories.includes(product.secondaryCategory);
+            if (!primaryMatch && !secondaryMatch) {
                 return false;
             }
         }
