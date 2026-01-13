@@ -106,7 +106,7 @@ function getCategories() {
         return categories;
     }
     
-    // Default categories - NOW INCLUDING 'boite'
+    // Default categories - NOW INCLUDING 'casquettes'
     const defaultCategories = [
         { id: 'packs', name: 'Packs', icon: 'fa-gift', visible: true, order: 1 },
         { id: 'boite', name: 'Boite', icon: 'fa-box-open', visible: true, order: 2 },
@@ -115,7 +115,8 @@ function getCategories() {
         { id: 'wallets', name: 'Wallets', icon: 'fa-wallet', visible: true, order: 5 },
         { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 6 },
         { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 },
-        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 8 }
+        { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 8 },
+        { id: 'casquettes', name: 'Casquettes', icon: 'fa-hat-cowboy', visible: true, order: 9 }
     ];
     
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
