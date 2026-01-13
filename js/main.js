@@ -622,11 +622,11 @@ function renderProductsGrid(productsGrid, products, append = false) {
                     <h3>${product.name}</h3>
                     <div class="product-rating">${starsHtml}</div>
                     <p>${product.description || ''}</p>
-                    <div class="product-price">
+                    <div class="product-price" style="margin-top: auto;">
                         ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
                         <span class="price">${Math.round(finalPrice)} DH</span>
                     </div>
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; margin-top: auto;">
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
@@ -1069,11 +1069,11 @@ async function loadBestSellers() {
                     <h3>${product.name}</h3>
                     <div class="product-rating">${starsHtml}</div>
                     <p>${product.description || ''}</p>
-                    <div class="product-price">
+                    <div class="product-price" style="margin-top: auto;">
                         ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
                         <span class="price">${Math.round(finalPrice)} DH</span>
                     </div>
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; margin-top: auto;">
                         <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                             <i class="fas fa-shopping-cart"></i> Commander
                         </button>
