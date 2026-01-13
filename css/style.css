@@ -1627,6 +1627,8 @@ body {
     cursor: pointer;
     position: relative;
     border: 1px solid rgba(212, 175, 55, 0.15);
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card::before {
@@ -1813,6 +1815,9 @@ body {
 .product-info {
     padding: 25px;
     position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-info h3 {
