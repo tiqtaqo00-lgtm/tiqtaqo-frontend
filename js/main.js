@@ -622,17 +622,19 @@ function renderProductsGrid(productsGrid, products, append = false) {
                     <h3>${product.name}</h3>
                     <div class="product-rating">${starsHtml}</div>
                     <p>${product.description || ''}</p>
-                    <div class="product-price" style="margin-top: auto;">
-                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                        <span class="price">${Math.round(finalPrice)} DH</span>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: auto;">
-                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
-                            <i class="fas fa-shopping-cart"></i> Commander
-                        </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
-                            <i class="fas fa-shopping-bag"></i>
-                        </button>
+                    <div class="product-footer" style="margin-top: auto;">
+                        <div class="product-price">
+                            ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                            <span class="price">${Math.round(finalPrice)} DH</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                                <i class="fas fa-shopping-cart"></i> Commander
+                            </button>
+                            <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1069,17 +1071,19 @@ async function loadBestSellers() {
                     <h3>${product.name}</h3>
                     <div class="product-rating">${starsHtml}</div>
                     <p>${product.description || ''}</p>
-                    <div class="product-price" style="margin-top: auto;">
-                        ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                        <span class="price">${Math.round(finalPrice)} DH</span>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: auto;">
-                        <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
-                            <i class="fas fa-shopping-cart"></i> Commander
-                        </button>
-                        <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
-                            <i class="fas fa-shopping-bag"></i>
-                        </button>
+                    <div class="product-footer" style="margin-top: auto;">
+                        <div class="product-price">
+                            ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                            <span class="price">${Math.round(finalPrice)} DH</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-primary" style="flex: 1;" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
+                                <i class="fas fa-shopping-cart"></i> Commander
+                            </button>
+                            <button class="btn-secondary add-to-cart-btn" style="padding: 12px;" data-product-id="${product.id}" title="Ajouter au panier" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

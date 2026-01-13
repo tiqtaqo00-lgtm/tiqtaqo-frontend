@@ -321,17 +321,19 @@
                         <div class="product-info">
                             <h3>${product.name}</h3>
                             <p>${product.description || ''}</p>
-                            <div class="product-price" style="margin-top: auto;">
-                                ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
-                                <span class="price">${Math.round(finalPrice)} DH</span>
-                            </div>
-                            <div style="display: flex; gap: 10px; margin-top: auto;" onclick="event.stopPropagation();">
-                                <button class="btn-primary" style="flex: 1;" onclick="openOrderModal('${product.id}')">
-                                    <i class="fas fa-shopping-cart"></i> Commander
-                                </button>
-                                <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </button>
+                            <div class="product-footer" style="margin-top: auto;">
+                                <div class="product-price">
+                                    ${hasPromotion ? `<span class="old-price">${product.price} DH</span>` : ''}
+                                    <span class="price">${Math.round(finalPrice)} DH</span>
+                                </div>
+                                <div style="display: flex; gap: 10px;" onclick="event.stopPropagation();">
+                                    <button class="btn-primary" style="flex: 1;" onclick="openOrderModal('${product.id}')">
+                                        <i class="fas fa-shopping-cart"></i> Commander
+                                    </button>
+                                    <button class="btn-secondary" style="padding: 12px;" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "\\\\'")})' title="Ajouter au panier">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
