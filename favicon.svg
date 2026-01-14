@@ -2,13 +2,13 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Transparent background -->
   
-  <!-- FontAwesome fa-crown style - exact copy -->
-  <path d="M464 192H48l38.4 172.8L256 396.8l169.6-32L464 192z M48 320h416v32H48v-32z" 
-        fill="#D4AF37" stroke="#B8860B" stroke-width="4"/>
+  <!-- Simple clean crown - like the image -->
+  <path d="M80 400 L80 250 L140 250 L140 180 L200 250 L256 100 L312 250 L372 180 L372 250 L432 250 L432 400 Z" 
+        fill="#D4AF37"/>
   
-  <!-- Crown inner detail -->
-  <path d="M70 230L256 110L442 230" fill="none" stroke="#B8860B" stroke-width="2"/>
+  <!-- Crown base -->
+  <rect x="80" y="400" width="352" height="50" rx="8" ry="8" fill="#C5A028"/>
   
-  <!-- Crown band line -->
-  <line x1="48" y1="256" x2="464" y2="256" stroke="#B8860B" stroke-width="3"/>
+  <!-- Simple jewel in center -->
+  <circle cx="256" cy="425" r="18" fill="#FFD700"/>
 </svg>
