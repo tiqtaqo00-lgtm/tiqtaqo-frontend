@@ -2,13 +2,19 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Transparent background -->
   
-  <!-- Simple clean crown - like the image -->
-  <path d="M80 400 L80 250 L140 250 L140 180 L200 250 L256 100 L312 250 L372 180 L372 250 L432 250 L432 400 Z" 
-        fill="#D4AF37"/>
+  <!-- Three golden columns -->
+  <rect x="170" y="180" width="40" height="180" fill="#D4AF37"/>
+  <rect x="236" y="120" width="40" height="240" fill="#D4AF37"/>
+  <rect x="302" y="180" width="40" height="180" fill="#D4AF37"/>
   
-  <!-- Crown base -->
-  <rect x="80" y="400" width="352" height="50" rx="8" ry="8" fill="#C5A028"/>
+  <!-- Three rounded tops (balls) -->
+  <circle cx="190" cy="160" r="35" fill="#D4AF37"/>
+  <circle cx="256" cy="100" r="35" fill="#D4AF37"/>
+  <circle cx="322" cy="160" r="35" fill="#D4AF37"/>
   
-  <!-- Simple jewel in center -->
-  <circle cx="256" cy="425" r="18" fill="#FFD700"/>
+  <!-- Base rectangle -->
+  <rect x="140" y="340" width="232" height="50" rx="10" ry="10" fill="#D4AF37"/>
+  
+  <!-- Base decoration -->
+  <rect x="155" y="355" width="202" height="20" rx="5" ry="5" fill="#C5A028"/>
 </svg>
