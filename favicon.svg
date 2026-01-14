@@ -2,36 +2,33 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Transparent background -->
   
-  <!-- Main crown body -->
-  <path d="M120 200 
-           L120 160 
-           L100 160 
-           L100 120 
-           L130 160 
-           L170 160 
-           L170 120 
-           L200 160 
-           L256 100 
-           L312 160 
-           L342 120 
-           L342 160 
-           L382 160 
-           L412 120 
-           L412 160 
-           L392 160 
-           L392 200 
-           L392 280 
-           L120 280 Z" 
-        fill="#D4AF37" stroke="#B8860B" stroke-width="3"/>
+  <!-- Large Crown - filling the space -->
+  <path d="M80 250 
+           L80 180 
+           L50 180 
+           L50 130 
+           L100 180 
+           L150 180 
+           L150 130 
+           L200 180 
+           L256 60 
+           L312 180 
+           L362 130 
+           L362 180 
+           L412 180 
+           L462 130 
+           L462 180 
+           L432 180 
+           L432 250 
+           L432 350 
+           L80 350 Z" 
+        fill="#D4AF37" stroke="#B8860B" stroke-width="4"/>
   
   <!-- Crown base decoration -->
-  <rect x="130" y="265" width="252" height="30" rx="5" ry="5" fill="#C5A028"/>
-  
-  <!-- Decorative band -->
-  <rect x="130" y="220" width="252" height="15" fill="#D4AF37" opacity="0.6"/>
+  <rect x="90" y="320" width="332" height="40" rx="8" ry="8" fill="#C5A028"/>
   
   <!-- Crown jewels -->
-  <circle cx="180" cy="280" r="12" fill="#FFD700"/>
-  <circle cx="256" cy="280" r="15" fill="#FFD700"/>
-  <circle cx="332" cy="280" r="12" fill="#FFD700"/>
+  <circle cx="160" cy="340" r="18" fill="#FFD700"/>
+  <circle cx="256" cy="340" r="22" fill="#FFD700"/>
+  <circle cx="352" cy="340" r="18" fill="#FFD700"/>
 </svg>
