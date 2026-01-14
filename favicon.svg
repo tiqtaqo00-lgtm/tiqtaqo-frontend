@@ -2,29 +2,25 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Transparent background -->
   
-  <!-- Crown base - wide and flat -->
-  <rect x="96" y="280" width="320" height="60" rx="10" ry="10" fill="#D4AF37"/>
+  <!-- Simple minimalist golden crown - 3 points -->
+  <path d="M106 200 L106 150 L156 150 L156 200 L256 200 L256 150 L306 150 L306 200 L406 200 L406 150 L456 150 L456 200 L456 280 L406 280 L406 280 L106 280 Z" 
+        fill="#D4AF37"/>
   
-  <!-- Crown body - rising up -->
-  <path d="M120 280 L120 200 L140 200 L140 260 L372 260 L372 200 L392 200 L392 280 Z" fill="#D4AF37"/>
+  <!-- Simplified crown body -->
+  <path d="M106 280 L126 380 L386 380 L406 280 Z" fill="#D4AF37"/>
   
-  <!-- Crown side curves -->
-  <path d="M120 200 Q120 140 80 120" stroke="#D4AF37" stroke-width="35" fill="none" stroke-linecap="round"/>
-  <path d="M392 200 Q392 140 432 120" stroke="#D4AF37" stroke-width="35" fill="none" stroke-linecap="round"/>
+  <!-- Three peaks with rounded tops -->
+  <circle cx="156" cy="140" r="35" fill="#D4AF37"/>
+  <circle cx="256" cy="120" r="35" fill="#D4AF37"/>
+  <circle cx="356" cy="140" r="35" fill="#D4AF37"/>
   
-  <!-- Center peak -->
-  <path d="M256 200 L256 100" stroke="#D4AF37" stroke-width="35" fill="none" stroke-linecap="round"/>
+  <!-- Crown base band -->
+  <rect x="106" y="360" width="350" height="40" rx="8" ry="8" fill="#D4AF37"/>
   
-  <!-- Three balls on top (crown peaks) -->
-  <circle cx="80" cy="100" r="35" fill="#D4AF37"/>
-  <circle cx="432" cy="100" r="35" fill="#D4AF37"/>
-  <circle cx="256" cy="80" r="35" fill="#D4AF37"/>
+  <!-- Simple decoration line -->
+  <rect x="126" y="375" width="310" height="10" fill="#C5A028"/>
   
-  <!-- Crown band decoration -->
-  <rect x="130" y="310" width="252" height="25" rx="5" ry="5" fill="#C5A028"/>
-  
-  <!-- Crown jewels -->
-  <circle cx="180" cy="322" r="12" fill="#FFD700"/>
-  <circle cx="256" cy="322" r="15" fill="#FFD700"/>
-  <circle cx="332" cy="322" r="12" fill="#FFD700"/>
+  <!-- Crown center jewel -->
+  <circle cx="256" cy="380" r="20" fill="#FFD700"/>
+  <circle cx="256" cy="380" r="10" fill="#DAA520"/>
 </svg>
