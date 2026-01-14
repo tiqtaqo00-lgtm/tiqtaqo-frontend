@@ -504,6 +504,12 @@
                     // Display the product
                     displayProduct(product, container);
                     
+                    // Preload all product images to eliminate lag when switching colors
+                    // Delay slightly to allow DOM to render first
+                    setTimeout(() => {
+                        preloadProductImages(product);
+                    }, 100);
+                    
                     // Initialize reviews system
                     if (typeof initReviews === 'function') {
                         initReviews(productId);
@@ -670,6 +676,64 @@
                 thumbnailElement.classList.add('active');
                 thumbnailElement.style.borderColor = 'var(--gold)';
             }
+        }
+        
+        // Preload all product images to eliminate lag when switching colors
+        // This function loads all images into browser cache before they're needed
+        function preloadProductImages(product) {
+            console.log('Starting image preloading...');
+            
+            const imageUrls = new Set();
+            
+            // Collect all images from product.images array
+            if (product.images && Array.isArray(product.images)) {
+                product.images.forEach(img => {
+                    if (img && typeof img === 'string' && img.trim() !== '') {
+                        imageUrls.add(img);
+                        console.log('Added gallery image to preload queue:', img);
+                    }
+                });
+            }
+            
+            // Collect all color-specific images
+            if (product.colors && Array.isArray(product.colors)) {
+                product.colors.forEach(color => {
+                    // Support both old format (image) and new format (colorImage)
+                    const colorImg = color.colorImage || color.image;
+                    if (colorImg && typeof colorImg === 'string' && colorImg.trim() !== '' && colorImg !== 'null' && colorImg !== 'undefined') {
+                        imageUrls.add(colorImg);
+                        console.log('Added color image to preload queue:', colorImg);
+                    }
+                });
+            }
+            
+            // Also preload the main product image
+            if (product.image && typeof product.image === 'string' && product.image.trim() !== '') {
+                imageUrls.add(product.image);
+                console.log('Added main product image to preload queue:', product.image);
+            }
+            
+            // Convert Set to Array and preload
+            const urlsToPreload = Array.from(imageUrls);
+            console.log(`Total images to preload: ${urlsToPreload.length}`);
+            
+            let loadedCount = 0;
+            const totalCount = urlsToPreload.length;
+            
+            urlsToPreload.forEach(url => {
+                const img = new Image();
+                img.onload = function() {
+                    loadedCount++;
+                    console.log(`Preloaded ${loadedCount}/${totalCount}: ${url}`);
+                };
+                img.onerror = function() {
+                    loadedCount++;
+                    console.warn(`Failed to preload: ${url}`);
+                };
+                img.src = url;
+            });
+            
+            console.log('Image preloading initiated for', totalCount, 'images');
         }
 
         // Magnifying glass zoom effect
