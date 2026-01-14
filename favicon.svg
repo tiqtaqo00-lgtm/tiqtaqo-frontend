@@ -2,25 +2,26 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Transparent background -->
   
-  <!-- Simple minimalist golden crown - 3 points -->
-  <path d="M106 200 L106 150 L156 150 L156 200 L256 200 L256 150 L306 150 L306 200 L406 200 L406 150 L456 150 L456 200 L456 280 L406 280 L406 280 L106 280 Z" 
+  <!-- Elegant golden crown - simple and clean -->
+  <path d="M100 180 
+           L100 140 L140 140 
+           L140 180 L200 180 
+           L200 120 L230 120 
+           L230 180 L282 180 
+           L282 120 L312 120 
+           L312 180 L372 180 
+           L372 140 L412 140 
+           L412 180 L412 200 
+           L100 200 Z" 
         fill="#D4AF37"/>
   
-  <!-- Simplified crown body -->
-  <path d="M106 280 L126 380 L386 380 L406 280 Z" fill="#D4AF37"/>
+  <!-- Crown base -->
+  <rect x="100" y="280" width="312" height="50" rx="10" ry="10" fill="#D4AF37"/>
   
-  <!-- Three peaks with rounded tops -->
-  <circle cx="156" cy="140" r="35" fill="#D4AF37"/>
-  <circle cx="256" cy="120" r="35" fill="#D4AF37"/>
-  <circle cx="356" cy="140" r="35" fill="#D4AF37"/>
+  <!-- Crown band shadow -->
+  <rect x="115" y="295" width="282" height="20" rx="5" ry="5" fill="#C5A028" opacity="0.5"/>
   
-  <!-- Crown base band -->
-  <rect x="106" y="360" width="350" height="40" rx="8" ry="8" fill="#D4AF37"/>
-  
-  <!-- Simple decoration line -->
-  <rect x="126" y="375" width="310" height="10" fill="#C5A028"/>
-  
-  <!-- Crown center jewel -->
-  <circle cx="256" cy="380" r="20" fill="#FFD700"/>
-  <circle cx="256" cy="380" r="10" fill="#DAA520"/>
+  <!-- Decorative circles on crown points -->
+  <circle cx="230" cy="100" r="18" fill="#D4AF37"/>
+  <circle cx="282" cy="100" r="18" fill="#D4AF37"/>
 </svg>
