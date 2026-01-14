@@ -3,37 +3,36 @@
   <!-- Transparent background -->
   
   <!-- Outer watch circle -->
-  <circle cx="256" cy="256" r="240" fill="none" stroke="#D4AF37" stroke-width="12"/>
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#D4AF37" stroke-width="10"/>
   
-  <!-- Inner watch circle -->
-  <circle cx="256" cy="256" r="200" fill="none" stroke="#D4AF37" stroke-width="4"/>
+  <!-- Inner decorative circle -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#D4AF37" stroke-width="2" stroke-dasharray="5,5"/>
   
   <!-- Hour markers -->
-  <rect x="254" y="40" width="8" height="30" rx="2" fill="#D4AF37"/>
-  <rect x="254" y="442" width="8" height="30" rx="2" fill="#D4AF37"/>
-  <rect x="40" y="254" width="30" height="8" rx="2" fill="#D4AF37"/>
-  <rect x="442" y="254" width="30" height="8" rx="2" fill="#D4AF37"/>
+  <rect x="254" y="30" width="8" height="25" rx="2" fill="#D4AF37"/>
+  <rect x="254" y="457" width="8" height="25" rx="2" fill="#D4AF37"/>
+  <rect x="30" y="254" width="25" height="8" rx="2" fill="#D4AF37"/>
+  <rect x="457" y="254" width="25" height="8" rx="2" fill="#D4AF37"/>
   
-  <!-- Smaller hour markers -->
-  <rect x="254" y="100" width="6" height="15" rx="1" fill="#D4AF37" transform="rotate(30 257 107.5)"/>
-  <rect x="254" y="100" width="6" height="15" rx="1" fill="#D4AF37" transform="rotate(60 257 107.5)"/>
-  <rect x="254" y="397" width="6" height="15" rx="1" fill="#D4AF37" transform="rotate(-30 257 404.5)"/>
-  <rect x="254" y="397" width="6" height="15" rx="1" fill="#D4AF37" transform="rotate(-60 257 404.5)"/>
-  <rect x="113" y="254" width="15" height="6" rx="1" fill="#D4AF37" transform="rotate(30 120.5 257)"/>
-  <rect x="113" y="254" width="15" height="6" rx="1" fill="#D4AF37" transform="rotate(60 120.5 257)"/>
-  <rect x="384" y="254" width="15" height="6" rx="1" fill="#D4AF37" transform="rotate(-30 391.5 257)"/>
-  <rect x="384" y="254" width="15" height="6" rx="1" fill="#D4AF37" transform="rotate(-60 391.5 257)"/>
+  <!-- Small hour markers -->
+  <rect x="254" y="85" width="5" height="12" rx="1" fill="#D4AF37"/>
+  <rect x="254" y="415" width="5" height="12" rx="1" fill="#D4AF37"/>
+  <rect x="85" y="254" width="12" height="5" rx="1" fill="#D4AF37"/>
+  <rect x="415" y="254" width="12" height="5" rx="1" fill="#D4AF37"/>
   
   <!-- Hour hand pointing to 2 o'clock -->
-  <line x1="256" y1="256" x2="340" y2="172" stroke="#D4AF37" stroke-width="12" stroke-linecap="round"/>
+  <line x1="256" y1="256" x2="350" y2="162" stroke="#D4AF37" stroke-width="10" stroke-linecap="round"/>
   
   <!-- Minute hand pointing to 6 o'clock -->
-  <line x1="256" y1="256" x2="256" y2="380" stroke="#D4AF37" stroke-width="8" stroke-linecap="round"/>
+  <line x1="256" y1="256" x2="256" y2="390" stroke="#D4AF37" stroke-width="7" stroke-linecap="round"/>
   
   <!-- Center dot -->
-  <circle cx="256" cy="256" r="16" fill="#D4AF37"/>
-  <circle cx="256" cy="256" r="8" fill="#000000"/>
+  <circle cx="256" cy="256" r="14" fill="#D4AF37"/>
+  <circle cx="256" cy="256" r="6" fill="#D4AF37"/>
   
-  <!-- Letter T in center (elegant, luxury style) -->
-  <text x="256" y="290" font-family="Georgia, serif" font-size="80" font-weight="bold" fill="#D4AF37" text-anchor="middle" letter-spacing="2">T</text>
+  <!-- Letter T in the center - Large and elegant -->
+  <text x="256" y="310" font-family="Times New Roman, Georgia, serif" font-size="120" font-weight="bold" fill="#D4AF37" text-anchor="middle" dominant-baseline="middle">T</text>
+  
+  <!-- Crown on top of T -->
+  <polygon points="256,95 236,125 246,125 241,145 271,125 281,125" fill="#D4AF37"/>
 </svg>
