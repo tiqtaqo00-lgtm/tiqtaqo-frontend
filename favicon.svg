@@ -2,27 +2,30 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Transparent background -->
   
-  <!-- Outer watch circle -->
-  <circle cx="256" cy="256" r="245" fill="none" stroke="#D4AF37" stroke-width="12"/>
+  <!-- Outer watch circle - bold -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#D4AF37" stroke-width="16"/>
   
-  <!-- Inner decorative circle -->
-  <circle cx="256" cy="256" r="220" fill="none" stroke="#D4AF37" stroke-width="4"/>
+  <!-- Inner thin circle -->
+  <circle cx="256" cy="256" r="215" fill="none" stroke="#D4AF37" stroke-width="3"/>
   
-  <!-- Hour markers -->
-  <rect x="254" y="20" width="10" height="30" rx="2" fill="#D4AF37"/>
-  <rect x="254" y="462" width="10" height="30" rx="2" fill="#D4AF37"/>
-  <rect x="20" y="254" width="30" height="10" rx="2" fill="#D4AF37"/>
-  <rect x="462" y="254" width="30" height="10" rx="2" fill="#D4AF37"/>
+  <!-- Hour markers - bold and clear -->
+  <rect x="252" y="10" width="12" height="40" rx="3" fill="#D4AF37"/>
+  <rect x="252" y="462" width="12" height="40" rx="3" fill="#D4AF37"/>
+  <rect x="10" y="252" width="40" height="12" rx="3" fill="#D4AF37"/>
+  <rect x="462" y="252" width="40" height="12" rx="3" fill="#D4AF37"/>
   
-  <!-- Hour hand pointing to 2 o'clock -->
-  <line x1="256" y1="256" x2="370" y2="142" stroke="#D4AF37" stroke-width="10" stroke-linecap="round"/>
+  <!-- Hour hand -->
+  <line x1="256" y1="256" x2="380" y2="132" stroke="#D4AF37" stroke-width="12" stroke-linecap="round"/>
   
-  <!-- Minute hand pointing to 6 o'clock -->
-  <line x1="256" y1="256" x2="256" y2="410" stroke="#D4AF37" stroke-width="8" stroke-linecap="round"/>
+  <!-- Minute hand -->
+  <line x1="256" y1="256" x2="256" y2="420" stroke="#D4AF37" stroke-width="10" stroke-linecap="round"/>
   
   <!-- Center dot -->
-  <circle cx="256" cy="256" r="15" fill="#D4AF37"/>
+  <circle cx="256" cy="256" r="20" fill="#D4AF37"/>
   
-  <!-- Large Letter T in center -->
-  <text x="256" y="295" font-family="Times New Roman, serif" font-size="180" font-weight="bold" fill="#D4AF37" text-anchor="middle">T</text>
+  <!-- VERY LARGE and BOLD Letter T in center -->
+  <text x="256" y="310" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" fill="#D4AF37" text-anchor="middle">T</text>
+  
+  <!-- T outline for extra visibility -->
+  <text x="256" y="310" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" fill="none" stroke="#D4AF37" stroke-width="3" text-anchor="middle">T</text>
 </svg>
