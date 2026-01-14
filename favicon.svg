@@ -2,33 +2,13 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Transparent background -->
   
-  <!-- Large Golden Crown filling the space -->
-  <path d="M40 200 
-           L40 120 
-           L10 120 
-           L10 60 
-           L80 120 
-           L140 120 
-           L140 60 
-           L200 120 
-           L256 0 
-           L312 120 
-           L372 60 
-           L372 120 
-           L432 120 
-           L492 60 
-           L492 120 
-           L472 120 
-           L472 200 
-           L472 400 
-           L40 400 Z" 
-        fill="#D4AF37" stroke="#B8860B" stroke-width="5"/>
+  <!-- FontAwesome fa-crown style - exact copy -->
+  <path d="M464 192H48l38.4 172.8L256 396.8l169.6-32L464 192z M48 320h416v32H48v-32z" 
+        fill="#D4AF37" stroke="#B8860B" stroke-width="4"/>
   
-  <!-- Crown base decoration -->
-  <rect x="55" y="365" width="402" height="45" rx="10" ry="10" fill="#C5A028"/>
+  <!-- Crown inner detail -->
+  <path d="M70 230L256 110L442 230" fill="none" stroke="#B8860B" stroke-width="2"/>
   
-  <!-- Crown jewels -->
-  <circle cx="145" cy="388" r="22" fill="#FFD700"/>
-  <circle cx="256" cy="388" r="28" fill="#FFD700"/>
-  <circle cx="367" cy="388" r="22" fill="#FFD700"/>
+  <!-- Crown band line -->
+  <line x1="48" y1="256" x2="464" y2="256" stroke="#B8860B" stroke-width="3"/>
 </svg>
