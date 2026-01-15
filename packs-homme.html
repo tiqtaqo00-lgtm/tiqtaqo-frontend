@@ -425,13 +425,25 @@
             });
 
             // FILTER: Show products that match homme OR have no gender (old products)
+            // Support both primary and secondary category
             const categoryProducts = products.filter(p => {
-                const match = p.category === category;
+                // Check both primary and secondary category
+                const primaryMatch = p.category === category;
+                const secondaryMatch = p.secondaryCategory === category;
+                
                 const isHomme = p.gender === 'homme';
                 const hasNoGender = !p.gender || p.gender === '' || p.gender === undefined;
+                
+                const isSecondaryHomme = p.secondaryGender === 'homme';
+                const hasNoSecondaryGender = !p.secondaryGender || p.secondaryGender === '' || p.secondaryGender === undefined;
+                
                 const isVisible = p.visible === true || p.visible === undefined;
                 
-                return match && isVisible && (isHomme || hasNoGender);
+                // Show if: visible AND matches category AND (gender matches OR secondaryGender matches)
+                const categoryMatch = primaryMatch || secondaryMatch;
+                const genderMatch = isHomme || hasNoGender || isSecondaryHomme || hasNoSecondaryGender;
+                
+                return categoryMatch && isVisible && genderMatch;
             });
             
             // Show debug info

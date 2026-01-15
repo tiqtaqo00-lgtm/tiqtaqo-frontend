@@ -286,14 +286,25 @@
 
             if (!productsGrid) return;
 
-            // STRICT FILTER: Only show products that match the specific gender for this branch
+            // Filter products - support both primary and secondary category
             const categoryProducts = products.filter(p => {
-                const match = p.category === category;
+                // Check both primary and secondary category
+                const primaryMatch = p.category === category;
+                const secondaryMatch = p.secondaryCategory === category;
+                
                 const hasGender = p.gender === gender;
                 const hasNoGender = !p.gender || p.gender === '' || p.gender === undefined;
+                
+                const hasSecondaryGender = p.secondaryGender === gender;
+                const hasNoSecondaryGender = !p.secondaryGender || p.secondaryGender === '' || p.secondaryGender === undefined;
+                
                 const isVisible = p.visible === true || p.visible === undefined;
                 
-                return match && isVisible && (hasGender || hasNoGender);
+                // Show if: visible AND matches category AND (gender matches OR secondaryGender matches)
+                const categoryMatch = primaryMatch || secondaryMatch;
+                const genderMatch = hasGender || hasNoGender || hasSecondaryGender || hasNoSecondaryGender;
+                
+                return categoryMatch && isVisible && genderMatch;
             });
 
             if (categoryProducts.length === 0) {

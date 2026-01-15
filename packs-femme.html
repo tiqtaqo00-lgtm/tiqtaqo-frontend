@@ -347,13 +347,25 @@
                 });
                 
                 // FILTER: Show products that match femme OR have no gender (old products)
+                // Support both primary and secondary category
                 const categoryProducts = products.filter(p => {
-                    const match = p.category === 'packs';
+                    // Check both primary and secondary category
+                    const primaryMatch = p.category === 'packs';
+                    const secondaryMatch = p.secondaryCategory === 'packs';
+                    
                     const isFemme = p.gender === 'femme';
                     const hasNoGender = !p.gender || p.gender === '' || p.gender === undefined;
+                    
+                    const isSecondaryFemme = p.secondaryGender === 'femme';
+                    const hasNoSecondaryGender = !p.secondaryGender || p.secondaryGender === '' || p.secondaryGender === undefined;
+                    
                     const isVisible = p.visible === true || p.visible === undefined;
                     
-                    return match && isVisible && (isFemme || hasNoGender);
+                    // Show if: visible AND matches category AND (gender matches OR secondaryGender matches)
+                    const categoryMatch = primaryMatch || secondaryMatch;
+                    const genderMatch = isFemme || hasNoGender || isSecondaryFemme || hasNoSecondaryGender;
+                    
+                    return categoryMatch && isVisible && genderMatch;
                 });
                 
                 console.log('Filtered products count:', categoryProducts.length);
