@@ -656,16 +656,39 @@
         }
 
         // Change main image when thumbnail is clicked
+        // Optimized for instant switching using preloaded images in memory
         function changeImage(imageSrc, thumbnailElement) {
             const mainImage = document.getElementById('mainImage');
-            if (mainImage) {
+            if (!mainImage || !imageSrc) return;
+            
+            console.log('changeImage called, checking for cached version...');
+            
+            // Show loading state immediately
+            mainImage.style.opacity = '0.3';
+            mainImage.style.transition = 'opacity 0.1s ease';
+            
+            // Check if we have a data URL in memory
+            const cachedDataUrl = window.cachedImageDataUrls && window.cachedImageDataUrls[imageSrc];
+            
+            if (cachedDataUrl) {
+                console.log('Using cached data URL');
+                mainImage.src = cachedDataUrl;
+                mainImage.style.opacity = '1';
+                console.log('Image loaded from memory cache');
+            } else {
+                console.log('No cached data URL found, loading from network');
+                mainImage.onload = function() {
+                    mainImage.style.opacity = '1';
+                    console.log('Image loaded from network');
+                };
+                mainImage.onerror = function() {
+                    mainImage.style.opacity = '1';
+                    console.error('Failed to load image');
+                };
                 mainImage.src = imageSrc;
-                mainImage.style.transform = 'scale(1.05)';
-                setTimeout(() => {
-                    mainImage.style.transform = 'scale(1)';
-                }, 200);
             }
             
+            // Update thumbnails
             document.querySelectorAll('.thumbnail').forEach(thumb => {
                 thumb.classList.remove('active');
                 thumb.style.borderColor = 'transparent';
@@ -676,19 +699,22 @@
             }
         }
         
-        // Preload all product images to eliminate lag when switching colors
-        // This function loads all images into browser cache before they're needed
+        // Preload all product images and store as data URLs in memory for instant access
         function preloadProductImages(product) {
-            console.log('Starting image preloading...');
+            console.log('Starting image preloading with data URL caching...');
             
-            const imageUrls = new Set();
+            // Initialize cache if not exists
+            if (!window.cachedImageDataUrls) {
+                window.cachedImageDataUrls = {};
+            }
+            
+            const imageUrls = [];
             
             // Collect all images from product.images array
             if (product.images && Array.isArray(product.images)) {
                 product.images.forEach(img => {
                     if (img && typeof img === 'string' && img.trim() !== '') {
-                        imageUrls.add(img);
-                        console.log('Added gallery image to preload queue:', img);
+                        imageUrls.push(img);
                     }
                 });
             }
@@ -696,72 +722,62 @@
             // Collect all color-specific images
             if (product.colors && Array.isArray(product.colors)) {
                 product.colors.forEach(color => {
-                    // Support both old format (image) and new format (colorImage)
                     const colorImg = color.colorImage || color.image;
                     if (colorImg && typeof colorImg === 'string' && colorImg.trim() !== '' && colorImg !== 'null' && colorImg !== 'undefined') {
-                        imageUrls.add(colorImg);
-                        console.log('Added color image to preload queue:', colorImg);
+                        imageUrls.push(colorImg);
                     }
                 });
             }
             
             // Also preload the main product image
             if (product.image && typeof product.image === 'string' && product.image.trim() !== '') {
-                imageUrls.add(product.image);
-                console.log('Added main product image to preload queue:', product.image);
+                imageUrls.push(product.image);
             }
             
-            // Convert Set to Array and preload
-            const urlsToPreload = Array.from(imageUrls);
-            console.log(`Total images to preload: ${urlsToPreload.length}`);
+            console.log(`Preloading ${imageUrls.length} images...`);
             
             let loadedCount = 0;
-            const totalCount = urlsToPreload.length;
+            const totalCount = imageUrls.length;
             
-            urlsToPreload.forEach(url => {
+            imageUrls.forEach(url => {
+                if (window.cachedImageDataUrls[url]) {
+                    console.log('Already cached:', url.substring(url.lastIndexOf('/') + 1));
+                    loadedCount++;
+                    return;
+                }
+                
                 const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                
                 img.onload = function() {
-                    loadedCount++;
-                    console.log(`Preloaded ${loadedCount}/${totalCount}: ${url}`);
+                    try {
+                        // Convert to data URL and store in memory
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        window.cachedImageDataUrls[url] = canvas.toDataURL('image/jpeg', 0.7);
+                        loadedCount++;
+                        console.log(`Cached ${loadedCount}/${totalCount}: ${url.substring(url.lastIndexOf('/') + 1)} (${Math.round(img.naturalWidth)}x${Math.round(img.naturalHeight)})`);
+                    } catch (e) {
+                        // If canvas fails, mark as loaded but don't cache
+                        window.cachedImageDataUrls[url] = 'FAILED';
+                        loadedCount++;
+                        console.warn('Failed to cache image (CORS/Canvas error):', url.substring(url.lastIndexOf('/') + 1));
+                    }
                 };
+                
                 img.onerror = function() {
+                    window.cachedImageDataUrls[url] = 'FAILED';
                     loadedCount++;
-                    console.warn(`Failed to preload: ${url}`);
+                    console.warn('Failed to load image:', url);
                 };
+                
                 img.src = url;
             });
             
-            console.log('Image preloading initiated for', totalCount, 'images');
-            
-            // Also preload color swatch images immediately for instant color switching
-            if (product.colors && Array.isArray(product.colors)) {
-                preloadColorSwatches(product.colors);
-            }
-        }
-        
-        // Preload color swatch images for instant color switching
-        function preloadColorSwatches(colors) {
-            console.log('Preloading color swatch images...');
-            
-            colors.forEach((color, index) => {
-                const colorImg = color.colorImage || color.image;
-                if (colorImg && typeof colorImg === 'string' && colorImg.trim() !== '' && colorImg !== 'null' && colorImg !== 'undefined') {
-                    // Create invisible image element that will be cached
-                    const img = new Image();
-                    img.style.cssText = 'position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;';
-                    img.src = colorImg;
-                    img.id = `color-swatch-preload-${index}`;
-                    
-                    // Remove if already exists
-                    const existing = document.getElementById(`color-swatch-preload-${index}`);
-                    if (existing) existing.remove();
-                    
-                    document.body.appendChild(img);
-                    console.log(`Color swatch ${index} preloaded: ${colorImg}`);
-                }
-            });
-            
-            console.log('Color swatch preloading complete');
+            console.log('Image preloading initiated');
         }
 
         // Magnifying glass zoom effect
