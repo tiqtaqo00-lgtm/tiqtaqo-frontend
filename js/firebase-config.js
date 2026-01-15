@@ -174,17 +174,46 @@ export const ProductAPI = {
                 // This ensures backward compatibility with old products
                 if (gender && gender !== '') {
                     const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
-                    if (branchedCategories.includes(category)) {
+                    
+                    // Get the category we're filtering for
+                    const filterCategory = (category || '').trim();
+                    const filterCategoryIsBranched = branchedCategories.includes(filterCategory);
+                    
+                    // Get product's categories
+                    const productPrimaryCategory = (product.category || '').trim();
+                    const productSecondaryCategory = (product.secondaryCategory || '').trim();
+                    const productSecondaryCategoryIsBranched = branchedCategories.includes(productSecondaryCategory);
+                    
+                    // Only check gender if the filter category is branched
+                    // OR if product's secondary category is branched (for products in secondary category)
+                    if (filterCategoryIsBranched || productSecondaryCategoryIsBranched) {
                         // Check both primary and secondary gender
                         const productGender = (product.gender || '').trim();
                         const secondaryGender = (product.secondaryGender || '').trim();
                         
-                        // Allow products without gender OR if gender matches
-                        // OR if secondary gender matches (for products in secondary category)
-                        const primaryMatch = productGender === '' || productGender === gender;
-                        const secondaryMatch = secondaryGender === '' || secondaryGender === gender;
+                        // For products where secondaryCategory matches filterCategory:
+                        // - If secondaryCategory is branched, use secondaryGender
+                        // - If secondaryCategory is NOT branched, show in both Homme/Femme branches
+                        let shouldShow = false;
                         
-                        if (!primaryMatch && !secondaryMatch) {
+                        // Case 1: Product's primary category matches filter category
+                        if (productPrimaryCategory === filterCategory) {
+                            // Allow if no gender OR gender matches
+                            shouldShow = productGender === '' || productGender === gender;
+                        }
+                        
+                        // Case 2: Product's secondary category matches filter category
+                        if (!shouldShow && productSecondaryCategory === filterCategory) {
+                            if (productSecondaryCategoryIsBranched) {
+                                // Branched category - only show if secondaryGender matches
+                                shouldShow = secondaryGender === '' || secondaryGender === gender;
+                            } else {
+                                // Non-branched category - show in both Homme/Femme
+                                shouldShow = true;
+                            }
+                        }
+                        
+                        if (!shouldShow) {
                             return false;
                         }
                     }

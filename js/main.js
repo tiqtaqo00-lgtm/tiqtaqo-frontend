@@ -293,14 +293,50 @@ async function getProducts(options = {}) {
             products = products.filter(p => p.category === category || p.secondaryCategory === category);
         }
         if (gender && gender !== '') {
-            products = products.filter(p => {
-                const hasGender = p.gender && p.gender !== '';
-                // Check both primary and secondary category gender
-                const secondaryHasGender = p.secondaryGender && p.secondaryGender !== '';
-                const primaryMatch = !hasGender || p.gender === gender;
-                const secondaryMatch = !secondaryHasGender || p.secondaryGender === gender;
-                return primaryMatch || secondaryMatch;
-            });
+            const genderBranches = ['packs', 'wallets', 'glasses', 'accessoires', 'belts'];
+            
+            // Get the category we're filtering for
+            const filterCategory = (category || '').trim();
+            const filterCategoryIsBranched = genderBranches.includes(filterCategory);
+            
+            // Get product's categories
+            const productPrimaryCategory = (p.category || '').trim();
+            const productSecondaryCategory = (p.secondaryCategory || '').trim();
+            const productSecondaryCategoryIsBranched = genderBranches.includes(productSecondaryCategory);
+            
+            // Only check gender if the filter category is branched
+            // OR if product's secondary category is branched (for products in secondary category)
+            if (filterCategoryIsBranched || productSecondaryCategoryIsBranched) {
+                // Check both primary and secondary gender
+                const productGender = (p.gender || '').trim();
+                const secondaryGender = (p.secondaryGender || '').trim();
+                
+                // For products where secondaryCategory matches filterCategory:
+                // - If secondaryCategory is branched, use secondaryGender
+                // - If secondaryCategory is NOT branched, show in both Homme/Femme branches
+                let shouldShow = false;
+                
+                // Case 1: Product's primary category matches filter category
+                if (productPrimaryCategory === filterCategory) {
+                    // Allow if no gender OR gender matches
+                    shouldShow = productGender === '' || productGender === gender;
+                }
+                
+                // Case 2: Product's secondary category matches filter category
+                if (!shouldShow && productSecondaryCategory === filterCategory) {
+                    if (productSecondaryCategoryIsBranched) {
+                        // Branched category - only show if secondaryGender matches
+                        shouldShow = secondaryGender === '' || secondaryGender === gender;
+                    } else {
+                        // Non-branched category - show in both Homme/Femme
+                        shouldShow = true;
+                    }
+                }
+                
+                if (!shouldShow) {
+                    return false;
+                }
+            }
         }
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase();
