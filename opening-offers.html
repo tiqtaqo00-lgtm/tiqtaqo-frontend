@@ -448,10 +448,9 @@
         
         // Global variables
         let products = [];
-        let countdownInterval = null;
         
-        // Function to load products
-        async function loadProducts() {
+        // Function to initialize Firebase and load products
+        async function initializeAndLoad() {
             const container = document.getElementById('offersProducts');
             const loadingEl = document.getElementById('offersLoading');
             
@@ -460,30 +459,33 @@
                 return;
             }
             
-            console.log('Waiting for Firebase to be ready...');
-            
-            // Wait for Firebase to be ready (up to 15 seconds)
-            let attempts = 0;
-            const maxAttempts = 150; // 15 seconds
-            
-            while (!window.ProductAPI && attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                attempts++;
-            }
-            
-            if (!window.ProductAPI) {
-                console.error('Firebase not ready after 15 seconds, using demo products');
-                showDebugInfo([]);
-                loadingEl.style.display = 'none';
-                container.style.display = 'grid';
-                renderDemoProducts();
-                return;
-            }
-            
-            console.log('Firebase ready, loading products...');
+            console.log('Starting initialization...');
             
             try {
-                // Use ProductAPI like other pages do
+                // Step 1: Explicitly initialize Firebase first
+                console.log('Initializing Firebase...');
+                if (typeof window.initFirebase === 'function') {
+                    await window.initFirebase();
+                    console.log('Firebase initialized successfully');
+                } else {
+                    throw new Error('initFirebase function not found');
+                }
+                
+                // Step 2: Wait for ProductAPI to be available (should be immediate after init)
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max
+                while (!window.ProductAPI && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!window.ProductAPI) {
+                    throw new Error('ProductAPI not available after initialization');
+                }
+                
+                console.log('ProductAPI is ready, loading products...');
+                
+                // Step 3: Load products using ProductAPI
                 const result = await window.ProductAPI.getProducts({ pageSize: 100 });
                 
                 // Filter products with openingOffer flag
@@ -493,14 +495,13 @@
                 console.log('Total products in database:', result.products.length);
                 
                 if (products.length > 0) {
-                    // Show success and products
+                    // Success - show products
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderProducts();
-                    
-                    // Show debug info
                     showDebugInfo(result.products);
                 } else {
+                    // No products found with openingOffer flag
                     console.log('No opening offer products found');
                     showDebugInfo(result.products);
                     loadingEl.style.display = 'none';
@@ -509,7 +510,7 @@
                 }
                 
             } catch (error) {
-                console.error('Error loading products:', error);
+                console.error('Error:', error.message);
                 showDebugInfo([]);
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
@@ -523,8 +524,8 @@
             const { initOpeningOffersCountdown } = await import('./js/opening-offers.js');
             initOpeningOffersCountdown();
             
-            // Then load products
-            await loadProducts();
+            // Then initialize Firebase and load products
+            await initializeAndLoad();
         }
         
         // Start initialization on page load
