@@ -438,71 +438,52 @@
 
     <!-- Scripts -->
     <script src="js/firebase-config.js"></script>
+    <script type="module" src="js/opening-offers.js"></script>
     <script type="module">
-        import { db, doc, getDoc, collection, getDocs, query, where, orderBy, limit } from './js/firebase-config.js';
+        import { initOpeningOffersCountdown } from './js/opening-offers.js';
         
         // Global variables
-        let offersConfig = null;
-        let countdownInterval = null;
         let products = [];
+        let countdownInterval = null;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadOffersConfig();
-            initCountdown();
-        });
-        
-        // Load offers configuration from Firebase
-        async function loadOffersConfig() {
-            try {
-                const configRef = doc(db, 'config', 'openingOffers');
-                const configSnap = await getDoc(configRef);
-                
-                if (configSnap.exists()) {
-                    offersConfig = configSnap.data();
-                    console.log('Offers config loaded:', offersConfig);
-                } else {
-                    offersConfig = { endTime: null, isActive: false };
-                }
-                
-                // Hide loading, show products
-                document.getElementById('offersLoading').style.display = 'none';
-                document.getElementById('offersProducts').style.display = 'grid';
-                
-                // Load products
+            // Initialize countdown from shared module
+            initOpeningOffersCountdown();
+            
+            // Load products after a short delay to allow Firebase to initialize
+            setTimeout(async () => {
                 await loadProducts();
-                
-            } catch (error) {
-                console.error('Error loading offers config:', error);
-                // Use default config
-                offersConfig = { endTime: null, isActive: false };
-                document.getElementById('offersLoading').style.display = 'none';
-            }
-        }
+            }, 500);
+        });
         
         // Load offer products
         async function loadProducts() {
+            const container = document.getElementById('offersProducts');
+            const loadingEl = document.getElementById('offersLoading');
+            
             try {
-                // Get products with "opening_offer" tag
-                const productsRef = collection(db, 'products');
-                const q = query(
-                    productsRef,
-                    where('tags', 'array-contains', 'opening_offer'),
-                    limit(20)
-                );
+                if (window.ProductAPI) {
+                    const result = await window.ProductAPI.getProducts({
+                        pageSize: 50
+                    });
+                    
+                    // Filter products with opening_offer tag
+                    products = result.products.filter(p => 
+                        p.tags && p.tags.includes('opening_offer')
+                    );
+                }
                 
-                const querySnapshot = await getDocs(q);
-                products = [];
-                
-                querySnapshot.forEach((doc) => {
-                    products.push({ id: doc.id, ...doc.data() });
-                });
+                // Hide loading, show products
+                loadingEl.style.display = 'none';
+                container.style.display = 'grid';
                 
                 renderProducts();
                 
             } catch (error) {
                 console.error('Error loading products:', error);
-                // Show demo products for testing
+                loadingEl.style.display = 'none';
+                container.style.display = 'grid';
                 renderDemoProducts();
             }
         }
@@ -544,6 +525,8 @@
                 { id: 2, name: 'محفظة جلدية فاخرة', price: 800, offerPrice: 599, discount: 25 },
                 { id: 3, name: 'حزام جلدي أنيق', price: 450, offerPrice: 349, discount: 22 },
                 { id: 4, name: 'نظارات شمسية مودرن', price: 1200, offerPrice: 899, discount: 25 },
+                { id: 5, name: 'ساعة حريمية أنيقة', price: 2200, offerPrice: 1699, discount: 23 },
+                { id: 6, name: 'مجموعة إكسسوارات', price: 1500, offerPrice: 1099, discount: 27 },
             ];
             
             container.innerHTML = demoProducts.map(product => `
@@ -563,71 +546,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-        
-        // Initialize countdown timer
-        function initCountdown() {
-            if (!offersConfig || !offersConfig.endTime) {
-                // No end time set, show 7 days countdown by default
-                const sevenDaysFromNow = Date.now() + (7 * 24 * 60 * 60 * 1000);
-                startCountdown(sevenDaysFromNow);
-                return;
-            }
-            
-            startCountdown(offersConfig.endTime);
-        }
-        
-        // Start countdown
-        function startCountdown(endTime) {
-            function updateCountdown() {
-                const now = Date.now();
-                const remaining = endTime - now;
-                
-                if (remaining <= 0) {
-                    // Time expired
-                    clearInterval(countdownInterval);
-                    expireSection();
-                    return;
-                }
-                
-                // Calculate time units
-                const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-                
-                // Update DOM
-                document.getElementById('countDays').textContent = String(days).padStart(2, '0');
-                document.getElementById('countHours').textContent = String(hours).padStart(2, '0');
-                document.getElementById('countMinutes').textContent = String(minutes).padStart(2, '0');
-                document.getElementById('countSeconds').textContent = String(seconds).padStart(2, '0');
-            }
-            
-            // Update immediately
-            updateCountdown();
-            
-            // Start interval
-            countdownInterval = setInterval(updateCountdown, 1000);
-        }
-        
-        // Expire section (called when time is up)
-        function expireSection() {
-            const section = document.getElementById('openingOffersSection');
-            
-            // Add fade-out effect
-            section.style.opacity = '0';
-            section.style.transform = 'translateY(20px)';
-            section.style.transition = 'all 1s ease';
-            
-            // Hide after animation
-            setTimeout(() => {
-                section.style.display = 'none';
-                section.classList.add('hidden');
-            }, 1000);
-            
-            // Store in localStorage to prevent showing on reload
-            localStorage.setItem('offersExpired', 'true');
-            localStorage.setItem('offersExpiredTime', Date.now());
         }
         
         // Add to cart (placeholder)
