@@ -584,6 +584,9 @@
                 await initFirebaseFn();
             }
             
+            let products = [];
+            
+            // Direct Firebase query
             if (window.getDb && window.getDb()) {
                 const { collection, getDocs, query, where, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
                 
@@ -591,43 +594,26 @@
                 const q = query(productsRef, where('openingOffer', '==', true), limit(6));
                 const snapshot = await getDocs(q);
                 
-                const products = snapshot.docs.map(doc => ({
+                products = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
                 
-                if (products.length > 0) {
-                    renderPreviewProducts(products);
-                } else {
-                    // Try without filter if no products found
-                    const allProductsRef = collection(window.getDb(), 'products');
-                    const allSnapshot = await getDocs(allProductsRef);
-                    const allProducts = allSnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    })).filter(p => p.openingOffer === true);
-                    
-                    if (allProducts.length > 0) {
-                        renderPreviewProducts(allProducts.slice(0, 6));
-                    } else {
-                        loadingEl.style.display = 'none';
-                        container.innerHTML = '<p style="color: #fff; text-align: center; grid-column: 1/-1;">Aucune offre disponible pour le moment.</p>';
-                    }
-                }
+                console.log('Homepage - Firebase products loaded:', products.length);
+            }
+            
+            // Fallback to ProductAPI if no products found
+            if (products.length === 0 && window.ProductAPI) {
+                const result = await window.ProductAPI.getProducts({ pageSize: 100 });
+                products = result.products.filter(p => p.openingOffer === true).slice(0, 6);
+                console.log('Homepage - ProductAPI products loaded:', products.length);
+            }
+            
+            if (products.length > 0) {
+                renderPreviewProducts(products);
             } else {
-                // Fallback - try ProductAPI
-                if (window.ProductAPI) {
-                    const result = await window.ProductAPI.getProducts({ pageSize: 50 });
-                    const products = result.products.filter(p => p.openingOffer === true).slice(0, 6);
-                    
-                    if (products.length > 0) {
-                        renderPreviewProducts(products);
-                    } else {
-                        loadingEl.style.display = 'none';
-                    }
-                } else {
-                    loadingEl.style.display = 'none';
-                }
+                loadingEl.style.display = 'none';
+                container.innerHTML = '';
             }
         } catch (error) {
             console.error('Error loading opening offers preview:', error);
@@ -642,6 +628,11 @@
         if (!container || !loadingEl) return;
         
         loadingEl.style.display = 'none';
+        
+        if (products.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
         
         container.innerHTML = products.map(product => {
             const originalPrice = product.price || 0;
@@ -673,7 +664,7 @@
     
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(loadOpeningOffersPreview, 1000);
+        setTimeout(loadOpeningOffersPreview, 1500);
     });
     </script>
 </body>
