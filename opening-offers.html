@@ -473,9 +473,9 @@
                         pageSize: 50
                     });
                     
-                    // Filter products with opening_offer tag
+                    // Filter products with openingOffer flag (set from admin dashboard)
                     products = result.products.filter(p => 
-                        p.tags && p.tags.includes('opening_offer')
+                        p.openingOffer === true
                     );
                 }
                 
@@ -502,16 +502,25 @@
                 return;
             }
             
-            container.innerHTML = products.map(product => `
+            container.innerHTML = products.map(product => {
+                // Calculate offer price from promotion percentage
+                const originalPrice = product.price || 0;
+                const promotion = product.promotion || 0;
+                const offerPrice = promotion > 0 
+                    ? Math.round(originalPrice * (1 - promotion / 100)) 
+                    : originalPrice;
+                const discount = promotion > 0 ? promotion : Math.round((1 - offerPrice / originalPrice) * 100);
+                
+                return `
                 <div class="offer-product-card">
-                    <span class="offer-badge">-${Math.round((1 - product.offerPrice / product.price) * 100)}%</span>
+                    <span class="offer-badge">-${discount}%</span>
                     <img src="${product.image}" alt="${product.name}" class="offer-product-image" 
-                         onerror="this.src='https://via.placeholder.com/300x300?text=صورة+المنتج'">
+                         onerror="this.src='https://via.placeholder.com/300x300?text=Produit'">
                     <div class="offer-product-info">
                         <h3 class="offer-product-title">${product.name}</h3>
                         <div class="offer-product-price">
-                            <span class="offer-old-price">${product.price} MAD</span>
-                            <span class="offer-new-price">${product.offerPrice} MAD</span>
+                            <span class="offer-old-price">${originalPrice} MAD</span>
+                            <span class="offer-new-price">${offerPrice} MAD</span>
                         </div>
                         <button class="offer-add-btn" onclick="addToCart('${product.id}')">
                             <i class="fas fa-shopping-cart"></i>
@@ -519,7 +528,7 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
         
         // Render demo products (for testing)

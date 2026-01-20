@@ -469,55 +469,10 @@
             
             <!-- Products Preview -->
             <div class="offers-preview-grid" id="offersPreview">
-                <!-- Demo Product 1 -->
-                <div class="offer-product-card">
-                    <span class="offer-badge">-25%</span>
-                    <img src="https://via.placeholder.com/300x200?text=Montre+Luxe" alt="Montre Luxe Hommes" class="offer-product-image">
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">Montre Luxe Hommes</h3>
-                        <div class="offer-product-price">
-                            <span class="offer-old-price">2000 MAD</span>
-                            <span class="offer-new-price">1499 MAD</span>
-                        </div>
-                        <button class="offer-add-btn" onclick="addToCart(1)">
-                            <i class="fas fa-shopping-cart"></i>
-                            Ajouter au Panier
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Demo Product 2 -->
-                <div class="offer-product-card">
-                    <span class="offer-badge">-30%</span>
-                    <img src="https://via.placeholder.com/300x200?text=Portefeuille+Cuir" alt="Portefeuille Cuir Luxe" class="offer-product-image">
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">Portefeuille Cuir Luxe</h3>
-                        <div class="offer-product-price">
-                            <span class="offer-old-price">800 MAD</span>
-                            <span class="offer-new-price">559 MAD</span>
-                        </div>
-                        <button class="offer-add-btn" onclick="addToCart(2)">
-                            <i class="fas fa-shopping-cart"></i>
-                            Ajouter au Panier
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Demo Product 3 -->
-                <div class="offer-product-card">
-                    <span class="offer-badge">-20%</span>
-                    <img src="https://via.placeholder.com/300x200?text=Lunettes+Soleil" alt="Lunettes de Soleil Modernes" class="offer-product-image">
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">Lunettes de Soleil Modernes</h3>
-                        <div class="offer-product-price">
-                            <span class="offer-old-price">1200 MAD</span>
-                            <span class="offer-new-price">959 MAD</span>
-                        </div>
-                        <button class="offer-add-btn" onclick="addToCart(3)">
-                            <i class="fas fa-shopping-cart"></i>
-                            Ajouter au Panier
-                        </button>
-                    </div>
+                <!-- Products will be loaded dynamically -->
+                <div class="offers-loading" id="offersPreviewLoading">
+                    <div class="offers-loading-spinner"></div>
+                    <p class="offers-loading-text">Chargement des offres...</p>
                 </div>
             </div>
             
@@ -614,5 +569,112 @@
     <script type="module" src="js/main.js"></script>
     <script src="js/firebase-health-check.js"></script>
     <script src="js/bulk-import.js"></script>
+    
+    <script>
+    // Load opening offers products for homepage preview
+    async function loadOpeningOffersPreview() {
+        const container = document.getElementById('offersPreview');
+        const loadingEl = document.getElementById('offersPreviewLoading');
+        
+        if (!container || !loadingEl) return;
+        
+        try {
+            // Wait for Firebase to be ready
+            if (typeof initFirebaseFn === 'function') {
+                await initFirebaseFn();
+            }
+            
+            if (window.getDb && window.getDb()) {
+                const { collection, getDocs, query, where, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                
+                const productsRef = collection(window.getDb(), 'products');
+                const q = query(productsRef, where('openingOffer', '==', true), limit(6));
+                const snapshot = await getDocs(q);
+                
+                const products = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                if (products.length > 0) {
+                    renderPreviewProducts(products);
+                } else {
+                    // Try without filter if no products found
+                    const allProductsRef = collection(window.getDb(), 'products');
+                    const allSnapshot = await getDocs(allProductsRef);
+                    const allProducts = allSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    })).filter(p => p.openingOffer === true);
+                    
+                    if (allProducts.length > 0) {
+                        renderPreviewProducts(allProducts.slice(0, 6));
+                    } else {
+                        loadingEl.style.display = 'none';
+                        container.innerHTML = '<p style="color: #fff; text-align: center; grid-column: 1/-1;">Aucune offre disponible pour le moment.</p>';
+                    }
+                }
+            } else {
+                // Fallback - try ProductAPI
+                if (window.ProductAPI) {
+                    const result = await window.ProductAPI.getProducts({ pageSize: 50 });
+                    const products = result.products.filter(p => p.openingOffer === true).slice(0, 6);
+                    
+                    if (products.length > 0) {
+                        renderPreviewProducts(products);
+                    } else {
+                        loadingEl.style.display = 'none';
+                    }
+                } else {
+                    loadingEl.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading opening offers preview:', error);
+            loadingEl.style.display = 'none';
+        }
+    }
+    
+    function renderPreviewProducts(products) {
+        const container = document.getElementById('offersPreview');
+        const loadingEl = document.getElementById('offersPreviewLoading');
+        
+        if (!container || !loadingEl) return;
+        
+        loadingEl.style.display = 'none';
+        
+        container.innerHTML = products.map(product => {
+            const originalPrice = product.price || 0;
+            const promotion = product.promotion || 0;
+            const offerPrice = promotion > 0 
+                ? Math.round(originalPrice * (1 - promotion / 100)) 
+                : originalPrice;
+            const discount = promotion > 0 ? promotion : 0;
+            
+            return `
+            <div class="offer-product-card">
+                <span class="offer-badge">-${discount}%</span>
+                <img src="${product.image}" alt="${product.name}" class="offer-product-image" 
+                     onerror="this.src='https://via.placeholder.com/300x200?text=Produit'">
+                <div class="offer-product-info">
+                    <h3 class="offer-product-title">${product.name}</h3>
+                    <div class="offer-product-price">
+                        <span class="offer-old-price">${originalPrice} MAD</span>
+                        <span class="offer-new-price">${offerPrice} MAD</span>
+                    </div>
+                    <button class="offer-add-btn" onclick="addToCart('${product.id}')">
+                        <i class="fas fa-shopping-cart"></i>
+                        Ajouter au Panier
+                    </button>
+                </div>
+            </div>
+        `}).join('');
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(loadOpeningOffersPreview, 1000);
+    });
+    </script>
 </body>
 </html>
