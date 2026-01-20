@@ -462,14 +462,14 @@
                 return;
             }
             
-            console.log('Starting initialization...');
-            
-            // Create a timeout promise (10 seconds max)
-            const timeout = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Initialization timeout')), 10000);
-            });
+            console.log('Starting to load products...');
             
             try {
+                // Create a timeout promise (10 seconds max)
+                const timeout = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Initialization timeout')), 10000);
+                });
+                
                 // First: Initialize Firebase if not already done (with timeout)
                 if (typeof initFirebaseFn === 'function' && !window.db) {
                     console.log('Initializing Firebase...');
@@ -478,40 +478,75 @@
                     console.log('Firebase initialized successfully');
                 }
                 
-                // Second: Wait for ProductAPI to be available (with timeout)
-                let attempts = 0;
-                const maxAttempts = 50; // 5 seconds max
-                while (!window.ProductAPI && attempts < maxAttempts) {
+                // Second: Wait for window.getDb to be available (with timeout)
+                let dbAttempts = 0;
+                const maxDbAttempts = 50;
+                while (!window.getDb && dbAttempts < maxDbAttempts) {
                     await new Promise(resolve => setTimeout(resolve, 100));
-                    attempts++;
+                    dbAttempts++;
                 }
                 
-                if (!window.ProductAPI) {
-                    throw new Error('ProductAPI not available after waiting');
+                if (!window.getDb) {
+                    throw new Error('Firebase db not available');
                 }
                 
-                console.log('ProductAPI is available, loading products...');
+                console.log('Firebase db is available, fetching products...');
                 
-                // Third: Load products using ProductAPI (with timeout)
-                const loadPromise = window.ProductAPI.getProducts({ pageSize: 100 });
+                // Third: Load products using direct Firebase query (like index.html)
+                const loadPromise = (async () => {
+                    const { collection, getDocs, query, where, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                    
+                    const productsRef = collection(window.getDb(), 'products');
+                    
+                    // Try indexed query first (same as index.html)
+                    try {
+                        const q = query(productsRef, where('openingOffer', '==', true), limit(12));
+                        const snapshot = await getDocs(q);
+                        
+                        products = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        
+                        console.log('Direct Firebase query:', products.length, 'products found');
+                        
+                        // If we got products, we're done
+                        if (products.length > 0) {
+                            return products;
+                        }
+                    } catch (queryError) {
+                        console.log('Indexed query failed, trying fallback...', queryError.message);
+                    }
+                    
+                    // Fallback: Get all products and filter client-side
+                    const allSnapshot = await getDocs(productsRef);
+                    const allProducts = allSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    
+                    console.log('Total products in DB:', allProducts.length);
+                    
+                    // Filter for opening offers
+                    products = allProducts.filter(p => p.openingOffer === true);
+                    console.log('Client-side filtered:', products.length, 'products');
+                    
+                    // Show debug info
+                    showDebugInfo(allProducts);
+                    
+                    return products;
+                })();
+                
+                // Use timeout for loading
                 const result = await Promise.race([loadPromise, timeout]);
-                
-                // Filter products with openingOffer flag
-                products = result.products.filter(p => p.openingOffer === true);
-                
-                console.log('Loaded', products.length, 'opening offer products');
                 
                 if (products.length > 0) {
                     // Show success and products
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderProducts();
-                    
-                    // Show debug info
-                    showDebugInfo(result.products);
                 } else {
                     console.log('No opening offer products found');
-                    showDebugInfo(result.products);
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderDemoProducts();
