@@ -448,100 +448,139 @@
         // Global variables
         let products = [];
         let countdownInterval = null;
+        let firebaseReady = false;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             // Initialize countdown from shared module
             initOpeningOffersCountdown();
             
-            // Load products after a short delay to allow Firebase to initialize
-            setTimeout(async () => {
+            // Wait for Firebase to be ready (listen for custom event)
+            window.addEventListener('firebase-ready', async () => {
+                console.log('Firebase is ready, loading products...');
+                firebaseReady = true;
                 await loadProducts();
-            }, 1000);
+            });
+            
+            // Also check immediately in case firebase is already ready
+            setTimeout(async () => {
+                if (!firebaseReady) {
+                    console.log('Checking if Firebase is already ready...');
+                    if (typeof initFirebaseFn === 'function') {
+                        try {
+                            await initFirebaseFn();
+                            firebaseReady = true;
+                        } catch (e) {
+                            console.log('Firebase init in progress...');
+                        }
+                    }
+                }
+                if (!firebaseReady) {
+                    // Try to load products anyway, the function will handle missing Firebase
+                    await loadProducts();
+                }
+            }, 2000);
         });
         
-        // Load offer products directly from Firebase
+        // Load offer products - matching exactly the index.html logic
         async function loadProducts() {
             const container = document.getElementById('offersProducts');
             const loadingEl = document.getElementById('offersLoading');
             
-            if (!container || !loadingEl) return;
+            if (!container || !loadingEl) {
+                console.error('Container elements not found');
+                return;
+            }
+            
+            console.log('Starting to load products...');
             
             try {
-                // Wait for Firebase to be ready
-                if (typeof initFirebaseFn === 'function') {
-                    await initFirebaseFn();
+                // First try to get products from Firebase
+                let productsFound = false;
+                
+                if (window.db) {
+                    console.log('Using window.db to fetch products');
+                    const { collection, getDocs, query, where } = window.firebaseFirestore || window.firestore;
+                    
+                    if (collection && getDocs && query && where) {
+                        try {
+                            const productsRef = collection(db, 'products');
+                            
+                            // First try: Query with where clause (indexed)
+                            console.log('Trying indexed query for openingOffer=true...');
+                            const q = query(productsRef, where('openingOffer', '==', true));
+                            const snapshot = await getDocs(q);
+                            
+                            products = snapshot.docs.map(doc => ({
+                                id: doc.id,
+                                ...doc.data()
+                            }));
+                            
+                            console.log('Indexed query result:', products.length, 'products');
+                            
+                            // If we got products, we're done
+                            if (products.length > 0) {
+                                productsFound = true;
+                            }
+                            
+                        } catch (queryError) {
+                            console.log('Indexed query failed, trying fallback...', queryError.message);
+                            
+                            // Fallback: Get ALL products and filter client-side
+                            const allSnapshot = await getDocs(collection(db, 'products'));
+                            const allProducts = allSnapshot.docs.map(doc => ({
+                                id: doc.id,
+                                ...doc.data()
+                            }));
+                            
+                            console.log('Total products in DB:', allProducts.length);
+                            
+                            // Filter on client side
+                            products = allProducts.filter(p => p.openingOffer === true);
+                            console.log('Client-side filtered:', products.length, 'products');
+                            
+                            if (products.length > 0) {
+                                productsFound = true;
+                            }
+                            
+                            // Show debug info
+                            showDebugInfo(allProducts);
+                        }
+                    }
+                } else {
+                    console.log('window.db not available');
                 }
                 
-                // Try to get Firebase db
-                let db = null;
-                if (window.getDb) {
-                    db = window.getDb();
-                }
-                
-                if (db) {
-                    const { collection, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-                    
-                    const productsRef = collection(db, 'products');
-                    
-                    // First try: Query with where clause
+                // If no products from Firebase, try ProductAPI (if available)
+                if (!productsFound && window.ProductAPI) {
+                    console.log('Trying ProductAPI fallback...');
                     try {
-                        const q = query(productsRef, where('openingOffer', '==', true));
-                        const snapshot = await getDocs(q);
+                        const result = await window.ProductAPI.getProducts({ pageSize: 100 });
+                        products = result.products.filter(p => p.openingOffer === true);
+                        console.log('ProductAPI result:', products.length, 'products');
                         
-                        products = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-                        
-                        console.log('Query with openingOffer filter:', products.length, 'products found');
-                        
-                        // Debug: Also get all products to show in console
-                        const allSnapshot = await getDocs(productsRef);
-                        const allProducts = allSnapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-                        console.log('Total products in database:', allProducts.length);
-                        console.log('Products with openingOffer=true:', allProducts.filter(p => p.openingOffer === true).length);
-                        
-                        // Show debug info on page
-                        showDebugInfo(allProducts);
-                        
-                    } catch (queryError) {
-                        console.log('Query failed, trying client-side filter:', queryError.message);
-                        
-                        // Fallback: Get ALL products and filter client-side
-                        const allSnapshot = await getDocs(productsRef);
-                        const allProducts = allSnapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-                        
-                        // Filter products with openingOffer flag
-                        products = allProducts.filter(p => p.openingOffer === true);
-                        console.log('Client-side filter:', products.length, 'products found');
-                        
-                        // Show debug info on page
-                        showDebugInfo(allProducts);
+                        if (products.length > 0) {
+                            productsFound = true;
+                        }
+                    } catch (apiError) {
+                        console.log('ProductAPI failed:', apiError.message);
                     }
                 }
                 
-                // If no products from Firebase, try ProductAPI
-                if (products.length === 0 && window.ProductAPI) {
-                    const result = await window.ProductAPI.getProducts({ pageSize: 100 });
-                    products = result.products.filter(p => p.openingOffer === true);
-                    console.log('ProductAPI:', products.length, 'products found');
+                // If still no products, use demo products as last resort
+                if (products.length === 0) {
+                    console.log('No products found from any source, using demo products');
+                    showDebugInfo([]);
                 }
                 
-                // Hide loading, show products
+                // Update UI
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
                 
                 renderProducts();
                 
             } catch (error) {
-                console.error('Error loading products:', error);
+                console.error('Error in loadProducts:', error);
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
                 renderDemoProducts();
@@ -550,33 +589,65 @@
         
         // Show debug information on page
         function showDebugInfo(allProducts) {
+            // Remove existing debug info if any
+            const existingDebug = document.getElementById('debugInfo');
+            if (existingDebug) {
+                existingDebug.remove();
+            }
+            
             const debugDiv = document.createElement('div');
             debugDiv.id = 'debugInfo';
-            debugDiv.style.cssText = 'background: rgba(0,0,0,0.8); color: #fff; padding: 15px; margin: 20px; border-radius: 8px; font-size: 12px;';
+            debugDiv.style.cssText = 'background: rgba(0,0,0,0.9); color: #fff; padding: 20px; margin: 20px; border-radius: 10px; font-size: 14px; max-width: 800px; margin-left: auto; margin-right: auto;';
             
-            const openingOfferProducts = allProducts.filter(p => p.openingOffer === true);
-            const noOpeningOfferProducts = allProducts.filter(p => !p.openingOffer);
+            const openingOfferProducts = allProducts ? allProducts.filter(p => p.openingOffer === true) : [];
+            const noOpeningOfferProducts = allProducts ? allProducts.filter(p => !p.openingOffer) : [];
+            
+            let productsListHtml = '';
+            if (allProducts && allProducts.length > 0) {
+                productsListHtml = `
+                    <div style="margin-top: 15px;">
+                        <p style="color: #f39c12; font-weight: bold; margin-bottom: 10px;">Liste des produits dans la base de données:</p>
+                        <ul style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto;">
+                            ${allProducts.map(p => `
+                                <li style="padding: 8px 10px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>${p.openingOffer ? '✅' : '❌'} ${p.name || 'Sans nom'}</span>
+                                    <span style="font-size: 12px; color: ${p.openingOffer ? '#27ae60' : '#e74c3c'};">
+                                        openingOffer: ${p.openingOffer === true ? 'true' : 'false'}
+                                    </span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            } else {
+                productsListHtml = `
+                    <p style="color: #e74c3c; margin-top: 15px;">⚠️ Aucun produit trouvé dans Firebase.</p>
+                    <p>Vérifiez que:</p>
+                    <ul style="text-align: left; margin-left: 20px;">
+                        <li>La connexion Firebase fonctionne</li>
+                        <li>Vous avez ajouté des produits avec "openingOffer: true"</li>
+                    </ul>
+                `;
+            }
             
             debugDiv.innerHTML = `
-                <h4 style="color: #d4af37; margin-top: 0;">📊 Debug Info - Produits dans Firebase</h4>
-                <p><strong>Total de produits:</strong> ${allProducts.length}</p>
-                <p><strong>Produits avec Opening Offer:</strong> ${openingOfferProducts.length}</p>
-                <p><strong>Produits SANS Opening Offer:</strong> ${noOpeningOfferProducts.length}</p>
-                <hr style="border-color: #444;">
-                <p><strong>Si produits avec Opening Offer = 0:</strong></p>
-                <p>Allez dans le dashboard Admin et cochez "Afficher dans Opening Offers" pour vos produits.</p>
-                <p style="color: #e74c3c;">Produits actuellement disponibles:</p>
-                <ul style="list-style: none; padding: 0;">
-                    ${allProducts.slice(0, 10).map(p => `
-                        <li style="padding: 5px 0; border-bottom: 1px solid #333;">
-                            ${p.openingOffer ? '✅' : '❌'} ${p.name || 'Sans nom'} 
-                            <span style="color: ${p.openingOffer ? '#27ae60' : '#e74c3c'}">
-                                (openingOffer: ${p.openingOffer || false})
-                            </span>
-                        </li>
-                    `).join('')}
-                    ${allProducts.length > 10 ? `<li>... et ${allProducts.length - 10} autres</li>` : ''}
-                </ul>
+                <h4 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px;">📊 Debug Info - État des Produits</h4>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #2c3e50; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #3498db;">${allProducts ? allProducts.length : 0}</div>
+                        <div style="font-size: 12px; color: #aaa;">Total Produits</div>
+                    </div>
+                    <div style="background: #27ae60; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold;">${openingOfferProducts.length}</div>
+                        <div style="font-size: 12px; color: #aaa;">Avec Opening Offer</div>
+                    </div>
+                    <div style="background: #e74c3c; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold;">${noOpeningOfferProducts.length}</div>
+                        <div style="font-size: 12px; color: #aaa;">Sans Opening Offer</div>
+                    </div>
+                </div>
+                <hr style="border-color: #444; margin: 15px 0;">
+                ${productsListHtml}
             `;
             
             // Add debug div after the section
@@ -586,14 +657,17 @@
             }
         }
         
-        // Render products
+        // Render products from database
         function renderProducts() {
             const container = document.getElementById('offersProducts');
             
             if (products.length === 0) {
+                console.log('No products to render, showing demo products');
                 renderDemoProducts();
                 return;
             }
+            
+            console.log('Rendering', products.length, 'products from database');
             
             container.innerHTML = products.map(product => {
                 // Calculate offer price from promotion percentage
@@ -607,15 +681,15 @@
                 return `
                 <div class="offer-product-card">
                     <span class="offer-badge">-${discount}%</span>
-                    <img src="${product.image}" alt="${product.name}" class="offer-product-image" 
-                         onerror="this.src='https://placehold.co/300x300/1a1a1a/d4af37?text=Produit'">
+                    <img src="${product.image || ''}" alt="${product.name || 'Produit'}" class="offer-product-image" 
+                         onerror="this.src='https://placehold.co/300x300/1a1a1a/d4af37?text=${encodeURIComponent(product.name || 'Produit')}'">
                     <div class="offer-product-info">
-                        <h3 class="offer-product-title">${product.name}</h3>
+                        <h3 class="offer-product-title">${product.name || 'Sans nom'}</h3>
                         <div class="offer-product-price">
                             <span class="offer-old-price">${originalPrice} MAD</span>
                             <span class="offer-new-price">${offerPrice} MAD</span>
                         </div>
-                        <button class="offer-add-btn" onclick="addToCart('${product.id}')">
+                        <button class="offer-add-btn" onclick="addToCart('${product.id || ''}')">
                             <i class="fas fa-shopping-cart"></i>
                             Ajouter au Panier
                         </button>
@@ -624,20 +698,20 @@
             `}).join('');
         }
         
-        // Render demo products (for testing)
+        // Render demo products (for testing when no database products found)
         function renderDemoProducts() {
             const container = document.getElementById('offersProducts');
             const demoProducts = [
-                { id: 1, name: 'Montre Luxe Hommes', price: 2500, offerPrice: 1999, discount: 20 },
-                { id: 2, name: 'Portefeuille Cuir Luxe', price: 800, offerPrice: 599, discount: 25 },
-                { id: 3, name: 'Ceinture Cuir Elegante', price: 450, offerPrice: 349, discount: 22 },
-                { id: 4, name: 'Lunettes de Soleil Modernes', price: 1200, offerPrice: 899, discount: 25 },
-                { id: 5, name: 'Montre Elegante Femme', price: 2200, offerPrice: 1699, discount: 23 },
-                { id: 6, name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 },
+                { id: 'demo-1', name: 'Montre Luxe Hommes', price: 2500, offerPrice: 1999, discount: 20 },
+                { id: 'demo-2', name: 'Portefeuille Cuir Luxe', price: 800, offerPrice: 599, discount: 25 },
+                { id: 'demo-3', name: 'Ceinture Cuir Elegante', price: 450, offerPrice: 349, discount: 22 },
+                { id: 'demo-4', name: 'Lunettes de Soleil Modernes', price: 1200, offerPrice: 899, discount: 25 },
+                { id: 'demo-5', name: 'Montre Elegante Femme', price: 2200, offerPrice: 1699, discount: 23 },
+                { id: 'demo-6', name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 },
             ];
             
             container.innerHTML = demoProducts.map(product => `
-                <div class="offer-product-card">
+                <div class="offer-product-card" style="opacity: 0.7;">
                     <span class="offer-badge">-${product.discount}%</span>
                     <img src="https://placehold.co/300x300/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}" 
                          alt="${product.name}" class="offer-product-image"
@@ -648,17 +722,27 @@
                             <span class="offer-old-price">${product.price} MAD</span>
                             <span class="offer-new-price">${product.offerPrice} MAD</span>
                         </div>
-                        <button class="offer-add-btn" onclick="addToCart(${product.id})">
+                        <button class="offer-add-btn" onclick="addToCart('${product.id}')">
                             <i class="fas fa-shopping-cart"></i>
                             Ajouter au Panier
                         </button>
                     </div>
                 </div>
             `).join('');
+            
+            // Add warning banner
+            const banner = document.createElement('div');
+            banner.style.cssText = 'background: #e74c3c; color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 20px;';
+            banner.innerHTML = '⚠️ <strong>Produits de démonstration affichés</strong> - Vérifiez la connexion Firebase ou ajoutez des produits avec "Opening Offer" activé.';
+            container.parentNode.insertBefore(banner, container);
         }
         
-        // Add to cart (placeholder)
+        // Add to cart function
         window.addToCart = function(productId) {
+            if (productId.startsWith('demo-')) {
+                alert('Ceci est un produit de démonstration!');
+                return;
+            }
             alert('Produit ajouté au panier!');
         };
     </script>
