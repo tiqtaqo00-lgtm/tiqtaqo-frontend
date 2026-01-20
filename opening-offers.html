@@ -462,40 +462,39 @@
                 return;
             }
             
-            console.log('Initializing Firebase and loading products...');
+            console.log('Starting initialization...');
             
-            // First: Initialize Firebase if not already done
-            if (typeof initFirebaseFn === 'function' && !window.db) {
-                console.log('Initializing Firebase...');
-                try {
-                    await initFirebaseFn();
-                    console.log('Firebase initialized successfully');
-                } catch (error) {
-                    console.error('Firebase initialization failed:', error);
-                }
-            }
+            // Create a timeout promise (10 seconds max)
+            const timeout = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Initialization timeout')), 10000);
+            });
             
-            // Second: Wait for ProductAPI to be available
-            let attempts = 0;
-            while (!window.ProductAPI && attempts < 50) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                attempts++;
-            }
-            
-            if (!window.ProductAPI) {
-                console.error('ProductAPI not available after waiting');
-                showDebugInfo([]);
-                loadingEl.style.display = 'none';
-                container.style.display = 'grid';
-                renderDemoProducts();
-                return;
-            }
-            
-            console.log('ProductAPI is available, loading products...');
-            
-            // Third: Load products using ProductAPI
             try {
-                const result = await window.ProductAPI.getProducts({ pageSize: 100 });
+                // First: Initialize Firebase if not already done (with timeout)
+                if (typeof initFirebaseFn === 'function' && !window.db) {
+                    console.log('Initializing Firebase...');
+                    const initPromise = initFirebaseFn();
+                    await Promise.race([initPromise, timeout]);
+                    console.log('Firebase initialized successfully');
+                }
+                
+                // Second: Wait for ProductAPI to be available (with timeout)
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max
+                while (!window.ProductAPI && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!window.ProductAPI) {
+                    throw new Error('ProductAPI not available after waiting');
+                }
+                
+                console.log('ProductAPI is available, loading products...');
+                
+                // Third: Load products using ProductAPI (with timeout)
+                const loadPromise = window.ProductAPI.getProducts({ pageSize: 100 });
+                const result = await Promise.race([loadPromise, timeout]);
                 
                 // Filter products with openingOffer flag
                 products = result.products.filter(p => p.openingOffer === true);
@@ -519,7 +518,7 @@
                 }
                 
             } catch (error) {
-                console.error('Error loading products:', error);
+                console.error('Error during initialization/loading:', error.message);
                 showDebugInfo([]);
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
