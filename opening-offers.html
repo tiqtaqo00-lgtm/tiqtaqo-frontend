@@ -275,7 +275,7 @@
             
             <!-- Desktop Search Bar -->
             <div class="search-container desktop-search">
-                <input type="text" class="search-input" id="desktopSearchInput" placeholder="ابحث عن منتج...">
+                <input type="text" class="search-input" id="desktopSearchInput" placeholder="Rechercher un produit...">
                 <button class="search-icon-btn" id="desktopSearchBtn">
                     <i class="fas fa-search"></i>
                 </button>
@@ -305,7 +305,7 @@
     <div class="search-modal" id="searchModal">
         <div class="search-modal-content">
             <div class="search-modal-header">
-                <input type="text" class="search-modal-input" id="searchModalInput" placeholder="ابحث عن منتج...">
+                <input type="text" class="search-modal-input" id="searchModalInput" placeholder="Rechercher un produit...">
                 <button class="close-search-modal" id="closeSearchModal">
                     <i class="fas fa-times"></i>
                 </button>
@@ -313,7 +313,7 @@
             <div class="search-modal-results" id="searchModalResults">
                 <div class="search-modal-placeholder">
                     <i class="fas fa-search"></i>
-                    <p>ابدأ بالكتابة للبحث</p>
+                    <p>Commencez à taper pour rechercher</p>
                 </div>
             </div>
         </div>
@@ -323,7 +323,7 @@
     <div class="cart-overlay" id="cartOverlay"></div>
     <div class="cart-panel" id="cartPanel">
         <div class="cart-header">
-            <h3><i class="fas fa-shopping-bag"></i> سلة المشتريات (<span id="cartCount">0</span>)</h3>
+            <h3><i class="fas fa-shopping-bag"></i> Panier (<span id="cartCount">0</span>)</h3>
             <button class="close-cart" id="closeCart">
                 <i class="fas fa-times"></i>
             </button>
@@ -331,7 +331,7 @@
         <div class="cart-items" id="cartItems"></div>
         <div class="cart-footer">
             <div class="cart-total">
-                <span>المجموع:</span>
+                <span>Total:</span>
                 <span id="cartTotal">0.00 MAD</span>
             </div>
             <button class="checkout-btn" id="checkoutBtn">
@@ -344,22 +344,22 @@
     <!-- Sidebar Menu -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h2>القائمة</h2>
+            <h2>Menu</h2>
             <button class="close-sidebar" id="closeSidebar">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
-            <li><a href="packs.html"><i class="fas fa-gift"></i> الباقات</a></li>
-            <li><a href="homme.html"><i class="fas fa-user-tie"></i> رجالي</a></li>
-            <li><a href="femme.html"><i class="fas fa-crown"></i> حريمي</a></li>
-            <li><a href="wallets.html"><i class="fas fa-wallet"></i> المحافظ</a></li>
-            <li><a href="belts.html"><i class="fas fa-ribbon"></i> الأحزمة</a></li>
-            <li><a href="glasses.html"><i class="fas fa-glasses"></i> النظارات</a></li>
-            <li><a href="accessoires.html"><i class="fas fa-gem"></i> الإكسسوارات</a></li>
-            <li><a href="about.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
-            <li><a href="contact.html"><i class="fas fa-envelope"></i> اتصل بنا</a></li>
+            <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
+            <li><a href="packs.html"><i class="fas fa-gift"></i> Packs</a></li>
+            <li><a href="homme.html"><i class="fas fa-user-tie"></i> Homme</a></li>
+            <li><a href="femme.html"><i class="fas fa-crown"></i> Femme</a></li>
+            <li><a href="wallets.html"><i class="fas fa-wallet"></i> Portefeuilles</a></li>
+            <li><a href="belts.html"><i class="fas fa-ribbon"></i> Ceintures</a></li>
+            <li><a href="glasses.html"><i class="fas fa-glasses"></i> Lunettes</a></li>
+            <li><a href="accessoires.html"><i class="fas fa-gem"></i> Accessoires</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> À Propos</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
         </ul>
     </div>
 
@@ -370,34 +370,34 @@
         <div class="offers-container">
             <!-- Header -->
             <div class="offers-header">
-                <h1 class="offers-title">عروض الافتتاح</h1>
-                <p class="offers-subtitle">اغتنم فرصتك قبل انتهاء الوقت!</p>
+                <h1 class="offers-title">Offres d'Ouverture</h1>
+                <p class="offers-subtitle">Profitez de nos offres avant qu'elles ne terminent !</p>
             </div>
             
             <!-- Countdown Timer -->
             <div class="countdown-container" id="countdownContainer">
                 <div class="countdown-unit">
                     <span class="countdown-number" id="countDays">00</span>
-                    <span class="countdown-label">أيام</span>
+                    <span class="countdown-label">Jours</span>
                 </div>
                 <div class="countdown-unit">
                     <span class="countdown-number" id="countHours">00</span>
-                    <span class="countdown-label">ساعات</span>
+                    <span class="countdown-label">Heures</span>
                 </div>
                 <div class="countdown-unit">
                     <span class="countdown-number" id="countMinutes">00</span>
-                    <span class="countdown-label">دقائق</span>
+                    <span class="countdown-label">Minutes</span>
                 </div>
                 <div class="countdown-unit">
                     <span class="countdown-number" id="countSeconds">00</span>
-                    <span class="countdown-label">ثواني</span>
+                    <span class="countdown-label">Secondes</span>
                 </div>
             </div>
             
             <!-- Loading -->
             <div class="offers-loading" id="offersLoading">
                 <div class="offers-loading-spinner"></div>
-                <p class="offers-loading-text">جاري تحميل العروض...</p>
+                <p class="offers-loading-text">Chargement des offres...</p>
             </div>
             
             <!-- Products Grid -->
@@ -413,17 +413,17 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>TiqtaQo</h3>
-                    <p>وجهتك الأولى للساعات والإكسسوارات الفاخرة في المغرب.</p>
+                    <p>Votre destination privilégiée pour les montres et accessoires de luxe au Maroc.</p>
                 </div>
                 <div class="footer-section">
-                    <h3>روابط سريعة</h3>
+                    <h3>Liens Rapides</h3>
                     <ul>
-                        <li><a href="about.html">من نحن</a></li>
-                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="about.html">À Propos</a></li>
+                        <li><a href="contact.html">Contactez-nous</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>تابعنا</h3>
+                    <h3>Suivez-nous</h3>
                     <div class="social-links">
                         <a href="#"><i class="fab fa-facebook"></i></a>
                         <a href="https://www.instagram.com/tiqta_qo/" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -431,7 +431,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 TiqtaQo. جميع الحقوق محفوظة.</p>
+                <p>&copy; 2025 TiqtaQo. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
@@ -510,7 +510,7 @@
                         </div>
                         <button class="offer-add-btn" onclick="addToCart('${product.id}')">
                             <i class="fas fa-shopping-cart"></i>
-                            أضف للسلة
+                            Ajouter au Panier
                         </button>
                     </div>
                 </div>
@@ -521,18 +521,18 @@
         function renderDemoProducts() {
             const container = document.getElementById('offersProducts');
             const demoProducts = [
-                { id: 1, name: 'ساعة فاخرة رجالية', price: 2500, offerPrice: 1999, discount: 20 },
-                { id: 2, name: 'محفظة جلدية فاخرة', price: 800, offerPrice: 599, discount: 25 },
-                { id: 3, name: 'حزام جلدي أنيق', price: 450, offerPrice: 349, discount: 22 },
-                { id: 4, name: 'نظارات شمسية مودرن', price: 1200, offerPrice: 899, discount: 25 },
-                { id: 5, name: 'ساعة حريمية أنيقة', price: 2200, offerPrice: 1699, discount: 23 },
-                { id: 6, name: 'مجموعة إكسسوارات', price: 1500, offerPrice: 1099, discount: 27 },
+                { id: 1, name: 'Montre Luxe Hommes', price: 2500, offerPrice: 1999, discount: 20 },
+                { id: 2, name: 'Portefeuille Cuir Luxe', price: 800, offerPrice: 599, discount: 25 },
+                { id: 3, name: 'Ceinture Cuir Elegante', price: 450, offerPrice: 349, discount: 22 },
+                { id: 4, name: 'Lunettes de Soleil Modernes', price: 1200, offerPrice: 899, discount: 25 },
+                { id: 5, name: 'Montre Elegante Femme', price: 2200, offerPrice: 1699, discount: 23 },
+                { id: 6, name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 },
             ];
             
             container.innerHTML = demoProducts.map(product => `
                 <div class="offer-product-card">
                     <span class="offer-badge">-${product.discount}%</span>
-                    <img src="https://via.placeholder.com/300x300?text=منتج+العرض" alt="${product.name}" class="offer-product-image">
+                    <img src="https://via.placeholder.com/300x300?text=Offre+Speciale" alt="${product.name}" class="offer-product-image">
                     <div class="offer-product-info">
                         <h3 class="offer-product-title">${product.name}</h3>
                         <div class="offer-product-price">
@@ -541,7 +541,7 @@
                         </div>
                         <button class="offer-add-btn" onclick="addToCart(${product.id})">
                             <i class="fas fa-shopping-cart"></i>
-                            أضف للسلة
+                            Ajouter au Panier
                         </button>
                     </div>
                 </div>
@@ -550,7 +550,7 @@
         
         // Add to cart (placeholder)
         window.addToCart = function(productId) {
-            alert('تم إضافة المنتج للسلة!');
+            alert('Produit ajouté au panier!');
         };
     </script>
     
