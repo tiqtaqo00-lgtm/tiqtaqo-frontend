@@ -483,23 +483,39 @@
                     const { collection, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
                     
                     const productsRef = collection(db, 'products');
-                    // Filter by openingOffer field
-                    const q = query(productsRef, where('openingOffer', '==', true));
-                    const snapshot = await getDocs(q);
                     
-                    products = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    
-                    console.log('Loaded opening offers products:', products.length);
+                    // First try: Query with where clause
+                    try {
+                        const q = query(productsRef, where('openingOffer', '==', true));
+                        const snapshot = await getDocs(q);
+                        
+                        products = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        
+                        console.log('Query with openingOffer filter:', products.length, 'products found');
+                    } catch (queryError) {
+                        console.log('Query failed, trying client-side filter:', queryError.message);
+                        
+                        // Fallback: Get ALL products and filter client-side
+                        const allSnapshot = await getDocs(productsRef);
+                        const allProducts = allSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        
+                        // Filter products with openingOffer flag
+                        products = allProducts.filter(p => p.openingOffer === true);
+                        console.log('Client-side filter:', products.length, 'products found');
+                    }
                 }
                 
-                // If no products from Firebase or Firebase not available, try ProductAPI
+                // If no products from Firebase, try ProductAPI
                 if (products.length === 0 && window.ProductAPI) {
                     const result = await window.ProductAPI.getProducts({ pageSize: 100 });
                     products = result.products.filter(p => p.openingOffer === true);
-                    console.log('Loaded from ProductAPI:', products.length);
+                    console.log('ProductAPI:', products.length, 'products found');
                 }
                 
                 // Hide loading, show products
@@ -538,7 +554,7 @@
                 <div class="offer-product-card">
                     <span class="offer-badge">-${discount}%</span>
                     <img src="${product.image}" alt="${product.name}" class="offer-product-image" 
-                         onerror="this.src='https://via.placeholder.com/300x300?text=Produit'">
+                         onerror="this.src='https://placehold.co/300x300/1a1a1a/d4af37?text=Produit'">
                     <div class="offer-product-info">
                         <h3 class="offer-product-title">${product.name}</h3>
                         <div class="offer-product-price">
@@ -569,7 +585,9 @@
             container.innerHTML = demoProducts.map(product => `
                 <div class="offer-product-card">
                     <span class="offer-badge">-${product.discount}%</span>
-                    <img src="https://via.placeholder.com/300x300?text=Offre+Speciale" alt="${product.name}" class="offer-product-image">
+                    <img src="https://placehold.co/300x300/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}" 
+                         alt="${product.name}" class="offer-product-image"
+                         onerror="this.src='https://placehold.co/300x300/1a1a1a/d4af37?text=Offre'">
                     <div class="offer-product-info">
                         <h3 class="offer-product-title">${product.name}</h3>
                         <div class="offer-product-price">
