@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TiqtaQo - Luxury Watches & Accessories</title>
+    <title>عروض الافتتاح - TiqtaQo</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -100,15 +99,12 @@
             display: block;
         }
         
-        /* Products Preview Grid */
-        .offers-preview-grid {
+        /* Products Grid */
+        .offers-products {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 30px;
             margin-bottom: 40px;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
         }
         
         .offer-product-card {
@@ -142,7 +138,7 @@
         
         .offer-product-image {
             width: 100%;
-            height: 200px;
+            height: 250px;
             object-fit: cover;
             background: #252525;
         }
@@ -153,7 +149,7 @@
         
         .offer-product-title {
             font-family: 'Cairo', sans-serif;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: #fff;
             margin-bottom: 10px;
@@ -169,27 +165,27 @@
         
         .offer-old-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
             text-decoration: line-through;
         }
         
         .offer-new-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: #d4af37;
         }
         
         .offer-add-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, #d4af37, #aa8a2e);
             border: none;
             border-radius: 10px;
             color: #1a1a1a;
             font-family: 'Cairo', sans-serif;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -200,34 +196,45 @@
             box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
         }
         
-        /* CTA Button */
-        .offers-cta {
-            text-align: center;
-        }
-        
-        .btn-offers-view {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 16px 40px;
-            background: linear-gradient(135deg, #d4af37, #aa8a2e);
-            color: #1a1a1a;
-            font-family: 'Cairo', sans-serif;
-            font-size: 18px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-offers-view:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4);
-        }
-        
         /* Expired State */
         .section-expired {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        .section-expired.hidden {
             display: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .offers-title {
+                font-size: 32px;
+            }
+            
+            .countdown-unit {
+                min-width: 70px;
+                padding: 15px;
+            }
+            
+            .countdown-number {
+                font-size: 32px;
+            }
+            
+            .countdown-label {
+                font-size: 12px;
+            }
+            
+            .countdown-container {
+                gap: 10px;
+            }
         }
         
         /* Loading State */
@@ -255,45 +262,10 @@
             color: #aaa;
             font-size: 16px;
         }
-        
-        /* Responsive */
-        @media (max-width: 992px) {
-            .offers-preview-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .offers-preview-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .offers-title {
-                font-size: 32px;
-            }
-            
-            .countdown-unit {
-                min-width: 70px;
-                padding: 15px;
-            }
-            
-            .countdown-number {
-                font-size: 32px;
-            }
-            
-            .countdown-label {
-                font-size: 12px;
-            }
-            
-            .countdown-container {
-                gap: 10px;
-            }
-        }
     </style>
 </head>
 <body>
 
-    <!-- TiqtaQo E-commerce -->
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -380,7 +352,6 @@
         <ul class="sidebar-menu">
             <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
             <li><a href="packs.html"><i class="fas fa-gift"></i> الباقات</a></li>
-            <li><a href="boite.html"><i class="fas fa-box-open"></i> العلب</a></li>
             <li><a href="homme.html"><i class="fas fa-user-tie"></i> رجالي</a></li>
             <li><a href="femme.html"><i class="fas fa-crown"></i> حريمي</a></li>
             <li><a href="wallets.html"><i class="fas fa-wallet"></i> المحافظ</a></li>
@@ -394,45 +365,6 @@
 
     <div class="overlay" id="overlay"></div>
 
-    <!-- Announcement Bar -->
-    <div class="announcement-bar">
-        <i class="fas fa-truck"></i>
-        توصيل مجاني لجميع أنحاء المغرب
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <!-- Scroll to Top Button -->
-    <button class="scroll-top">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-    <!-- WhatsApp Float Button -->
-    <a href="https://wa.me/212674743106" class="whatsapp-float" target="_blank">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-    <!-- Hero Banner -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">الأناقة الخالدة</h1>
-            <p class="hero-subtitle">اكتشف مجموعتنا الحصرية من الساعات والإكسسوارات الفاخرة</p>
-            <a href="#collections" class="btn-primary">استكشف</a>
-        </div>
-    </section>
-
-    <!-- Elegant Gold Divider -->
-    <div class="elegant-divider">
-        <div class="divider-line"></div>
-        <div class="divider-icon">
-            <i class="fas fa-gem"></i>
-        </div>
-        <div class="divider-line"></div>
-    </div>
-
     <!-- Opening Offers Section -->
     <section class="opening-offers-section" id="openingOffersSection">
         <div class="offers-container">
@@ -443,7 +375,7 @@
             </div>
             
             <!-- Countdown Timer -->
-            <div class="countdown-container">
+            <div class="countdown-container" id="countdownContainer">
                 <div class="countdown-unit">
                     <span class="countdown-number" id="countDays">00</span>
                     <span class="countdown-label">أيام</span>
@@ -462,114 +394,15 @@
                 </div>
             </div>
             
-            <!-- Products Preview -->
-            <div class="offers-preview-grid" id="offersPreview">
-                <!-- Demo Product 1 -->
-                <div class="offer-product-card">
-                    <span class="offer-badge">-25%</span>
-                    <img src="https://via.placeholder.com/300x200?text=ساعة+فاخرة" alt="ساعة فاخرة" class="offer-product-image">
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">ساعة فاخرة رجالية</h3>
-                        <div class="offer-product-price">
-                            <span class="offer-old-price">2000 MAD</span>
-                            <span class="offer-new-price">1499 MAD</span>
-                        </div>
-                        <button class="offer-add-btn" onclick="addToCart(1)">
-                            <i class="fas fa-shopping-cart"></i>
-                            أضف للسلة
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Demo Product 2 -->
-                <div class="offer-product-card">
-                    <span class="offer-badge">-30%</span>
-                    <img src="https://via.placeholder.com/300x200?text=محفظة+جلدية" alt="محفظة جلدية" class="offer-product-image">
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">محفظة جلدية فاخرة</h3>
-                        <div class="offer-product-price">
-                            <span class="offer-old-price">800 MAD</span>
-                            <span class="offer-new-price">559 MAD</span>
-                        </div>
-                        <button class="offer-add-btn" onclick="addToCart(2)">
-                            <i class="fas fa-shopping-cart"></i>
-                            أضف للسلة
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Demo Product 3 -->
-                <div class="offer-product-card">
-                    <span class="offer-badge">-20%</span>
-                    <img src="https://via.placeholder.com/300x200?text=نظارات+شمسية" alt="نظارات شمسية" class="offer-product-image">
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">نظارات شمسية مودرن</h3>
-                        <div class="offer-product-price">
-                            <span class="offer-old-price">1200 MAD</span>
-                            <span class="offer-new-price">959 MAD</span>
-                        </div>
-                        <button class="offer-add-btn" onclick="addToCart(3)">
-                            <i class="fas fa-shopping-cart"></i>
-                            أضف للسلة
-                        </button>
-                    </div>
-                </div>
+            <!-- Loading -->
+            <div class="offers-loading" id="offersLoading">
+                <div class="offers-loading-spinner"></div>
+                <p class="offers-loading-text">جاري تحميل العروض...</p>
             </div>
             
-            <!-- CTA -->
-            <div class="offers-cta">
-                <a href="opening-offers.html" class="btn-offers-view">
-                    <i class="fas fa-arrow-left"></i>
-                    عرض كل المنتجات
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Collections Section -->
-    <section class="collections" id="collections">
-        <div class="container">
-            <h2 class="section-title">مجموعاتنا</h2>
-            <div class="collections-grid" id="collectionsGrid"></div>
-        </div>
-    </section>
-
-    <!-- Best Sellers Section -->
-    <section class="best-sellers" id="bestSellers">
-        <div class="container">
-            <h2 class="section-title">
-                <i class="fas fa-fire" style="color: var(--gold);"></i>
-                الأفضل مبيعاً
-            </h2>
-            <p class="section-subtitle">منتجاتنا الأكثر شعبية</p>
-            <div class="best-sellers-grid" id="bestSellersGrid"></div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-shipping-fast"></i>
-                    <h3>توصيل سريع</h3>
-                    <p>توصيل مجاني لجميع أنحاء المغرب</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>ضمان الجودة</h3>
-                    <p>منتجات أصلية مضمونة</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-headset"></i>
-                    <h3>دعم 24/7</h3>
-                    <p>خدمة عملاء متاحة</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-undo"></i>
-                    <h3>إرجاع سهل</h3>
-                    <p>إرجاع خلال 14 يوم</p>
-                </div>
+            <!-- Products Grid -->
+            <div class="offers-products" id="offersProducts" style="display: none;">
+                <!-- Products will be loaded here -->
             </div>
         </div>
     </section>
@@ -603,33 +436,152 @@
         </div>
     </footer>
 
-    <!-- Countdown Timer Script -->
-    <script>
-        // Countdown Timer Configuration
-        // Set the end time for offers (default: 7 days from now)
-        let offersEndTime = localStorage.getItem('offersEndTime');
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script type="module">
+        import { db, doc, getDoc, collection, getDocs, query, where, orderBy, limit } from './js/firebase-config.js';
         
-        if (!offersEndTime) {
-            // Default: 7 days from now
-            offersEndTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
-            localStorage.setItem('offersEndTime', offersEndTime);
+        // Global variables
+        let offersConfig = null;
+        let countdownInterval = null;
+        let products = [];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadOffersConfig();
+            initCountdown();
+        });
+        
+        // Load offers configuration from Firebase
+        async function loadOffersConfig() {
+            try {
+                const configRef = doc(db, 'config', 'openingOffers');
+                const configSnap = await getDoc(configRef);
+                
+                if (configSnap.exists()) {
+                    offersConfig = configSnap.data();
+                    console.log('Offers config loaded:', offersConfig);
+                } else {
+                    offersConfig = { endTime: null, isActive: false };
+                }
+                
+                // Hide loading, show products
+                document.getElementById('offersLoading').style.display = 'none';
+                document.getElementById('offersProducts').style.display = 'grid';
+                
+                // Load products
+                await loadProducts();
+                
+            } catch (error) {
+                console.error('Error loading offers config:', error);
+                // Use default config
+                offersConfig = { endTime: null, isActive: false };
+                document.getElementById('offersLoading').style.display = 'none';
+            }
         }
         
-        let countdownInterval = null;
+        // Load offer products
+        async function loadProducts() {
+            try {
+                // Get products with "opening_offer" tag
+                const productsRef = collection(db, 'products');
+                const q = query(
+                    productsRef,
+                    where('tags', 'array-contains', 'opening_offer'),
+                    limit(20)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                products = [];
+                
+                querySnapshot.forEach((doc) => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderProducts();
+                
+            } catch (error) {
+                console.error('Error loading products:', error);
+                // Show demo products for testing
+                renderDemoProducts();
+            }
+        }
         
-        function initCountdown() {
-            const section = document.getElementById('openingOffersSection');
-            if (!section) return;
+        // Render products
+        function renderProducts() {
+            const container = document.getElementById('offersProducts');
             
-            // Check if already expired
-            if (Date.now() >= parseInt(offersEndTime)) {
-                section.style.display = 'none';
+            if (products.length === 0) {
+                renderDemoProducts();
                 return;
             }
             
+            container.innerHTML = products.map(product => `
+                <div class="offer-product-card">
+                    <span class="offer-badge">-${Math.round((1 - product.offerPrice / product.price) * 100)}%</span>
+                    <img src="${product.image}" alt="${product.name}" class="offer-product-image" 
+                         onerror="this.src='https://via.placeholder.com/300x300?text=صورة+المنتج'">
+                    <div class="offer-product-info">
+                        <h3 class="offer-product-title">${product.name}</h3>
+                        <div class="offer-product-price">
+                            <span class="offer-old-price">${product.price} MAD</span>
+                            <span class="offer-new-price">${product.offerPrice} MAD</span>
+                        </div>
+                        <button class="offer-add-btn" onclick="addToCart('${product.id}')">
+                            <i class="fas fa-shopping-cart"></i>
+                            أضف للسلة
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Render demo products (for testing)
+        function renderDemoProducts() {
+            const container = document.getElementById('offersProducts');
+            const demoProducts = [
+                { id: 1, name: 'ساعة فاخرة رجالية', price: 2500, offerPrice: 1999, discount: 20 },
+                { id: 2, name: 'محفظة جلدية فاخرة', price: 800, offerPrice: 599, discount: 25 },
+                { id: 3, name: 'حزام جلدي أنيق', price: 450, offerPrice: 349, discount: 22 },
+                { id: 4, name: 'نظارات شمسية مودرن', price: 1200, offerPrice: 899, discount: 25 },
+            ];
+            
+            container.innerHTML = demoProducts.map(product => `
+                <div class="offer-product-card">
+                    <span class="offer-badge">-${product.discount}%</span>
+                    <img src="https://via.placeholder.com/300x300?text=منتج+العرض" alt="${product.name}" class="offer-product-image">
+                    <div class="offer-product-info">
+                        <h3 class="offer-product-title">${product.name}</h3>
+                        <div class="offer-product-price">
+                            <span class="offer-old-price">${product.price} MAD</span>
+                            <span class="offer-new-price">${product.offerPrice} MAD</span>
+                        </div>
+                        <button class="offer-add-btn" onclick="addToCart(${product.id})">
+                            <i class="fas fa-shopping-cart"></i>
+                            أضف للسلة
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Initialize countdown timer
+        function initCountdown() {
+            if (!offersConfig || !offersConfig.endTime) {
+                // No end time set, show 7 days countdown by default
+                const sevenDaysFromNow = Date.now() + (7 * 24 * 60 * 60 * 1000);
+                startCountdown(sevenDaysFromNow);
+                return;
+            }
+            
+            startCountdown(offersConfig.endTime);
+        }
+        
+        // Start countdown
+        function startCountdown(endTime) {
             function updateCountdown() {
                 const now = Date.now();
-                const remaining = parseInt(offersEndTime) - now;
+                const remaining = endTime - now;
                 
                 if (remaining <= 0) {
                     // Time expired
@@ -645,15 +597,10 @@
                 const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
                 
                 // Update DOM
-                const daysEl = document.getElementById('countDays');
-                const hoursEl = document.getElementById('countHours');
-                const minutesEl = document.getElementById('countMinutes');
-                const secondsEl = document.getElementById('countSeconds');
-                
-                if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
-                if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
-                if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
-                if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+                document.getElementById('countDays').textContent = String(days).padStart(2, '0');
+                document.getElementById('countHours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('countMinutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('countSeconds').textContent = String(seconds).padStart(2, '0');
             }
             
             // Update immediately
@@ -663,9 +610,9 @@
             countdownInterval = setInterval(updateCountdown, 1000);
         }
         
+        // Expire section (called when time is up)
         function expireSection() {
             const section = document.getElementById('openingOffersSection');
-            if (!section) return;
             
             // Add fade-out effect
             section.style.opacity = '0';
@@ -675,33 +622,21 @@
             // Hide after animation
             setTimeout(() => {
                 section.style.display = 'none';
+                section.classList.add('hidden');
             }, 1000);
             
-            // Store expiration state
+            // Store in localStorage to prevent showing on reload
             localStorage.setItem('offersExpired', 'true');
+            localStorage.setItem('offersExpiredTime', Date.now());
         }
         
-        // Initialize countdown when DOM is ready
-        document.addEventListener('DOMContentLoaded', initCountdown);
-        
-        // Add to cart function
-        function addToCart(productId) {
-            // You can implement cart logic here
-            alert('تم إضافة المنتج للسلة! (ID: ' + productId + ')');
-        }
-        
-        // Admin function to set countdown (for admin panel)
-        window.setOffersCountdown = function(days) {
-            const endTime = Date.now() + (days * 24 * 60 * 60 * 1000);
-            localStorage.setItem('offersEndTime', endTime);
-            localStorage.removeItem('offersExpired');
-            location.reload();
+        // Add to cart (placeholder)
+        window.addToCart = function(productId) {
+            alert('تم إضافة المنتج للسلة!');
         };
     </script>
-
-    <script type="module" src="js/firebase-config.js?v=2"></script>
-    <script type="module" src="js/main.js"></script>
+    
+    <script src="js/main.js"></script>
     <script src="js/firebase-health-check.js"></script>
-    <script src="js/bulk-import.js"></script>
 </body>
 </html>
