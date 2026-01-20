@@ -528,9 +528,8 @@
             await initializeAndLoad();
         }
         
-        // Start initialization on page load
-        document.addEventListener('DOMContentLoaded', initializePage);
-    </script>
+        // ========== HELPER FUNCTIONS ==========
+        // These must be in the same scope to be accessible
         
         // Show debug information on page
         function showDebugInfo(allProducts) {
@@ -551,7 +550,7 @@
             if (allProducts && allProducts.length > 0) {
                 productsListHtml = `
                     <div style="margin-top: 15px;">
-                        <p style="color: #f39c12; font-weight: bold; margin-bottom: 10px;">Liste des produits dans la base de données:</p>
+                        <p style="color: #f39c12; font-weight: bold; margin-bottom: 10px;">Liste des produits dans la base de donnees:</p>
                         <ul style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto;">
                             ${allProducts.map(p => `
                                 <li style="padding: 8px 10px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
@@ -566,17 +565,17 @@
                 `;
             } else {
                 productsListHtml = `
-                    <p style="color: #e74c3c; margin-top: 15px;">⚠️ Aucun produit trouvé dans Firebase.</p>
-                    <p>Vérifiez que:</p>
+                    <p style="color: #e74c3c; margin-top: 15px;">⚠️ Aucun produit trouve dans Firebase.</p>
+                    <p>Verifiez que:</p>
                     <ul style="text-align: left; margin-left: 20px;">
                         <li>La connexion Firebase fonctionne</li>
-                        <li>Vous avez ajouté des produits avec "openingOffer: true"</li>
+                        <li>Vous avez ajoute des produits avec "openingOffer: true"</li>
                     </ul>
                 `;
             }
             
             debugDiv.innerHTML = `
-                <h4 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px;">📊 Debug Info - État des Produits</h4>
+                <h4 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px;">📊 Debug Info - Etat des Produits</h4>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
                     <div style="background: #2c3e50; padding: 15px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 24px; font-weight: bold; color: #3498db;">${allProducts ? allProducts.length : 0}</div>
@@ -654,7 +653,7 @@
                 { id: 'demo-5', name: 'Montre Elegante Femme', price: 2200, offerPrice: 1699, discount: 23 },
                 { id: 'demo-6', name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 },
             ];
-            
+                
             container.innerHTML = demoProducts.map(product => `
                 <div class="offer-product-card" style="opacity: 0.7;">
                     <span class="offer-badge">-${product.discount}%</span>
@@ -678,18 +677,21 @@
             // Add warning banner
             const banner = document.createElement('div');
             banner.style.cssText = 'background: #e74c3c; color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 20px;';
-            banner.innerHTML = '⚠️ <strong>Produits de démonstration affichés</strong> - Vérifiez la connexion Firebase ou ajoutez des produits avec "Opening Offer" activé.';
+            banner.innerHTML = '⚠️ <strong>Produits de demonstration affiches</strong> - Verifiez la connexion Firebase ou ajoutez des produits avec "Opening Offer" active.';
             container.parentNode.insertBefore(banner, container);
         }
         
         // Add to cart function
         window.addToCart = function(productId) {
-            if (productId.startsWith('demo-')) {
-                alert('Ceci est un produit de démonstration!');
+            if (productId && productId.startsWith('demo-')) {
+                alert('Ceci est un produit de demonstration!');
                 return;
             }
-            alert('Produit ajouté au panier!');
+            alert('Produit ajoute au panier!');
         };
+        
+        // Start initialization on page load
+        document.addEventListener('DOMContentLoaded', initializePage);
     </script>
     
     <script src="js/main.js"></script>
