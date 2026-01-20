@@ -495,6 +495,19 @@
                         }));
                         
                         console.log('Query with openingOffer filter:', products.length, 'products found');
+                        
+                        // Debug: Also get all products to show in console
+                        const allSnapshot = await getDocs(productsRef);
+                        const allProducts = allSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        console.log('Total products in database:', allProducts.length);
+                        console.log('Products with openingOffer=true:', allProducts.filter(p => p.openingOffer === true).length);
+                        
+                        // Show debug info on page
+                        showDebugInfo(allProducts);
+                        
                     } catch (queryError) {
                         console.log('Query failed, trying client-side filter:', queryError.message);
                         
@@ -508,6 +521,9 @@
                         // Filter products with openingOffer flag
                         products = allProducts.filter(p => p.openingOffer === true);
                         console.log('Client-side filter:', products.length, 'products found');
+                        
+                        // Show debug info on page
+                        showDebugInfo(allProducts);
                     }
                 }
                 
@@ -529,6 +545,44 @@
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
                 renderDemoProducts();
+            }
+        }
+        
+        // Show debug information on page
+        function showDebugInfo(allProducts) {
+            const debugDiv = document.createElement('div');
+            debugDiv.id = 'debugInfo';
+            debugDiv.style.cssText = 'background: rgba(0,0,0,0.8); color: #fff; padding: 15px; margin: 20px; border-radius: 8px; font-size: 12px;';
+            
+            const openingOfferProducts = allProducts.filter(p => p.openingOffer === true);
+            const noOpeningOfferProducts = allProducts.filter(p => !p.openingOffer);
+            
+            debugDiv.innerHTML = `
+                <h4 style="color: #d4af37; margin-top: 0;">📊 Debug Info - Produits dans Firebase</h4>
+                <p><strong>Total de produits:</strong> ${allProducts.length}</p>
+                <p><strong>Produits avec Opening Offer:</strong> ${openingOfferProducts.length}</p>
+                <p><strong>Produits SANS Opening Offer:</strong> ${noOpeningOfferProducts.length}</p>
+                <hr style="border-color: #444;">
+                <p><strong>Si produits avec Opening Offer = 0:</strong></p>
+                <p>Allez dans le dashboard Admin et cochez "Afficher dans Opening Offers" pour vos produits.</p>
+                <p style="color: #e74c3c;">Produits actuellement disponibles:</p>
+                <ul style="list-style: none; padding: 0;">
+                    ${allProducts.slice(0, 10).map(p => `
+                        <li style="padding: 5px 0; border-bottom: 1px solid #333;">
+                            ${p.openingOffer ? '✅' : '❌'} ${p.name || 'Sans nom'} 
+                            <span style="color: ${p.openingOffer ? '#27ae60' : '#e74c3c'}">
+                                (openingOffer: ${p.openingOffer || false})
+                            </span>
+                        </li>
+                    `).join('')}
+                    ${allProducts.length > 10 ? `<li>... et ${allProducts.length - 10} autres</li>` : ''}
+                </ul>
+            `;
+            
+            // Add debug div after the section
+            const section = document.getElementById('openingOffersSection');
+            if (section) {
+                section.parentNode.insertBefore(debugDiv, section.nextSibling);
             }
         }
         

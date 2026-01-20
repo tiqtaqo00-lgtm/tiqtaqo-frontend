@@ -600,6 +600,15 @@
                 }));
                 
                 console.log('Homepage - Firebase products loaded:', products.length);
+                
+                // Debug: Get all products
+                const allSnapshot = await getDocs(productsRef);
+                const allProducts = allSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                console.log('Total products:', allProducts.length);
+                console.log('Products with openingOffer=true:', allProducts.filter(p => p.openingOffer === true).length);
             }
             
             // Fallback to ProductAPI if no products found
@@ -613,7 +622,9 @@
                 renderPreviewProducts(products);
             } else {
                 loadingEl.style.display = 'none';
-                container.innerHTML = '';
+                container.innerHTML = '<p style="color: #fff; text-align: center; grid-column: 1/-1; padding: 20px;">' +
+                    'Aucun produit Opening Offers trouvé. ' +
+                    'Allez dans le Dashboard Admin et cochez "Afficher dans Opening Offers" pour vos produits.</p>';
             }
         } catch (error) {
             console.error('Error loading opening offers preview:', error);
