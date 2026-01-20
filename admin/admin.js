@@ -154,7 +154,7 @@ async function loadProductsTable() {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="10" style="text-align: center; padding: 40px; color: #666;">
+                <td colspan="11" style="text-align: center; padding: 40px; color: #666;">
                     <i class="fas fa-box-open" style="font-size: 48px; color: var(--gold); display: block; margin-bottom: 15px;"></i>
                     Aucun produit disponible. Cliquez sur "Ajouter un Produit" pour commencer.
                 </td>
@@ -181,6 +181,11 @@ async function loadProductsTable() {
                 </button>
             </td>
             <td>
+                <button class="btn-toggle ${product.openingOffer ? 'active' : ''}" style="${product.openingOffer ? 'background: linear-gradient(135deg, #d4af37, #aa8a2e);' : ''}" onclick="toggleProductOpeningOffer('${product.id}')">
+                    ${product.openingOffer ? '<i class="fas fa-gift"></i> Oui' : '<i class="fas fa-gift"></i> Non'}
+                </button>
+            </td>
+            <td>
                 <button class="btn-toggle ${product.visible ? 'active' : ''}" onclick="toggleProductVisibility('${product.id}')">
                     ${product.visible ? '<i class="fas fa-eye"></i> Visible' : '<i class="fas fa-eye-slash"></i> Caché'}
                 </button>
@@ -198,6 +203,193 @@ async function loadProductsTable() {
         </tr>
     `).join('');
 }
+
+// Toggle product opening offer status
+async function toggleProductOpeningOffer(id) {
+    const products = await getProducts();
+    const product = products.find(p => p.id === id);
+    if (product) {
+        product.openingOffer = !product.openingOffer;
+        await saveProducts(products);
+        loadProductsTable();
+    }
+}
+
+// Countdown Management Functions
+async function updateCountdown() {
+    const endDateInput = document.getElementById('countdownEndDate').value;
+    if (!endDateInput) {
+        alert('Veuillez sélectionner une date de fin!');
+        return;
+    }
+    
+    const endDate = new Date(endDateInput).getTime();
+    
+    try {
+        const db = await getDb();
+        if (db) {
+            const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            await setDoc(doc(db, 'config', 'openingOffers'), {
+                endTime: endDate,
+                isActive: true,
+                updatedAt: new Date().toISOString()
+            });
+            
+            // Also save to localStorage as backup
+            localStorage.setItem('openingOffers_endTime', endDate.toString());
+            localStorage.setItem('openingOffers_isActive', 'true');
+            
+            alert('Countdown mis à jour avec succès!');
+            loadCountdownDisplay();
+        }
+    } catch (error) {
+        console.error('Error updating countdown:', error);
+        // Fallback to localStorage
+        localStorage.setItem('openingOffers_endTime', endDate.toString());
+        localStorage.setItem('openingOffers_isActive', 'true');
+        alert('Countdown enregistré dans localStorage (Firebase non disponible)!');
+        loadCountdownDisplay();
+    }
+}
+
+async function resetCountdown() {
+    if (!confirm('Êtes-vous sûr de vouloir réinitialiser le countdown?')) return;
+    
+    try {
+        const db = await getDb();
+        if (db) {
+            const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            await setDoc(doc(db, 'config', 'openingOffers'), {
+                endTime: null,
+                isActive: false,
+                updatedAt: new Date().toISOString()
+            });
+        }
+        
+        // Also reset in localStorage
+        localStorage.removeItem('openingOffers_endTime');
+        localStorage.setItem('openingOffers_isActive', 'false');
+        
+        document.getElementById('countdownEndDate').value = '';
+        alert('Countdown réinitialisé avec succès!');
+        loadCountdownDisplay();
+    } catch (error) {
+        console.error('Error resetting countdown:', error);
+        localStorage.removeItem('openingOffers_endTime');
+        localStorage.setItem('openingOffers_isActive', 'false');
+        document.getElementById('countdownEndDate').value = '';
+        alert('Countdown réinitialisé dans localStorage!');
+        loadCountdownDisplay();
+    }
+}
+
+async function add24Hours() {
+    const now = new Date();
+    const newEndDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const endDateStr = newEndDate.toISOString().slice(0, 16);
+    
+    document.getElementById('countdownEndDate').value = endDateStr;
+    
+    // Auto-save
+    const endDate = newEndDate.getTime();
+    
+    try {
+        const db = await getDb();
+        if (db) {
+            const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            await setDoc(doc(db, 'config', 'openingOffers'), {
+                endTime: endDate,
+                isActive: true,
+                updatedAt: new Date().toISOString()
+            });
+        }
+        
+        localStorage.setItem('openingOffers_endTime', endDate.toString());
+        localStorage.setItem('openingOffers_isActive', 'true');
+        
+        alert('24 heures ajoutées! Countdown mis à jour.');
+        loadCountdownDisplay();
+    } catch (error) {
+        console.error('Error adding 24 hours:', error);
+        localStorage.setItem('openingOffers_endTime', endDate.toString());
+        localStorage.setItem('openingOffers_isActive', 'true');
+        alert('24 heures ajoutées! (Enregistré dans localStorage)');
+        loadCountdownDisplay();
+    }
+}
+
+async function loadCountdownDisplay() {
+    let endTime = null;
+    let isActive = false;
+    
+    try {
+        const db = await getDb();
+        if (db) {
+            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            const docSnap = await getDoc(doc(db, 'config', 'openingOffers'));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                endTime = data.endTime;
+                isActive = data.isActive;
+            }
+        }
+    } catch (error) {
+        console.log('Firebase not available, using localStorage');
+    }
+    
+    // Fallback to localStorage
+    if (!endTime) {
+        const localEndTime = localStorage.getItem('openingOffers_endTime');
+        if (localEndTime) {
+            endTime = parseInt(localEndTime);
+        }
+    }
+    
+    if (!isActive) {
+        isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+    }
+    
+    const display = document.getElementById('countdownDisplay');
+    const dateInput = document.getElementById('countdownEndDate');
+    
+    if (endTime && isActive) {
+        // Set the date input
+        const endDateObj = new Date(endTime);
+        dateInput.value = endDateObj.toISOString().slice(0, 16);
+        
+        // Update countdown display
+        const updateDisplay = () => {
+            const now = new Date().getTime();
+            const distance = endTime - now;
+            
+            if (distance < 0) {
+                display.innerHTML = '<i class="fas fa-check-circle"></i> Les offres sont terminées!';
+                display.style.color = '#27ae60';
+                return;
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            display.innerHTML = `${days}j ${hours}h ${minutes}m ${seconds}s`;
+            display.style.color = '#d4af37';
+        };
+        
+        updateDisplay();
+        setInterval(updateDisplay, 1000);
+    } else {
+        display.innerHTML = '<i class="fas fa-clock"></i> Aucune offre active';
+        display.style.color = '#e74c3c';
+    }
+}
+
+// Export countdown functions to window
+window.updateCountdown = updateCountdown;
+window.resetCountdown = resetCountdown;
+window.add24Hours = add24Hours;
+window.loadCountdownDisplay = loadCountdownDisplay;
 
 // Search products by name
 function searchProducts() {
@@ -523,6 +715,7 @@ async function editProduct(id) {
         document.getElementById('productBestSeller').checked = product.bestSeller || false;
         document.getElementById('productVisible').checked = product.visible;
         document.getElementById('productCanOffer').checked = product.showInCanOffers || false;
+        document.getElementById('productOpeningOffer').checked = product.openingOffer || false;
         
         // Handle gender for branched categories
         const branchedCategories = ['packs', 'wallets', 'glasses', 'accessoires'];
@@ -990,6 +1183,7 @@ async function saveProduct(event) {
         bestSeller: document.getElementById('productBestSeller').checked,
         visible: document.getElementById('productVisible').checked,
         showInCanOffers: document.getElementById('productCanOffer').checked,
+        openingOffer: document.getElementById('productOpeningOffer').checked,
         created_at: existingProduct?.created_at || new Date().toISOString()
     };
     
@@ -1168,6 +1362,7 @@ window.loadCategoriesTable = loadCategoriesTable;
 window.getCategoryName = getCategoryName;
 window.getGenderDisplay = getGenderDisplay;
 window.toggleProductBestSeller = toggleProductBestSeller;
+window.toggleProductOpeningOffer = toggleProductOpeningOffer;
 window.toggleProductVisibility = toggleProductVisibility;
 window.toggleCategoryVisibility = toggleCategoryVisibility;
 window.deleteProduct = deleteProduct;
@@ -1280,6 +1475,7 @@ async function initializeDashboard() {
         await updateStats();
         await loadProductsTable();
         loadCategoriesTable();
+        loadCountdownDisplay();
     }
 }
 

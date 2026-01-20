@@ -724,6 +724,47 @@
             </div>
         </div>
 
+        <!-- Opening Offers Countdown Section -->
+        <div class="products-section" style="margin-bottom: 30px; background: linear-gradient(135deg, #1a1a2e 0%, #2d2d2d 100%); border: 2px solid #d4af37;">
+            <div class="section-header">
+                <h2 style="color: #d4af37;">
+                    <i class="fas fa-clock"></i> Gestion du Countdown - Opening Offers
+                </h2>
+            </div>
+            <div style="padding: 20px;">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; color: #fff; margin-bottom: 8px; font-weight: 600;">
+                            <i class="fas fa-calendar-alt" style="color: #d4af37; margin-right: 8px;"></i>
+                            Date de fin des offres
+                        </label>
+                        <input type="datetime-local" id="countdownEndDate" 
+                               style="width: 100%; padding: 12px; border: 2px solid #d4af37; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; font-size: 16px;">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; color: #fff; margin-bottom: 8px; font-weight: 600;">
+                            <i class="fas fa-hourglass-half" style="color: #d4af37; margin-right: 8px;"></i>
+                            Temps restant actuel
+                        </label>
+                        <div id="countdownDisplay" style="padding: 15px; background: rgba(212, 175, 55, 0.2); border-radius: 8px; color: #d4af37; font-size: 18px; font-weight: 600; text-align: center;">
+                            Chargement...
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button onclick="updateCountdown()" style="padding: 12px 25px; background: linear-gradient(135deg, #d4af37, #aa8a2e); color: #1a1a1a; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-save"></i> Enregistrer la date
+                    </button>
+                    <button onclick="resetCountdown()" style="padding: 12px 25px; background: #e74c3c; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-redo"></i> Réinitialiser le countdown
+                    </button>
+                    <button onclick="add24Hours()" style="padding: 12px 25px; background: #27ae60; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-plus"></i> +24 heures
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Section Tabs -->
         <div class="section-tabs">
             <button class="tab-btn active" onclick="switchTab('products')">
@@ -768,6 +809,7 @@
                             <th>Genre</th>
                             <th>Promotion</th>
                             <th>Best-Seller</th>
+                            <th>Opening Offers</th>
                             <th>Visibilité</th>
                             <th>Actions</th>
                         </tr>
@@ -932,6 +974,14 @@
                     <div class="checkbox-group">
                         <input type="checkbox" id="productCanOffer">
                         <label for="productCanOffer" style="color: #006233; font-weight: 600;"><i class="fas fa-trophy" style="margin-right: 5px;"></i>Afficher dans CAN Offers</label>
+                    </div>
+                </div>
+
+                <!-- Opening Offers Section -->
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="productOpeningOffer">
+                        <label for="productOpeningOffer" style="color: #d4af37; font-weight: 600;"><i class="fas fa-gift" style="margin-right: 5px;"></i>Afficher dans Opening Offers</label>
                     </div>
                 </div>
 
