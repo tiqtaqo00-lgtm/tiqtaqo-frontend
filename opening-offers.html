@@ -449,17 +449,11 @@
         let products = [];
         let countdownInterval = null;
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
+        // Initialize Firebase first, then load products
+        async function initializeAndLoad() {
             // Initialize countdown from shared module
             initOpeningOffersCountdown();
             
-            // Load products immediately
-            await loadProducts();
-        });
-        
-        // Load offer products - prioritize ProductAPI for reliability
-        async function loadProducts() {
             const container = document.getElementById('offersProducts');
             const loadingEl = document.getElementById('offersLoading');
             
@@ -468,83 +462,74 @@
                 return;
             }
             
-            console.log('Starting to load products...');
+            console.log('Initializing Firebase and loading products...');
             
-            try {
-                // FIRST: Try ProductAPI (most reliable method)
-                if (window.ProductAPI) {
-                    console.log('Using ProductAPI to fetch products...');
-                    const result = await window.ProductAPI.getProducts({ pageSize: 100 });
-                    
-                    // Filter products with openingOffer flag
-                    products = result.products.filter(p => p.openingOffer === true);
-                    
-                    console.log('ProductAPI loaded:', products.length, 'products');
-                    
-                    if (products.length > 0) {
-                        // Update UI
-                        loadingEl.style.display = 'none';
-                        container.style.display = 'grid';
-                        renderProducts();
-                        console.log('Products loaded successfully from ProductAPI');
-                        return;
-                    }
-                } else {
-                    console.log('ProductAPI not available');
+            // First: Initialize Firebase if not already done
+            if (typeof initFirebaseFn === 'function' && !window.db) {
+                console.log('Initializing Firebase...');
+                try {
+                    await initFirebaseFn();
+                    console.log('Firebase initialized successfully');
+                } catch (error) {
+                    console.error('Firebase initialization failed:', error);
                 }
-                
-                // SECOND: Try direct Firebase access (if ProductAPI failed)
-                if (window.db) {
-                    console.log('Trying direct Firebase access...');
-                    const { collection, getDocs, query, where } = window.firebaseFirestore || window.firestore;
-                    
-                    if (collection && getDocs) {
-                        try {
-                            const productsRef = collection(db, 'products');
-                            
-                            // Try to get all products and filter client-side
-                            const snapshot = await getDocs(productsRef);
-                            const allProducts = snapshot.docs.map(doc => ({
-                                id: doc.id,
-                                ...doc.data()
-                            }));
-                            
-                            console.log('Direct Firebase:', allProducts.length, 'products found');
-                            
-                            // Filter for opening offers
-                            products = allProducts.filter(p => p.openingOffer === true);
-                            
-                            if (products.length > 0) {
-                                showDebugInfo(allProducts);
-                                
-                                // Update UI
-                                loadingEl.style.display = 'none';
-                                container.style.display = 'grid';
-                                renderProducts();
-                                return;
-                            }
-                        } catch (fbError) {
-                            console.log('Direct Firebase failed:', fbError.message);
-                        }
-                    }
-                }
-                
-                // THIRD: If still no products, show demo products and debug info
-                console.log('No products found, showing demo products');
+            }
+            
+            // Second: Wait for ProductAPI to be available
+            let attempts = 0;
+            while (!window.ProductAPI && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (!window.ProductAPI) {
+                console.error('ProductAPI not available after waiting');
                 showDebugInfo([]);
-                
-                // Update UI
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
                 renderDemoProducts();
+                return;
+            }
+            
+            console.log('ProductAPI is available, loading products...');
+            
+            // Third: Load products using ProductAPI
+            try {
+                const result = await window.ProductAPI.getProducts({ pageSize: 100 });
+                
+                // Filter products with openingOffer flag
+                products = result.products.filter(p => p.openingOffer === true);
+                
+                console.log('Loaded', products.length, 'opening offer products');
+                
+                if (products.length > 0) {
+                    // Show success and products
+                    loadingEl.style.display = 'none';
+                    container.style.display = 'grid';
+                    renderProducts();
+                    
+                    // Show debug info
+                    showDebugInfo(result.products);
+                } else {
+                    console.log('No opening offer products found');
+                    showDebugInfo(result.products);
+                    loadingEl.style.display = 'none';
+                    container.style.display = 'grid';
+                    renderDemoProducts();
+                }
                 
             } catch (error) {
-                console.error('Error in loadProducts:', error);
+                console.error('Error loading products:', error);
+                showDebugInfo([]);
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
                 renderDemoProducts();
             }
         }
+        
+        // Start initialization on page load
+        document.addEventListener('DOMContentLoaded', initializeAndLoad);
+    </script>
         
         // Show debug information on page
         function showDebugInfo(allProducts) {
