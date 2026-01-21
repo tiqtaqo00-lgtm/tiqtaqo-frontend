@@ -16,21 +16,28 @@
     <style>
         /* Opening Offers Section Styles */
         .opening-offers-section {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-            padding: 60px 0;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            padding: 80px 0;
             position: relative;
             overflow: hidden;
             margin-top: 80px;
         }
         
+        /* Animated background particles */
         .opening-offers-section::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #d4af37, #f4d03f, #d4af37, transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
         
         .offers-container {
@@ -42,130 +49,276 @@
         /* Header */
         .offers-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
+            position: relative;
         }
         
         .offers-title {
             font-family: 'Cairo', sans-serif;
-            font-size: 48px;
-            font-weight: 800;
-            color: #d4af37;
+            font-size: 56px;
+            font-weight: 900;
+            color: #ffffff;
             margin-bottom: 15px;
-            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .offers-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+            border-radius: 2px;
+        }
+        
+        .offers-title span {
+            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .offers-subtitle {
             font-family: 'Cairo', sans-serif;
-            font-size: 20px;
-            color: #ffffff;
-            margin-bottom: 30px;
+            font-size: 22px;
+            color: #cccccc;
+            margin-top: 25px;
+            font-weight: 300;
+            letter-spacing: 1px;
         }
         
         /* Countdown Timer */
         .countdown-container {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-bottom: 40px;
+            gap: 25px;
+            margin-bottom: 50px;
             flex-wrap: wrap;
         }
         
         .countdown-unit {
-            background: rgba(212, 175, 55, 0.1);
-            border: 2px solid rgba(212, 175, 55, 0.4);
-            border-radius: 15px;
-            padding: 20px 25px;
-            min-width: 100px;
+            background: rgba(212, 175, 55, 0.08);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 25px 35px;
+            min-width: 120px;
             text-align: center;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .countdown-unit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
         
         .countdown-unit:hover {
             border-color: #d4af37;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.25), 0 0 30px rgba(212, 175, 55, 0.1);
         }
         
         .countdown-number {
             font-family: 'Cairo', sans-serif;
-            font-size: 48px;
-            font-weight: 700;
-            color: #d4af37;
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: block;
             line-height: 1;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
         }
         
         .countdown-label {
             font-family: 'Cairo', sans-serif;
             font-size: 14px;
-            color: #aaa;
-            margin-top: 8px;
+            color: #999;
+            margin-top: 12px;
             display: block;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
         }
         
         /* Products Grid */
         .offers-products {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 35px;
+            margin-bottom: 50px;
+            padding: 20px 0;
         }
         
+        /* Stunning Product Card Design */
         .offer-product-card {
-            background: linear-gradient(145deg, #252525, #1e1e1e);
-            border-radius: 20px;
+            background: linear-gradient(145deg, #1f1f1f 0%, #141414 50%, #1a1a1a 100%);
+            border-radius: 24px;
             overflow: hidden;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            transition: all 0.4s ease;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
         }
         
+        .offer-product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #d4af37, #f4d03f, #d4af37);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .offer-product-card:hover::before {
+            opacity: 1;
+        }
+        
         .offer-product-card:hover {
-            transform: translateY(-10px);
-            border-color: #d4af37;
-            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
+            transform: translateY(-15px) scale(1.02);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(212, 175, 55, 0.15), inset 0 0 30px rgba(212, 175, 55, 0.05);
         }
         
         .offer-badge {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: linear-gradient(135deg, #d4af37, #aa8a2e);
-            color: #1a1a1a;
-            padding: 8px 15px;
-            border-radius: 25px;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 50%, #c0392b 100%);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 30px;
             font-family: 'Cairo', sans-serif;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 700;
             z-index: 10;
+            box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4);
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Wishlist heart icon */
+        .offer-wishlist {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .offer-wishlist:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: #d4af37;
+            transform: scale(1.1);
+        }
+        
+        .offer-wishlist i {
+            color: #fff;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        
+        .offer-wishlist:hover i {
+            color: #d4af37;
+        }
+        
+        .offer-product-image-container {
+            position: relative;
+            height: 280px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
         }
         
         .offer-product-image {
             width: 100%;
-            height: 250px;
+            height: 100%;
             object-fit: cover;
-            background: #252525;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .offer-product-card:hover .offer-product-image {
+            transform: scale(1.15) rotate(2deg);
+        }
+        
+        /* Image overlay on hover */
+        .offer-image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .offer-product-card:hover .offer-image-overlay {
+            opacity: 1;
         }
         
         .offer-product-info {
-            padding: 20px;
+            padding: 25px 28px 30px;
+            position: relative;
         }
         
         .offer-product-title {
             font-family: 'Cairo', sans-serif;
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 15px;
             line-height: 1.4;
+            transition: color 0.3s ease;
         }
         
-        .offer-product-price {
+        .offer-product-card:hover .offer-product-title {
+            color: #d4af37;
+        }
+        
+        .offer-product-description {
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .offer-product-price-container {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
         }
         
         .offer-old-price {
@@ -173,89 +326,165 @@
             font-size: 16px;
             color: #666;
             text-decoration: line-through;
+            position: relative;
+        }
+        
+        .offer-old-price::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #666;
+            transform: rotate(-5deg);
         }
         
         .offer-new-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #d4af37;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .offer-savings {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(39, 174, 96, 0.2) 100%);
+            color: #2ecc71;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
         }
         
         .offer-add-btn {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #d4af37, #aa8a2e);
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 50%, #d4af37 100%);
+            background-size: 200% 200%;
             border: none;
-            border-radius: 10px;
-            color: #1a1a1a;
+            border-radius: 14px;
+            color: #0a0a0a;
             font-family: 'Cairo', sans-serif;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .offer-add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .offer-add-btn:hover::before {
+            left: 100%;
         }
         
         .offer-add-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4);
+            background-position: 100% 0;
         }
         
-        /* Expired State */
-        .section-expired {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 1s ease;
-            pointer-events: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        .offer-add-btn:active {
+            transform: translateY(-1px);
         }
         
-        .section-expired.hidden {
-            display: none;
+        .offer-add-btn i {
+            margin-right: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .offer-add-btn:hover i {
+            transform: rotate(-15deg) scale(1.2);
+        }
+        
+        /* Stock indicator */
+        .offer-stock {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            color: #2ecc71;
+        }
+        
+        .offer-stock-dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse-stock 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-stock {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
         }
         
         /* Responsive */
         @media (max-width: 768px) {
             .offers-title {
-                font-size: 32px;
+                font-size: 36px;
+            }
+            
+            .offers-subtitle {
+                font-size: 16px;
             }
             
             .countdown-unit {
-                min-width: 70px;
-                padding: 15px;
+                padding: 20px 25px;
+                min-width: 80px;
             }
             
             .countdown-number {
-                font-size: 32px;
+                font-size: 36px;
             }
             
             .countdown-label {
-                font-size: 12px;
+                font-size: 11px;
             }
             
-            .countdown-container {
-                gap: 10px;
+            .offers-products {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 25px;
+            }
+            
+            .offer-new-price {
+                font-size: 26px;
             }
         }
         
         /* Loading State */
         .offers-loading {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
         }
         
         .offers-loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(212, 175, 55, 0.2);
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(212, 175, 55, 0.2);
             border-top-color: #d4af37;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 25px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
         }
         
         @keyframes spin {
@@ -264,8 +493,31 @@
         
         .offers-loading-text {
             font-family: 'Cairo', sans-serif;
-            color: #aaa;
-            font-size: 16px;
+            color: #888;
+            font-size: 18px;
+        }
+        
+        /* Demo products banner */
+        .demo-banner {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(192, 57, 43, 0.15) 100%);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .demo-banner i {
+            color: #e74c3c;
+            font-size: 20px;
+        }
+        
+        .demo-banner span {
+            font-family: 'Cairo', sans-serif;
+            color: #e74c3c;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -620,18 +872,30 @@
                 const offerPrice = promotion > 0 
                     ? Math.round(originalPrice * (1 - promotion / 100)) 
                     : originalPrice;
+                const savings = originalPrice - offerPrice;
                 const discount = promotion > 0 ? promotion : Math.round((1 - offerPrice / originalPrice) * 100);
                 
                 return `
                 <div class="offer-product-card">
                     <span class="offer-badge">-${discount}%</span>
-                    <img src="${product.image || ''}" alt="${product.name || 'Produit'}" class="offer-product-image" 
-                         onerror="this.src='https://placehold.co/300x300/1a1a1a/d4af37?text=${encodeURIComponent(product.name || 'Produit')}'">
+                    <div class="offer-wishlist" onclick="toggleWishlist(this)">
+                        <i class="far fa-heart"></i>
+                    </div>
+                    <div class="offer-product-image-container">
+                        <img src="${product.image || ''}" alt="${product.name || 'Produit'}" class="offer-product-image" 
+                             onerror="this.src='https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name || 'Produit')}'">
+                        <div class="offer-image-overlay"></div>
+                    </div>
                     <div class="offer-product-info">
                         <h3 class="offer-product-title">${product.name || 'Sans nom'}</h3>
-                        <div class="offer-product-price">
+                        <div class="offer-stock">
+                            <span class="offer-stock-dot"></span>
+                            <span>En stock - Expedition sous 24h</span>
+                        </div>
+                        <div class="offer-product-price-container">
                             <span class="offer-old-price">${originalPrice} MAD</span>
                             <span class="offer-new-price">${offerPrice} MAD</span>
+                            <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
                         <button class="offer-add-btn" onclick="addToCart('${product.id || ''}')">
                             <i class="fas fa-shopping-cart"></i>
@@ -654,17 +918,30 @@
                 { id: 'demo-6', name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 },
             ];
                 
-            container.innerHTML = demoProducts.map(product => `
+            container.innerHTML = demoProducts.map(product => {
+                const savings = product.price - product.offerPrice;
+                return `
                 <div class="offer-product-card" style="opacity: 0.7;">
                     <span class="offer-badge">-${product.discount}%</span>
-                    <img src="https://placehold.co/300x300/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}" 
-                         alt="${product.name}" class="offer-product-image"
-                         onerror="this.src='https://placehold.co/300x300/1a1a1a/d4af37?text=Offre'">
+                    <div class="offer-wishlist" onclick="toggleWishlist(this)">
+                        <i class="far fa-heart"></i>
+                    </div>
+                    <div class="offer-product-image-container">
+                        <img src="https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}" 
+                             alt="${product.name}" class="offer-product-image"
+                             onerror="this.src='https://placehold.co/400x350/1a1a1a/d4af37?text=Offre'">
+                        <div class="offer-image-overlay"></div>
+                    </div>
                     <div class="offer-product-info">
                         <h3 class="offer-product-title">${product.name}</h3>
-                        <div class="offer-product-price">
+                        <div class="offer-stock">
+                            <span class="offer-stock-dot"></span>
+                            <span>En stock - Expedition sous 24h</span>
+                        </div>
+                        <div class="offer-product-price-container">
                             <span class="offer-old-price">${product.price} MAD</span>
                             <span class="offer-new-price">${product.offerPrice} MAD</span>
+                            <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
                         <button class="offer-add-btn" onclick="addToCart('${product.id}')">
                             <i class="fas fa-shopping-cart"></i>
@@ -672,14 +949,32 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             
             // Add warning banner
             const banner = document.createElement('div');
-            banner.style.cssText = 'background: #e74c3c; color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 20px;';
-            banner.innerHTML = '⚠️ <strong>Produits de demonstration affiches</strong> - Verifiez la connexion Firebase ou ajoutez des produits avec "Opening Offer" active.';
+            banner.className = 'demo-banner';
+            banner.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Produits de demonstration affiches - Verifiez la connexion Firebase ou ajoutez des produits avec "Opening Offer" active.</span>';
             container.parentNode.insertBefore(banner, container);
         }
+        
+        // Toggle wishlist heart icon
+        window.toggleWishlist = function(element) {
+            const icon = element.querySelector('i');
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                icon.style.color = '#e74c3c';
+                element.style.background = 'rgba(231, 76, 60, 0.2)';
+                element.style.borderColor = '#e74c3c';
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.style.color = '';
+                element.style.background = '';
+                element.style.borderColor = '';
+            }
+        };
         
         // Add to cart function
         window.addToCart = function(productId) {
