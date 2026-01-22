@@ -961,31 +961,76 @@
         }
         
         // Quick add to cart from icon
-        window.quickAddToCart = function(productId, productName, price) {
+        window.quickAddToCart = async function(productId, productName, price) {
             if (productId && productId.startsWith('demo-')) {
                 showNotification('Produit de démonstration!', 'warning');
                 return;
             }
             
-            // Add to cart using global function
-            if (typeof window.addToCart === 'function') {
-                window.addToCart(productId);
-            } else {
-                showNotification(`${productName} ajouté au panier! (${price} MAD)`, 'success');
+            try {
+                // Get product data using the global getProduct function from main.js
+                let product = null;
+                if (typeof window.getProduct === 'function') {
+                    product = await window.getProduct(productId);
+                }
+                
+                // If getProduct is not available, create a minimal product object
+                if (!product) {
+                    product = {
+                        id: productId,
+                        name: productName,
+                        price: price,
+                        image: ''
+                    };
+                }
+                
+                // Use the global addToCart function from main.js
+                if (typeof window.addToCart === 'function') {
+                    window.addToCart(product);
+                } else {
+                    // Fallback: add to cart manually using localStorage
+                    const cart = JSON.parse(localStorage.getItem('tiqtaqo_cart') || '[]');
+                    const existingItem = cart.find(item => item.id === productId);
+                    
+                    if (existingItem) {
+                        existingItem.quantity += 1;
+                    } else {
+                        cart.push({
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            image: product.image || '',
+                            quantity: 1
+                        });
+                    }
+                    
+                    localStorage.setItem('tiqtaqo_cart', JSON.stringify(cart));
+                    
+                    // Update cart UI
+                    if (typeof window.updateCartUI === 'function') {
+                        window.updateCartUI();
+                    }
+                }
+                
+                // Visual feedback on the icon
+                const icon = event.currentTarget.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-shopping-cart');
+                    icon.classList.add('fa-check');
+                    icon.style.color = '#2ecc71';
+                    
+                    setTimeout(() => {
+                        icon.classList.remove('fa-check');
+                        icon.classList.add('fa-shopping-cart');
+                        icon.style.color = '';
+                    }, 1500);
+                }
+                
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                showNotification('Erreur lors de l\'ajout au panier', 'warning');
             }
-            
-            // Visual feedback on the icon
-            const icon = event.currentTarget.querySelector('i');
-            icon.classList.remove('fa-shopping-cart');
-            icon.classList.add('fa-check');
-            icon.style.color = '#2ecc71';
-            
-            setTimeout(() => {
-                icon.classList.remove('fa-check');
-                icon.classList.add('fa-shopping-cart');
-                icon.style.color = '';
-            }, 1500);
-        };
+        }
         
         // Show notification function
         function showNotification(message, type = 'success') {
