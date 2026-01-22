@@ -958,12 +958,9 @@
                     <button class="offer-add-btn" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})" title="Ajouter au panier">
                         <i class="fas fa-shopping-cart"></i>
                     </button>
-                    <a href="https://wa.me/212674743106?text=${encodeURIComponent('Bonjour, je voudrais commander: ' + (product.name || 'Produit') + ' - Prix: ' + offerPrice + ' MAD')}" 
-                       class="offer-whatsapp-btn" 
-                       target="_blank" 
-                       title="Commander via WhatsApp">
+                    <button class="offer-whatsapp-btn" onclick="openOrderModal('${product.id || ''}')" title="Commander">
                         <i class="fab fa-whatsapp"></i>
-                    </a>
+                    </button>
                 </div>
             `}).join('');
         }
@@ -1009,12 +1006,9 @@
                     <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})" title="Ajouter au panier">
                         <i class="fas fa-shopping-cart"></i>
                     </button>
-                    <a href="https://wa.me/212674743106?text=${encodeURIComponent('Bonjour, je voudrais commander: ' + product.name + ' - Prix: ' + product.offerPrice + ' MAD')}" 
-                       class="offer-whatsapp-btn" 
-                       target="_blank" 
-                       title="Commander via WhatsApp">
+                    <button class="offer-whatsapp-btn" onclick="openOrderModal('${product.id}')" title="Commander">
                         <i class="fab fa-whatsapp"></i>
-                    </a>
+                    </button>
                 </div>
             `}).join('');
             
