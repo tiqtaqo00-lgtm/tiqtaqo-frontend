@@ -311,22 +311,24 @@
         }
         
         .offer-add-btn {
-            width: 100%;
-            padding: 14px 20px;
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 48px;
+            height: 48px;
             background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 50%, #d4af37 100%);
             background-size: 200% 200%;
             border: none;
-            border-radius: 12px;
+            border-radius: 50%;
             color: #0a0a0a;
-            font-family: 'Cairo', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 18px;
             cursor: pointer;
             transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+            z-index: 10;
         }
         
         .offer-add-btn::before {
@@ -337,6 +339,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+            border-radius: 50%;
             transition: left 0.5s ease;
         }
         
@@ -345,23 +348,21 @@
         }
         
         .offer-add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.35);
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.45);
             background-position: 100% 0;
         }
         
         .offer-add-btn:active {
-            transform: translateY(-1px);
+            transform: scale(0.95);
         }
         
         .offer-add-btn i {
-            margin-right: 8px;
             transition: transform 0.3s ease;
         }
         
         .offer-add-btn:hover i {
-            transform: rotate(-12deg) scale(1.15);
-        }
+            transform: rotate(-12deg) scale(1.1);
         }
         
         .offer-new-price {
@@ -369,25 +370,6 @@
             font-size: 20px;
             font-weight: 700;
             color: #d4af37;
-        }
-        
-        .offer-add-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #d4af37, #aa8a2e);
-            border: none;
-            border-radius: 10px;
-            color: #1a1a1a;
-            font-family: 'Cairo', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .offer-add-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
         }
         
         /* CTA Button */
@@ -861,11 +843,10 @@
                         <span class="offer-new-price">${offerPrice} MAD</span>
                         <span class="offer-savings">Économisez ${savingsAmount} MAD</span>
                     </div>
-                    <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
-                        <i class="fas fa-shopping-cart"></i>
-                        Ajouter au Panier
-                    </button>
                 </div>
+                <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})" title="Ajouter au panier">
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
             </div>
         `}).join('');
         

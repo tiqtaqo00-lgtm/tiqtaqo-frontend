@@ -363,22 +363,24 @@
         }
         
         .offer-add-btn {
-            width: 100%;
-            padding: 16px 24px;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 50%, #d4af37 100%);
             background-size: 200% 200%;
             border: none;
-            border-radius: 14px;
+            border-radius: 50%;
             color: #0a0a0a;
-            font-family: 'Cairo', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
+            font-size: 22px;
             cursor: pointer;
             transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+            z-index: 10;
         }
         
         .offer-add-btn::before {
@@ -389,6 +391,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            border-radius: 50%;
             transition: left 0.5s ease;
         }
         
@@ -397,22 +400,21 @@
         }
         
         .offer-add-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4);
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
             background-position: 100% 0;
         }
         
         .offer-add-btn:active {
-            transform: translateY(-1px);
+            transform: scale(0.95);
         }
         
         .offer-add-btn i {
-            margin-right: 10px;
             transition: transform 0.3s ease;
         }
         
         .offer-add-btn:hover i {
-            transform: rotate(-15deg) scale(1.2);
+            transform: rotate(-15deg) scale(1.1);
         }
         
         /* Stock indicator */
@@ -899,11 +901,10 @@
                             <span class="offer-new-price">${offerPrice} MAD</span>
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
-                        <button class="offer-add-btn" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
-                            <i class="fas fa-shopping-cart"></i>
-                            Ajouter au Panier
-                        </button>
                     </div>
+                    <button class="offer-add-btn" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})" title="Ajouter au panier">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
                 </div>
             `}).join('');
         }
@@ -945,11 +946,10 @@
                             <span class="offer-new-price">${product.offerPrice} MAD</span>
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
-                        <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})">
-                            <i class="fas fa-shopping-cart"></i>
-                            Ajouter au Panier
-                        </button>
                     </div>
+                    <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})" title="Ajouter au panier">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
                 </div>
             `}).join('');
             
