@@ -899,7 +899,7 @@
                             <span class="offer-new-price">${offerPrice} MAD</span>
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
-                        <button class="offer-add-btn" onclick="addToCart('${product.id || ''}')">
+                        <button class="offer-add-btn" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
                             <i class="fas fa-shopping-cart"></i>
                             Ajouter au Panier
                         </button>
@@ -945,7 +945,7 @@
                             <span class="offer-new-price">${product.offerPrice} MAD</span>
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
-                        <button class="offer-add-btn" onclick="addToCart('${product.id}')">
+                        <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})">
                             <i class="fas fa-shopping-cart"></i>
                             Ajouter au Panier
                         </button>
@@ -1073,28 +1073,69 @@
             }, 3000);
         }
         
-        // Add to cart function
-        window.addToCart = function(productId) {
+        // Add to cart function - properly adds product to cart
+        window.addToCart = async function(productId) {
             if (productId && productId.startsWith('demo-')) {
                 showNotification('Ceci est un produit de démonstration!', 'warning');
                 return;
             }
             
-            // Find product in our loaded products
-            const product = products.find(p => p.id === productId);
-            if (product) {
+            try {
+                // Get product data from loaded products first
+                let product = products.find(p => p.id === productId);
+                
+                // If not found in loaded products, try to fetch from Firebase
+                if (!product && typeof window.getProduct === 'function') {
+                    product = await window.getProduct(productId);
+                }
+                
+                // If still not found, create a minimal product object
+                if (!product) {
+                    showNotification('Produit non trouvé!', 'warning');
+                    return;
+                }
+                
+                // Calculate offer price
                 const originalPrice = product.price || 0;
                 const promotion = product.promotion || 0;
                 const offerPrice = promotion > 0 
                     ? Math.round(originalPrice * (1 - promotion / 100)) 
                     : originalPrice;
                 
-                showNotification(`${product.name} ajouté au panier! (${offerPrice} MAD)`, 'success');
+                // Update product price to offer price
+                product.price = offerPrice;
                 
-                // Update cart badge if available
-                updateCartBadge();
-            } else {
-                showNotification('Produit ajouté au panier!', 'success');
+                // Use the global addToCart function from main.js
+                if (typeof window.addToCart === 'function') {
+                    window.addToCart(product);
+                } else {
+                    // Fallback: add to cart manually
+                    const cart = JSON.parse(localStorage.getItem('tiqtaqo_cart') || '[]');
+                    const existingItem = cart.find(item => item.id === productId);
+                    
+                    if (existingItem) {
+                        existingItem.quantity += 1;
+                    } else {
+                        cart.push({
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            image: product.image || '',
+                            quantity: 1
+                        });
+                    }
+                    
+                    localStorage.setItem('tiqtaqo_cart', JSON.stringify(cart));
+                    
+                    // Update cart UI
+                    if (typeof window.updateCartUI === 'function') {
+                        window.updateCartUI();
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                showNotification('Erreur lors de l\'ajout au panier', 'warning');
             }
         };
         
