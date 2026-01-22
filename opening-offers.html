@@ -217,16 +217,16 @@
             50% { transform: scale(1.05); }
         }
         
-        /* Wishlist heart icon */
-        .offer-wishlist {
+        /* Cart quick-add icon */
+        .offer-quick-cart {
             position: absolute;
             top: 20px;
             right: 20px;
             width: 44px;
             height: 44px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(212, 175, 55, 0.15);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(212, 175, 55, 0.4);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -236,20 +236,22 @@
             z-index: 10;
         }
         
-        .offer-wishlist:hover {
-            background: rgba(212, 175, 55, 0.2);
+        .offer-quick-cart:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
             border-color: #d4af37;
-            transform: scale(1.1);
+            transform: scale(1.15) rotate(-5deg);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
         }
         
-        .offer-wishlist i {
-            color: #fff;
+        .offer-quick-cart i {
+            color: #d4af37;
             font-size: 18px;
             transition: all 0.3s ease;
         }
         
-        .offer-wishlist:hover i {
-            color: #d4af37;
+        .offer-quick-cart:hover i {
+            color: #0a0a0a;
+            transform: scale(1.2);
         }
         
         .offer-product-image-container {
@@ -878,8 +880,8 @@
                 return `
                 <div class="offer-product-card">
                     <span class="offer-badge">-${discount}%</span>
-                    <div class="offer-wishlist" onclick="toggleWishlist(this)">
-                        <i class="far fa-heart"></i>
+                    <div class="offer-quick-cart" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
+                        <i class="fas fa-shopping-cart"></i>
                     </div>
                     <div class="offer-product-image-container">
                         <img src="${product.image || ''}" alt="${product.name || 'Produit'}" class="offer-product-image" 
@@ -923,8 +925,8 @@
                 return `
                 <div class="offer-product-card" style="opacity: 0.7;">
                     <span class="offer-badge">-${product.discount}%</span>
-                    <div class="offer-wishlist" onclick="toggleWishlist(this)">
-                        <i class="far fa-heart"></i>
+                    <div class="offer-quick-cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})">
+                        <i class="fas fa-shopping-cart"></i>
                     </div>
                     <div class="offer-product-image-container">
                         <img src="https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}" 
@@ -958,32 +960,108 @@
             container.parentNode.insertBefore(banner, container);
         }
         
-        // Toggle wishlist heart icon
-        window.toggleWishlist = function(element) {
-            const icon = element.querySelector('i');
-            if (icon.classList.contains('far')) {
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                icon.style.color = '#e74c3c';
-                element.style.background = 'rgba(231, 76, 60, 0.2)';
-                element.style.borderColor = '#e74c3c';
-            } else {
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                icon.style.color = '';
-                element.style.background = '';
-                element.style.borderColor = '';
+        // Quick add to cart from icon
+        window.quickAddToCart = function(productId, productName, price) {
+            if (productId && productId.startsWith('demo-')) {
+                showNotification('Produit de démonstration!', 'warning');
+                return;
             }
+            
+            // Add to cart using global function
+            if (typeof window.addToCart === 'function') {
+                window.addToCart(productId);
+            } else {
+                showNotification(`${productName} ajouté au panier! (${price} MAD)`, 'success');
+            }
+            
+            // Visual feedback on the icon
+            const icon = event.currentTarget.querySelector('i');
+            icon.classList.remove('fa-shopping-cart');
+            icon.classList.add('fa-check');
+            icon.style.color = '#2ecc71';
+            
+            setTimeout(() => {
+                icon.classList.remove('fa-check');
+                icon.classList.add('fa-shopping-cart');
+                icon.style.color = '';
+            }, 1500);
         };
+        
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #27ae60, #2ecc71)' : 'linear-gradient(135deg, #e74c3c, #c0392b)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-family: 'Cairo', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            `;
+            notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            
+            // Add animation styles
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; transform: translateX(50px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
         
         // Add to cart function
         window.addToCart = function(productId) {
             if (productId && productId.startsWith('demo-')) {
-                alert('Ceci est un produit de demonstration!');
+                showNotification('Ceci est un produit de démonstration!', 'warning');
                 return;
             }
-            alert('Produit ajoute au panier!');
+            
+            // Find product in our loaded products
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                const originalPrice = product.price || 0;
+                const promotion = product.promotion || 0;
+                const offerPrice = promotion > 0 
+                    ? Math.round(originalPrice * (1 - promotion / 100)) 
+                    : originalPrice;
+                
+                showNotification(`${product.name} ajouté au panier! (${offerPrice} MAD)`, 'success');
+                
+                // Update cart badge if available
+                updateCartBadge();
+            } else {
+                showNotification('Produit ajouté au panier!', 'success');
+            }
         };
+        
+        // Update cart badge
+        function updateCartBadge() {
+            const badge = document.getElementById('cartBadge');
+            if (badge) {
+                let currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+                badge.style.display = 'inline-block';
+            }
+        }
         
         // Start initialization on page load
         document.addEventListener('DOMContentLoaded', initializePage);

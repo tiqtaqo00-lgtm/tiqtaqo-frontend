@@ -163,15 +163,15 @@
             box-shadow: 0 3px 12px rgba(192, 57, 43, 0.35);
         }
         
-        .offer-wishlist {
+        .offer-quick-cart {
             position: absolute;
             top: 15px;
             right: 15px;
             width: 40px;
             height: 40px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(212, 175, 55, 0.15);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(212, 175, 55, 0.4);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -181,20 +181,22 @@
             z-index: 10;
         }
         
-        .offer-wishlist:hover {
-            background: rgba(212, 175, 55, 0.2);
+        .offer-quick-cart:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
             border-color: #d4af37;
-            transform: scale(1.1);
+            transform: scale(1.15) rotate(-5deg);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
         }
         
-        .offer-wishlist i {
-            color: #fff;
+        .offer-quick-cart i {
+            color: #d4af37;
             font-size: 16px;
             transition: all 0.3s ease;
         }
         
-        .offer-wishlist:hover i {
-            color: #d4af37;
+        .offer-quick-cart:hover i {
+            color: #0a0a0a;
+            transform: scale(1.2);
         }
         
         .offer-product-image-container {
@@ -840,8 +842,8 @@
             return `
             <div class="offer-product-card">
                 <span class="offer-badge">-${discount}%</span>
-                <div class="offer-wishlist">
-                    <i class="far fa-heart"></i>
+                <div class="offer-quick-cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
+                    <i class="fas fa-shopping-cart"></i>
                 </div>
                 <div class="offer-product-image-container">
                     <img src="${product.image}" alt="${product.name}" class="offer-product-image" 
@@ -866,6 +868,80 @@
                 </div>
             </div>
         `}).join('');
+        
+        // Add notification and quickAddToCart functions
+        window.quickAddToCart = function(productId, productName, price) {
+            if (productId && productId.startsWith('demo-')) {
+                showNotification('Produit de démonstration!', 'warning');
+                return;
+            }
+            
+            showNotification(`${productName} ajouté au panier! (${price} MAD)`, 'success');
+            
+            // Update cart badge if available
+            const badge = document.getElementById('cartBadge');
+            if (badge) {
+                let currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+                badge.style.display = 'inline-block';
+            }
+            
+            // Visual feedback on the icon
+            const icon = event.currentTarget.querySelector('i');
+            icon.classList.remove('fa-shopping-cart');
+            icon.classList.add('fa-check');
+            icon.style.color = '#2ecc71';
+            
+            setTimeout(() => {
+                icon.classList.remove('fa-check');
+                icon.classList.add('fa-shopping-cart');
+                icon.style.color = '';
+            }, 1500);
+        };
+        
+        // Show notification function
+        window.showNotification = function(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #27ae60, #2ecc71)' : 'linear-gradient(135deg, #e74c3c, #c0392b)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-family: 'Cairo', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            `;
+            notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            
+            // Add animation styles if not already added
+            if (!document.getElementById('notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes fadeOut {
+                        from { opacity: 1; }
+                        to { opacity: 0; transform: translateX(50px); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        };
     }
     
     // Initialize on page load
