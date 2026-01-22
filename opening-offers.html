@@ -383,6 +383,59 @@
             z-index: 10;
         }
         
+        .offer-whatsapp-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 26px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+            z-index: 10;
+        }
+        
+        .offer-whatsapp-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            border-radius: 50%;
+            transition: left 0.5s ease;
+        }
+        
+        .offer-whatsapp-btn:hover::before {
+            left: 100%;
+        }
+        
+        .offer-whatsapp-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(37, 211, 102, 0.5);
+        }
+        
+        .offer-whatsapp-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .offer-whatsapp-btn i {
+            transition: transform 0.3s ease;
+        }
+        
+        .offer-whatsapp-btn:hover i {
+            transform: scale(1.1);
+        }
+        
         .offer-add-btn::before {
             content: '';
             position: absolute;
@@ -905,6 +958,12 @@
                     <button class="offer-add-btn" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})" title="Ajouter au panier">
                         <i class="fas fa-shopping-cart"></i>
                     </button>
+                    <a href="https://wa.me/212674743106?text=${encodeURIComponent('Bonjour, je voudrais commander: ' + (product.name || 'Produit') + ' - Prix: ' + offerPrice + ' MAD')}" 
+                       class="offer-whatsapp-btn" 
+                       target="_blank" 
+                       title="Commander via WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
                 </div>
             `}).join('');
         }
@@ -950,6 +1009,12 @@
                     <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})" title="Ajouter au panier">
                         <i class="fas fa-shopping-cart"></i>
                     </button>
+                    <a href="https://wa.me/212674743106?text=${encodeURIComponent('Bonjour, je voudrais commander: ' + product.name + ' - Prix: ' + product.offerPrice + ' MAD')}" 
+                       class="offer-whatsapp-btn" 
+                       target="_blank" 
+                       title="Commander via WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
                 </div>
             `}).join('');
             
