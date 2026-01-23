@@ -259,50 +259,6 @@
         .offer-product-card:hover .offer-image-overlay {
             opacity: 1;
         }
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .offer-product-card:hover .offer-product-image {
-            transform: scale(1.15) rotate(2deg);
-        }
-        
-        /* Image overlay on hover */
-        .offer-image-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        
-        .offer-product-card:hover .offer-image-overlay {
-            opacity: 1;
-        }
-        
-        .offer-product-info {
-            padding: 25px 28px 30px;
-            position: relative;
-        }
-        
-        .offer-product-title {
-            font-family: 'Cairo', sans-serif;
-            font-size: 20px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 15px;
-            line-height: 1.4;
-            transition: color 0.3s ease;
-        }
-        
-        .offer-product-card:hover .offer-product-title {
-            color: #d4af37;
-        }
         
         .offer-product-info {
             padding: 20px;
@@ -378,10 +334,29 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .offer-add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .offer-add-btn:hover::before {
+            left: 100%;
         }
         
         .offer-add-btn:hover {
             background: #c5a028;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.35);
         }
         
         .offer-add-btn:active {
@@ -390,6 +365,11 @@
         
         .offer-add-btn i {
             font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+        
+        .offer-add-btn:hover i {
+            transform: rotate(-12deg) scale(1.1);
         }
         
         /* Stock indicator */
