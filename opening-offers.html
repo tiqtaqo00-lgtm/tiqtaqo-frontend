@@ -164,69 +164,45 @@
             padding: 20px 0;
         }
         
-        /* Stunning Product Card Design */
+        /* أنيق Product Card Design - Luxury Minimalist */
         .offer-product-card {
-            background: linear-gradient(145deg, #1f1f1f 0%, #141414 50%, #1a1a1a 100%);
-            border-radius: 24px;
+            background: #ffffff;
+            border-radius: 16px;
             overflow: hidden;
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid #d4af37;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
         
-        .offer-product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #d4af37, #f4d03f, #d4af37);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .offer-product-card:hover::before {
-            opacity: 1;
-        }
-        
         .offer-product-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            border-color: rgba(212, 175, 55, 0.5);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(212, 175, 55, 0.15), inset 0 0 30px rgba(212, 175, 55, 0.05);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
         }
         
         .offer-badge {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 50%, #c0392b 100%);
-            color: white;
-            padding: 10px 18px;
-            border-radius: 30px;
+            top: 15px;
+            left: 15px;
+            background: #d4af37;
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-family: 'Cairo', sans-serif;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 700;
             z-index: 10;
-            box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4);
-            animation: pulse-badge 2s ease-in-out infinite;
+            letter-spacing: 0.5px;
         }
         
-        @keyframes pulse-badge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        /* Cart quick-add icon */
+        /* أيقونة الإضافة السريعة */
         .offer-quick-cart {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 44px;
-            height: 44px;
-            background: rgba(212, 175, 55, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.4);
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border: 1px solid #d4af37;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -237,31 +213,52 @@
         }
         
         .offer-quick-cart:hover {
-            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+            background: #d4af37;
             border-color: #d4af37;
-            transform: scale(1.15) rotate(-5deg);
-            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
         }
         
         .offer-quick-cart i {
             color: #d4af37;
-            font-size: 18px;
+            font-size: 16px;
             transition: all 0.3s ease;
         }
         
         .offer-quick-cart:hover i {
-            color: #0a0a0a;
-            transform: scale(1.2);
+            color: #ffffff;
         }
         
         .offer-product-image-container {
             position: relative;
-            height: 280px;
+            height: 240px;
             overflow: hidden;
-            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            background: #f8f8f8;
         }
         
         .offer-product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .offer-product-card:hover .offer-product-image {
+            transform: scale(1.05);
+        }
+        
+        .offer-image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .offer-product-card:hover .offer-image-overlay {
+            opacity: 1;
+        }
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -307,217 +304,110 @@
             color: #d4af37;
         }
         
+        .offer-product-info {
+            padding: 20px;
+            background: #ffffff;
+        }
+        
+        .offer-product-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
         .offer-product-description {
             font-family: 'Cairo', sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             color: #888;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         
         .offer-product-price-container {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
         
         .offer-old-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 16px;
-            color: #666;
+            font-size: 14px;
+            color: #999;
             text-decoration: line-through;
-            position: relative;
-        }
-        
-        .offer-old-price::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #666;
-            transform: rotate(-5deg);
         }
         
         .offer-new-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 800;
-            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #d4af37;
         }
         
         .offer-savings {
-            background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(39, 174, 96, 0.2) 100%);
+            background: rgba(46, 204, 113, 0.1);
             color: #2ecc71;
-            padding: 6px 14px;
-            border-radius: 20px;
+            padding: 4px 10px;
+            border-radius: 15px;
             font-family: 'Cairo', sans-serif;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
         }
         
+        /* زر أنيق للإضافة في الأسفل */
         .offer-add-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 50%, #d4af37 100%);
-            background-size: 200% 200%;
+            width: 100%;
+            padding: 14px 20px;
+            background: #d4af37;
             border: none;
-            border-radius: 50%;
-            color: #0a0a0a;
-            font-size: 22px;
+            color: #ffffff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
-            z-index: 10;
-        }
-        
-        .offer-add-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            border-radius: 50%;
-            transition: left 0.5s ease;
-        }
-        
-        .offer-add-btn:hover::before {
-            left: 100%;
+            gap: 10px;
         }
         
         .offer-add-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
-            background-position: 100% 0;
+            background: #c5a028;
         }
         
         .offer-add-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .offer-add-btn i {
-            transition: transform 0.3s ease;
-        }
-        
-        .offer-add-btn:hover i {
-            transform: rotate(-15deg) scale(1.1);
-        }
-        
-        /* شريط الإجراءات المدمج */
-        .offer-action-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            height: 50px;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            overflow: hidden;
-        }
-        
-        .offer-action-btn {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Cairo', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        
-        .offer-action-btn.cart {
-            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
-            color: #0a0a0a;
-        }
-        
-        .offer-action-btn.order {
-            background: rgba(255, 255, 255, 0.1);
-            color: #25D366;
-            border-left: 1px solid rgba(212, 175, 55, 0.2);
-        }
-        
-        .offer-action-btn:hover {
-            filter: brightness(1.1);
-        }
-        
-        .offer-action-btn:active {
             transform: scale(0.98);
         }
         
-        .offer-action-btn i {
-            font-size: 16px;
-        }
-        
-        .offer-action-btn.cart i {
-            color: #0a0a0a;
-        }
-        
-        .offer-action-btn.order i {
-            color: #25D366;
-        }
-        
-        .offer-add-btn:hover::before {
-            left: 100%;
-        }
-        
-        .offer-add-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
-            background-position: 100% 0;
-        }
-        
-        .offer-add-btn:active {
-            transform: scale(0.95);
-        }
-        
         .offer-add-btn i {
-            transition: transform 0.3s ease;
-        }
-        
-        .offer-add-btn:hover i {
-            transform: rotate(-15deg) scale(1.1);
+            font-size: 16px;
         }
         
         /* Stock indicator */
         .offer-stock {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 6px;
+            margin-bottom: 15px;
             font-family: 'Cairo', sans-serif;
-            font-size: 13px;
+            font-size: 12px;
             color: #2ecc71;
         }
         
         .offer-stock-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             background: #2ecc71;
             border-radius: 50%;
-            animation: pulse-stock 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulse-stock {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
         }
         
         /* Responsive */
@@ -981,16 +871,10 @@
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
                     </div>
-                    <div class="offer-action-bar">
-                        <button class="offer-action-btn cart" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>إضافة للسلة</span>
-                        </button>
-                        <button class="offer-action-btn order" onclick="openOrderModal('${product.id || ''}')">
-                            <i class="fab fa-whatsapp"></i>
-                            <span>طلب</span>
-                        </button>
-                    </div>
+                    <button class="offer-add-btn" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>إضافة للسلة</span>
+                    </button>
                 </div>
             `}).join('');
         }
@@ -1033,16 +917,10 @@
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
                     </div>
-                    <div class="offer-action-bar">
-                        <button class="offer-action-btn cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>إضافة للسلة</span>
-                        </button>
-                        <button class="offer-action-btn order" onclick="openOrderModal('${product.id}')">
-                            <i class="fab fa-whatsapp"></i>
-                            <span>طلب</span>
-                        </button>
-                    </div>
+                    <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>إضافة للسلة</span>
+                    </button>
                 </div>
             `}).join('');
             

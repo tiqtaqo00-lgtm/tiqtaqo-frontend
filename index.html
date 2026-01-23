@@ -116,62 +116,44 @@
             margin-right: auto;
         }
         
-        /* Premium Product Card Design */
+        /* أنيق Product Card Design - Luxury Minimalist */
         .offer-product-card {
-            background: linear-gradient(145deg, #1f1f1f 0%, #141414 50%, #1a1a1a 100%);
-            border-radius: 24px;
+            background: #ffffff;
+            border-radius: 16px;
             overflow: hidden;
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid #d4af37;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
         
-        .offer-product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #d4af37, #f4d03f, #d4af37);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .offer-product-card:hover::before {
-            opacity: 1;
-        }
-        
         .offer-product-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            border-color: rgba(212, 175, 55, 0.5);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 35px rgba(212, 175, 55, 0.12), inset 0 0 25px rgba(212, 175, 55, 0.03);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
         }
         
         .offer-badge {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 50%, #c0392b 100%);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 25px;
+            top: 12px;
+            left: 12px;
+            background: #d4af37;
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 18px;
             font-family: 'Cairo', sans-serif;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             z-index: 10;
-            box-shadow: 0 3px 12px rgba(192, 57, 43, 0.35);
+            letter-spacing: 0.5px;
         }
         
         .offer-quick-cart {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 40px;
-            height: 40px;
-            background: rgba(212, 175, 55, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.4);
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: #ffffff;
+            border: 1px solid #d4af37;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -182,39 +164,36 @@
         }
         
         .offer-quick-cart:hover {
-            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+            background: #d4af37;
             border-color: #d4af37;
-            transform: scale(1.15) rotate(-5deg);
-            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
         }
         
         .offer-quick-cart i {
             color: #d4af37;
-            font-size: 16px;
+            font-size: 14px;
             transition: all 0.3s ease;
         }
         
         .offer-quick-cart:hover i {
-            color: #0a0a0a;
-            transform: scale(1.2);
+            color: #ffffff;
         }
         
         .offer-product-image-container {
             position: relative;
-            height: 220px;
+            height: 200px;
             overflow: hidden;
-            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            background: #f8f8f8;
         }
         
         .offer-product-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.5s ease;
         }
         
         .offer-product-card:hover .offer-product-image {
-            transform: scale(1.12) rotate(1deg);
+            transform: scale(1.05);
         }
         
         .offer-image-overlay {
@@ -223,9 +202,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+            background: rgba(0,0,0,0.1);
             opacity: 0;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.3s ease;
         }
         
         .offer-product-card:hover .offer-image-overlay {
@@ -233,35 +212,35 @@
         }
         
         .offer-product-info {
-            padding: 20px 22px 25px;
-            position: relative;
+            padding: 18px;
+            background: #ffffff;
         }
         
         .offer-product-title {
             font-family: 'Cairo', sans-serif;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 700;
-            color: #fff;
-            margin-bottom: 12px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
             line-height: 1.4;
-            transition: color 0.3s ease;
-        }
-        
-        .offer-product-card:hover .offer-product-title {
-            color: #d4af37;
         }
         
         .offer-stock {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
+            gap: 6px;
+            margin-bottom: 12px;
             font-family: 'Cairo', sans-serif;
-            font-size: 12px;
+            font-size: 11px;
             color: #2ecc71;
         }
         
         .offer-stock-dot {
+            width: 6px;
+            height: 6px;
+            background: #2ecc71;
+            border-radius: 50%;
+        }
             width: 7px;
             height: 7px;
             background: #2ecc71;
@@ -290,49 +269,67 @@
             position: relative;
         }
         
+        .offer-product-price {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .offer-old-price {
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            color: #999;
+            text-decoration: line-through;
+        }
+        
         .offer-new-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
-            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #d4af37;
         }
         
         .offer-savings {
-            background: linear-gradient(135deg, rgba(46, 204, 113, 0.18) 0%, rgba(39, 174, 96, 0.18) 100%);
+            background: rgba(46, 204, 113, 0.1);
             color: #2ecc71;
-            padding: 5px 12px;
-            border-radius: 18px;
+            padding: 4px 10px;
+            border-radius: 15px;
             font-family: 'Cairo', sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
         }
         
+        /* زر أنيق للإضافة في الأسفل */
         .offer-add-btn {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 50%, #d4af37 100%);
-            background-size: 200% 200%;
+            width: 100%;
+            padding: 12px 20px;
+            background: #d4af37;
             border: none;
-            border-radius: 50%;
-            color: #0a0a0a;
-            font-size: 18px;
+            color: #ffffff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-            z-index: 10;
+            gap: 8px;
         }
         
-        .offer-add-btn::before {
-            content: '';
+        .offer-add-btn:hover {
+            background: #c5a028;
+        }
+        
+        .offer-add-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .offer-add-btn i {
+            font-size: 14px;
+        }
             position: absolute;
             top: 0;
             left: -100%;
@@ -901,16 +898,10 @@
                         <span class="offer-savings">Économisez ${savingsAmount} MAD</span>
                     </div>
                 </div>
-                <div class="offer-action-bar">
-                    <button class="offer-action-btn cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>إضافة للسلة</span>
-                    </button>
-                    <button class="offer-action-btn order" onclick="openOrderModal('${product.id}')">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>طلب</span>
-                    </button>
-                </div>
+                <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>إضافة للسلة</span>
+                </button>
             </div>
         `}).join('');
         
