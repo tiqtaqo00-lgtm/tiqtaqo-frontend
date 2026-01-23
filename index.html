@@ -332,44 +332,82 @@
         .offer-add-btn:hover i {
             transform: rotate(-12deg) scale(1.1);
         }
-    
+        
+        /* حاوية الأزرار */
+        .offer-buttons-container {
+            display: flex;
+            gap: 10px;
+            padding: 12px 15px;
+            background: #fafafa;
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        
+        .offer-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
             border: none;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Cairo', sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
+            position: relative;
+            overflow: hidden;
         }
         
-        .offer-action-btn.cart {
-            background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
-            color: #0a0a0a;
+        .offer-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transition: left 0.5s ease;
         }
         
-        .offer-action-btn.order {
-            background: rgba(255, 255, 255, 0.1);
-            color: #25D366;
-            border-left: 1px solid rgba(212, 175, 55, 0.2);
+        .offer-btn:hover::before {
+            left: 100%;
         }
         
-        .offer-action-btn:hover {
-            filter: brightness(1.1);
+        .offer-btn-cart {
+            background: #d4af37;
+            color: #ffffff;
         }
         
-        .offer-action-btn:active {
+        .offer-btn-cart:hover {
+            background: #c5a028;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(212, 175, 55, 0.35);
+        }
+        
+        .offer-btn-order {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .offer-btn-order:hover {
+            background: #2d2d2d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+        
+        .offer-btn:active {
             transform: scale(0.98);
         }
         
-        .offer-action-btn i {
+        .offer-btn i {
             font-size: 14px;
+            transition: transform 0.3s ease;
         }
         
-        .offer-action-btn.cart i {
-            color: #0a0a0a;
-        }
-        
-        .offer-action-btn.order i {
-            color: #25D366;
+        .offer-btn:hover i {
+            transform: scale(1.1);
         }
         
         /* CTA Button */
@@ -844,10 +882,16 @@
                         <span class="offer-savings">Économisez ${savingsAmount} MAD</span>
                     </div>
                 </div>
-                <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>إضافة للسلة</span>
-                </button>
+                <div class="offer-buttons-container">
+                    <button class="offer-btn offer-btn-cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>إضافة للسلة</span>
+                    </button>
+                    <button class="offer-btn offer-btn-order" onclick="openOrderModal('${product.id}')">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>طلب</span>
+                    </button>
+                </div>
             </div>
         `}).join('');
         
