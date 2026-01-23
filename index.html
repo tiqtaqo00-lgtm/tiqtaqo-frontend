@@ -901,12 +901,16 @@
                         <span class="offer-savings">Économisez ${savingsAmount} MAD</span>
                     </div>
                 </div>
-                <button class="offer-add-btn" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})" title="Ajouter au panier">
-                    <i class="fas fa-shopping-cart"></i>
-                </button>
-                <button class="offer-whatsapp-btn" onclick="openOrderModal('${product.id}')" title="Commander">
-                    <i class="fab fa-whatsapp"></i>
-                </button>
+                <div class="offer-action-bar">
+                    <button class="offer-action-btn cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>إضافة للسلة</span>
+                    </button>
+                    <button class="offer-action-btn order" onclick="openOrderModal('${product.id}')">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>طلب</span>
+                    </button>
+                </div>
             </div>
         `}).join('');
         
