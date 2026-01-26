@@ -116,43 +116,67 @@
             margin-right: auto;
         }
         
-        /* أنيق Product Card Design - Luxury Minimalist */
+        /* تصميم بطاقات Opening Offers - Premium & Elegant */
         .offer-product-card {
-            background: #ffffff;
-            border-radius: 16px;
+            background: #141414;
+            border-radius: 4px;
             overflow: hidden;
-            border: 1px solid #d4af37;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #333;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
         }
         
-        .offer-product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
+        .offer-product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #b8860b, #d4af37, #f1d07e, #d4af37, #b8860b);
+            z-index: 10;
         }
         
+        .offer-product-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #b8860b, #d4af37, #f1d07e, #d4af37, #b8860b);
+        }
+        
+        .offer-product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2);
+            border-color: #b8860b;
+        }
+        
+        /* شارة الخصم بتصميم مميز */
         .offer-badge {
             position: absolute;
-            top: 12px;
-            left: 12px;
-            background: #d4af37;
-            color: #ffffff;
-            padding: 5px 12px;
-            border-radius: 18px;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #000000;
+            padding: 8px 14px;
             font-family: 'Cairo', sans-serif;
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 800;
             z-index: 10;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
             letter-spacing: 0.5px;
         }
         
+        /* أيقونة السلة السريعة */
         .offer-quick-cart {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 36px;
-            height: 36px;
-            background: #ffffff;
+            top: 15px;
+            right: 15px;
+            width: 38px;
+            height: 38px;
+            background: transparent;
             border: 1px solid #d4af37;
             border-radius: 50%;
             display: flex;
@@ -164,72 +188,73 @@
         }
         
         .offer-quick-cart:hover {
-            background: #d4af37;
-            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+            border-color: #f1d07e;
+            transform: scale(1.1) rotate(10deg);
         }
         
         .offer-quick-cart i {
             color: #d4af37;
-            font-size: 14px;
+            font-size: 15px;
             transition: all 0.3s ease;
         }
         
         .offer-quick-cart:hover i {
-            color: #ffffff;
+            color: #f1d07e;
         }
         
         .offer-product-image-container {
             position: relative;
-            height: 200px;
+            height: 220px;
             overflow: hidden;
-            background: #f8f8f8;
+            background: #1a1a1a;
         }
         
         .offer-product-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.5s ease;
+            transition: transform 0.6s ease;
         }
         
         .offer-product-card:hover .offer-product-image {
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
         
         .offer-image-overlay {
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.1);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .offer-product-card:hover .offer-image-overlay {
+            height: 50%;
+            background: linear-gradient(to top, #141414 0%, transparent 100%);
             opacity: 1;
         }
         
         .offer-product-info {
-            padding: 18px;
-            background: #ffffff;
+            padding: 20px 22px 25px;
+            background: #141414;
         }
         
         .offer-product-title {
             font-family: 'Cairo', sans-serif;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
-            color: #1a1a1a;
+            color: #ffffff;
             margin-bottom: 8px;
             line-height: 1.4;
+            transition: color 0.3s ease;
+        }
+        
+        .offer-product-card:hover .offer-product-title {
+            color: #d4af37;
         }
         
         .offer-stock {
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             font-family: 'Cairo', sans-serif;
             font-size: 11px;
             color: #2ecc71;
@@ -240,6 +265,7 @@
             height: 6px;
             background: #2ecc71;
             border-radius: 50%;
+            animation: pulse-stock 2s ease-in-out infinite;
         }
         
         @keyframes pulse-stock {
@@ -250,42 +276,49 @@
         .offer-product-price {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         
         .offer-old-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 13px;
-            color: #999;
+            font-size: 14px;
+            color: #666;
             text-decoration: line-through;
         }
         
         .offer-new-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 22px;
-            font-weight: 800;
+            font-size: 24px;
+            font-weight: 700;
             color: #d4af37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
         
         .offer-savings {
-            background: rgba(46, 204, 113, 0.1);
+            background: rgba(46, 204, 113, 0.15);
             color: #2ecc71;
             padding: 4px 10px;
             border-radius: 15px;
             font-family: 'Cairo', sans-serif;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
         }
         
-        /* زر أنيق للإضافة في الأسفل */
-        .offer-add-btn {
-            width: 100%;
-            padding: 14px 20px;
-            background: #d4af37;
+        /* أزرار الإجراءات */
+        .offer-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .offer-btn-primary {
+            flex: 1;
+            background: linear-gradient(90deg, #b8860b, #d4af37);
             border: none;
-            color: #ffffff;
+            color: #000000;
+            padding: 14px 20px;
             font-family: 'Cairo', sans-serif;
             font-size: 14px;
             font-weight: 700;
@@ -295,22 +328,45 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            position: relative;
-            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        .offer-add-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s ease;
+        .offer-btn-primary:hover {
+            background: linear-gradient(90deg, #d4af37, #f1d07e);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
         }
         
-        .offer-add-btn:hover::before {
+        .offer-btn-primary i {
+            font-size: 14px;
+        }
+        
+        .offer-btn-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .offer-btn-icon:hover {
+            background: rgba(212, 175, 55, 0.15);
+            color: #f1d07e;
+            border-color: #f1d07e;
+            transform: scale(1.1) rotate(10deg);
+        }
+        
+        .offer-btn-icon i {
+            font-size: 16px;
+        }
+    
             left: 100%;
         }
         
@@ -358,56 +414,6 @@
             font-weight: 600;
             position: relative;
             overflow: hidden;
-        }
-        
-        .offer-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .offer-btn:hover::before {
-            left: 100%;
-        }
-        
-        .offer-btn-cart {
-            background: #d4af37;
-            color: #ffffff;
-        }
-        
-        .offer-btn-cart:hover {
-            background: #c5a028;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(212, 175, 55, 0.35);
-        }
-        
-        .offer-btn-order {
-            background: #1a1a1a;
-            color: #ffffff;
-        }
-        
-        .offer-btn-order:hover {
-            background: #2d2d2d;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
-        }
-        
-        .offer-btn:active {
-            transform: scale(0.98);
-        }
-        
-        .offer-btn i {
-            font-size: 14px;
-            transition: transform 0.3s ease;
-        }
-        
-        .offer-btn:hover i {
-            transform: scale(1.1);
         }
         
         /* CTA Button */
@@ -882,14 +888,13 @@
                         <span class="offer-savings">Économisez ${savingsAmount} MAD</span>
                     </div>
                 </div>
-                <div class="offer-buttons-container">
-                    <button class="offer-btn offer-btn-cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>إضافة للسلة</span>
+                <div class="offer-actions">
+                    <button class="offer-btn-primary" onclick="openOrderModal('${product.id}')">
+                        <span>Commander</span>
+                        <i class="fas fa-shopping-bag"></i>
                     </button>
-                    <button class="offer-btn offer-btn-order" onclick="openOrderModal('${product.id}')">
-                        <i class="fas fa-clipboard-check"></i>
-                        <span>طلب</span>
+                    <button class="offer-btn-icon" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})" title="إضافة للسلة">
+                        <i class="fas fa-shopping-cart"></i>
                     </button>
                 </div>
             </div>
