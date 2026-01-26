@@ -164,57 +164,46 @@
             padding: 20px 0;
         }
         
-        /* تصميم بطاقات Opening Offers - Premium & Elegant */
+        /* تصميم بطاقات عروض الافتتاح - Luxury Clean */
         .offer-product-card {
-            background: #141414;
+            background: #ffffff;
+            width: 100%;
+            max-width: 340px;
+            position: relative;
+            border: 1px solid rgba(212, 175, 55, 0.25);
             border-radius: 4px;
             overflow: hidden;
-            border: 1px solid #333;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-        }
-        
-        .offer-product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #b8860b, #d4af37, #f1d07e, #d4af37, #b8860b);
-            z-index: 10;
-        }
-        
-        .offer-product-card::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #b8860b, #d4af37, #f1d07e, #d4af37, #b8860b);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            margin: 0 auto;
         }
         
         .offer-product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2);
-            border-color: #b8860b;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(26, 26, 26, 0.1);
+            border-color: #d4af37;
         }
         
-        /* شارة الخصم بتصميم مميز */
+        /* شارة العرض */
         .offer-badge {
             position: absolute;
             top: 15px;
             left: 15px;
             background: linear-gradient(135deg, #d4af37, #b8860b);
-            color: #000000;
-            padding: 8px 14px;
+            color: #ffffff;
             font-family: 'Cairo', sans-serif;
-            font-size: 12px;
-            font-weight: 800;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             z-index: 10;
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
-            letter-spacing: 0.5px;
+            border-radius: 2px;
+        }
+        
+        .offer-badge-offer {
+            background: #1a1a1a;
+            color: #d4af37;
+            border: 1px solid #d4af37;
         }
         
         /* أيقونة السلة السريعة */
@@ -222,10 +211,10 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            width: 38px;
-            height: 38px;
-            background: transparent;
-            border: 1px solid #d4af37;
+            width: 36px;
+            height: 36px;
+            background: #ffffff;
+            border: 1px solid #e5e5e5;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -236,26 +225,28 @@
         }
         
         .offer-quick-cart:hover {
-            background: rgba(212, 175, 55, 0.15);
-            border-color: #f1d07e;
-            transform: scale(1.1) rotate(10deg);
-        }
-        
-        .offer-quick-cart i {
-            color: #d4af37;
-            font-size: 15px;
-            transition: all 0.3s ease;
+            background: #d4af37;
+            border-color: #d4af37;
+            transform: scale(1.1);
         }
         
         .offer-quick-cart:hover i {
-            color: #f1d07e;
+            color: #ffffff;
         }
         
+        .offer-quick-cart i {
+            color: #1a1a1a;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        /* منطقة الصورة */
         .offer-product-image-container {
             position: relative;
-            height: 240px;
+            width: 100%;
+            height: 340px;
             overflow: hidden;
-            background: #1a1a1a;
+            background-color: #f9f9f9;
         }
         
         .offer-product-image {
@@ -266,36 +257,35 @@
         }
         
         .offer-product-card:hover .offer-product-image {
-            transform: scale(1.08);
+            transform: scale(1.05);
         }
         
-        .offer-image-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(to top, #141414 0%, transparent 100%);
-            opacity: 1;
-        }
-        
+        /* منطقة المحتوى */
         .offer-product-info {
-            padding: 20px 22px 25px;
-            background: #141414;
+            padding: 22px 20px;
+            text-align: center;
+            background: #ffffff;
+            position: relative;
+        }
+        
+        .offer-product-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 1px;
+            background-color: #d4af37;
         }
         
         .offer-product-title {
             font-family: 'Cairo', sans-serif;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 10px;
-            line-height: 1.4;
-            transition: color 0.3s ease;
-        }
-        
-        .offer-product-card:hover .offer-product-title {
-            color: #d4af37;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
         
         .offer-product-description {
@@ -310,32 +300,47 @@
             overflow: hidden;
         }
         
+        .offer-product-title-en {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            color: #888;
+            font-weight: 300;
+            margin-bottom: 12px;
+            display: block;
+        }
+        
+        /* منطقة السعر */
         .offer-product-price-container {
             display: flex;
-            align-items: center;
+            justify-content: center;
+            align-items: baseline;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             flex-wrap: wrap;
         }
         
         .offer-old-price {
             font-family: 'Cairo', sans-serif;
             font-size: 14px;
-            color: #666;
+            color: #999;
             text-decoration: line-through;
         }
         
         .offer-new-price {
             font-family: 'Cairo', sans-serif;
-            font-size: 24px;
-            font-weight: 800;
-            color: #d4af37;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        
+        .offer-currency {
+            font-size: 14px;
+            font-weight: 500;
         }
         
         .offer-savings {
-            background: rgba(46, 204, 113, 0.15);
-            color: #2ecc71;
+            background: rgba(212, 175, 55, 0.1);
+            color: #b8860b;
             padding: 4px 10px;
             border-radius: 15px;
             font-family: 'Cairo', sans-serif;
@@ -343,72 +348,79 @@
             font-weight: 600;
         }
         
-        /* أزرار الإجراءات */
-        .offer-actions {
+        /* مؤشر المخزون */
+        .offer-stock {
             display: flex;
-            gap: 12px;
             align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 15px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 12px;
+            color: #2ecc71;
         }
         
+        .offer-stock-dot {
+            width: 6px;
+            height: 6px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse-stock 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-stock {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+        
+        /* زر الإضافة */
         .offer-btn-primary {
-            flex: 1;
-            background: linear-gradient(90deg, #b8860b, #d4af37);
-            border: none;
-            color: #000000;
-            padding: 14px 20px;
+            background: transparent;
+            color: #1a1a1a;
+            border: 1px solid #1a1a1a;
+            padding: 12px 24px;
             font-family: 'Cairo', sans-serif;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .offer-btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background: #1a1a1a;
+            transition: all 0.3s ease;
+            z-index: -1;
         }
         
         .offer-btn-primary:hover {
-            background: linear-gradient(90deg, #d4af37, #f1d07e);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-            transform: translateY(-2px);
+            color: #d4af37;
+            border-color: #1a1a1a;
+        }
+        
+        .offer-btn-primary:hover::before {
+            width: 100%;
         }
         
         .offer-btn-primary i {
             font-size: 14px;
         }
         
-        .offer-btn-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            background: transparent;
-            border: 1px solid #d4af37;
-            color: #d4af37;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .offer-btn-icon:hover {
-            background: rgba(212, 175, 55, 0.15);
-            color: #f1d07e;
-            border-color: #f1d07e;
-            transform: scale(1.1) rotate(10deg);
-        }
-        
-        .offer-btn-icon i {
-            font-size: 16px;
-        }
-    
-        
-        .offer-savings {
-            background: rgba(46, 204, 113, 0.1);
-            color: #2ecc71;
-            padding: 4px 10px;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .offers-title {
             border-radius: 15px;
             font-family: 'Cairo', sans-serif;
             font-size: 11px;
@@ -894,15 +906,10 @@
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
                     </div>
-                    <div class="offer-actions">
-                        <button class="offer-btn-primary" onclick="openOrderModal('${product.id || ''}')">
-                            <span>Commander</span>
-                            <i class="fas fa-shopping-bag"></i>
-                        </button>
-                        <button class="offer-btn-icon" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})" title="إضافة للسلة">
-                            <i class="fas fa-shopping-cart"></i>
-                        </button>
-                    </div>
+                    <button class="offer-btn-primary" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>إضافة للسلة</span>
+                    </button>
                 </div>
             `}).join('');
         }
