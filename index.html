@@ -830,9 +830,9 @@
                         <span class="offer-savings">Économisez ${savingsAmount} MAD</span>
                     </div>
                 </div>
-                <button class="offer-btn-primary" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>إضافة للسلة</span>
+                <button class="offer-btn-primary" onclick="openOrderModal('${product.id}')">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>اطلب الان</span>
                 </button>
             </div>
         `}).join('');

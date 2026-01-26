@@ -886,11 +886,11 @@
                 return `
                 <div class="offer-product-card">
                     <span class="offer-badge">-${discount}%</span>
-                    <div class="offer-quick-cart" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
-                        <i class="fas fa-shopping-cart"></i>
+                    <div class="offer-quick-cart" onclick="openOrderModal('${product.id || ''}')">
+                        <i class="fas fa-shopping-bag"></i>
                     </div>
                     <div class="offer-product-image-container">
-                        <img src="${product.image || ''}" alt="${product.name || 'Produit'}" class="offer-product-image" 
+                        <img src="${product.image || ''}" alt="${product.name || 'Produit'}" class="offer-product-image"
                              onerror="this.src='https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name || 'Produit')}'">
                         <div class="offer-image-overlay"></div>
                     </div>
@@ -906,10 +906,12 @@
                             <span class="offer-savings">Economisez ${savings} MAD</span>
                         </div>
                     </div>
-                    <button class="offer-btn-primary" onclick="quickAddToCart('${product.id || ''}', '${product.name || ''}', ${offerPrice})">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>إضافة للسلة</span>
-                    </button>
+                    <div class="offer-actions">
+                        <button class="offer-btn-primary" onclick="openOrderModal('${product.id || ''}')">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>اطلب الان</span>
+                        </button>
+                    </div>
                 </div>
             `}).join('');
         }
@@ -931,11 +933,11 @@
                 return `
                 <div class="offer-product-card" style="opacity: 0.7;">
                     <span class="offer-badge">-${product.discount}%</span>
-                    <div class="offer-quick-cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})">
-                        <i class="fas fa-shopping-cart"></i>
+                    <div class="offer-quick-cart" onclick="openOrderModal('${product.id}')">
+                        <i class="fas fa-shopping-bag"></i>
                     </div>
                     <div class="offer-product-image-container">
-                        <img src="https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}" 
+                        <img src="https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}"
                              alt="${product.name}" class="offer-product-image"
                              onerror="this.src='https://placehold.co/400x350/1a1a1a/d4af37?text=Offre'">
                         <div class="offer-image-overlay"></div>
@@ -954,11 +956,8 @@
                     </div>
                     <div class="offer-actions">
                         <button class="offer-btn-primary" onclick="openOrderModal('${product.id}')">
-                            <span>Commander</span>
                             <i class="fas fa-shopping-bag"></i>
-                        </button>
-                        <button class="offer-btn-icon" onclick="quickAddToCart('${product.id}', '${product.name}', ${product.offerPrice})" title="إضافة للسلة">
-                            <i class="fas fa-shopping-cart"></i>
+                            <span>اطلب الان</span>
                         </button>
                     </div>
                 </div>
