@@ -1,20 +1,22 @@
 /**
  * Opening Offers Countdown Timer - Firebase Integration
- * Manages countdown timer for opening offers section
+ * Manages countdown timer for opening offers section with real-time updates
  */
 
 // Global variables
 let offersConfig = null;
 let countdownInterval = null;
 let countdownInitialized = false;
+let currentEndTime = null;
 
 /**
  * Initialize the opening offers countdown timer
  * Uses Firebase to get the end time, with fallback to localStorage
+ * Includes real-time listener for automatic updates
  */
 async function initOpeningOffersCountdown() {
     if (countdownInitialized) return;
-    
+
     const section = document.getElementById('openingOffersSection');
     if (!section) return;
 
@@ -25,9 +27,9 @@ async function initOpeningOffersCountdown() {
     }
 
     try {
-        // Try to load config from Firebase
+        // Try to load config from Firebase with real-time listener
         offersConfig = await loadOffersConfigFromFirebase();
-        
+
         // If Firebase fails or no config, try localStorage
         if (!offersConfig || !offersConfig.endTime) {
             offersConfig = loadOffersConfigFromLocalStorage();
@@ -44,9 +46,15 @@ async function initOpeningOffersCountdown() {
             localStorage.setItem('offersActive', 'true');
         }
 
-        // Start the countdown
+        // Start the countdown with real-time monitoring
         startCountdown(offersConfig.endTime);
         countdownInitialized = true;
+
+        // Set up real-time listener for changes
+        setupRealtimeListener();
+
+        // Set up localStorage listener for cross-tab communication
+        setupLocalStorageListener();
 
     } catch (error) {
         console.error('Error initializing countdown:', error);
@@ -59,7 +67,139 @@ async function initOpeningOffersCountdown() {
             startCountdown(defaultEndTime);
         }
         countdownInitialized = true;
+
+        // Still set up listeners even if there's an error
+        setupLocalStorageListener();
     }
+}
+
+/**
+ * Set up Firebase real-time listener for countdown changes
+ */
+async function setupRealtimeListener() {
+    try {
+        // Wait for Firebase to be ready
+        if (typeof initFirebaseFn === 'function') {
+            await initFirebaseFn();
+        }
+
+        // Check if db is available
+        if (!window.getDb) {
+            console.log('Firebase not available, skipping real-time listener');
+            return;
+        }
+
+        const db = window.getDb();
+        if (!db) {
+            console.log('Firebase db not initialized, skipping real-time listener');
+            return;
+        }
+
+        // Import Firebase functions
+        const { doc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+
+        // Set up real-time listener
+        const configRef = doc(db, 'config', 'openingOffers');
+        onSnapshot(configRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const newEndTime = data.endTime ? data.endTime.toDate().getTime() : null;
+
+                // Check if end time has changed
+                if (newEndTime && newEndTime !== currentEndTime) {
+                    console.log('Countdown updated via Firebase:', new Date(newEndTime));
+                    currentEndTime = newEndTime;
+
+                    // Update localStorage for backup
+                    localStorage.setItem('offersEndTime', newEndTime.toString());
+                    localStorage.setItem('offersActive', 'true');
+
+                    // Restart countdown with new time
+                    startCountdown(newEndTime);
+
+                    // Show notification
+                    showCountdownUpdateNotification();
+                }
+            }
+        }, (error) => {
+            console.log('Firebase listener error (using localStorage fallback):', error.message);
+        });
+
+    } catch (error) {
+        console.log('Could not set up Firebase listener:', error.message);
+    }
+}
+
+/**
+ * Set up localStorage listener for cross-tab updates
+ */
+function setupLocalStorageListener() {
+    // Listen for storage changes from other tabs
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'offersEndTime' || event.key === 'openingOffers_endTime') {
+            const newEndTime = event.newValue ? parseInt(event.newValue) : null;
+
+            if (newEndTime && newEndTime !== currentEndTime) {
+                console.log('Countdown updated from another tab:', new Date(newEndTime));
+                currentEndTime = newEndTime;
+                startCountdown(newEndTime);
+                showCountdownUpdateNotification();
+            }
+        }
+    });
+
+    // Also listen for custom events from same tab
+    window.addEventListener('countdownUpdated', (event) => {
+        const { endTime } = event.detail;
+        if (endTime && endTime !== currentEndTime) {
+            console.log('Countdown updated via custom event:', new Date(endTime));
+            currentEndTime = endTime;
+            startCountdown(endTime);
+        }
+    });
+}
+
+/**
+ * Show notification when countdown is updated
+ */
+function showCountdownUpdateNotification() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #d4af37, #aa8a2e);
+        color: #1a1a1a;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+    `;
+    notification.innerHTML = '<i class="fas fa-clock"></i> Countdown mis à jour!';
+
+    // Add animation style
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 /**
