@@ -22,12 +22,33 @@ async function initOpeningOffersCountdown() {
 
     // Check if already expired in this session
     if (section.dataset.expired === 'true') {
-        section.style.display = 'none';
-        return;
+        // Check if admin has set a new endTime while section was hidden
+        const newEndTime = localStorage.getItem('openingOffers_endTime');
+        const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+
+        if (newEndTime && isActive) {
+            // Admin has set a new countdown, clear expired state
+            section.dataset.expired = 'false';
+            console.log('New countdown detected, clearing expired state...');
+        } else {
+            section.style.display = 'none';
+            return;
+        }
     }
 
-    // Check if expired in localStorage BEFORE loading config
+    // Check if expired in localStorage
     const isExpiredInStorage = localStorage.getItem('openingOffers_expired') === 'true';
+    const storedEndTime = localStorage.getItem('openingOffers_endTime');
+    const storedIsActive = localStorage.getItem('openingOffers_isActive') === 'true';
+
+    // If expired but admin has set new time, clear expired state
+    if (isExpiredInStorage && storedEndTime && storedIsActive) {
+        console.log('Admin reset countdown, clearing expired flags...');
+        localStorage.removeItem('openingOffers_expired');
+        localStorage.removeItem('openingOffers_expiredTime');
+        isExpiredInStorage = false;
+    }
+
     if (isExpiredInStorage) {
         // Section was expired by admin or timer, keep it hidden
         section.dataset.expired = 'true';
@@ -144,46 +165,30 @@ async function setupRealtimeListener() {
                 // Check if end time has changed or section was reactivated
                 if (newEndTime && newEndTime !== currentEndTime) {
                     console.log('Countdown updated via Firebase:', new Date(newEndTime));
-                    currentEndTime = newEndTime;
 
-                    // Show the section if it was hidden
-                    const section = document.getElementById('openingOffersSection');
-                    if (section && section.dataset.expired === 'true') {
-                        section.dataset.expired = 'false';
-                        section.style.display = '';
-                        section.style.opacity = '1';
-                        section.style.transform = '';
-                    }
-
-                    // Update localStorage for backup
-                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
-                    localStorage.setItem('openingOffers_isActive', 'true');
+                    // Clear expired flags
                     localStorage.removeItem('openingOffers_expired');
                     localStorage.removeItem('openingOffers_expiredTime');
+                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
+                    localStorage.setItem('openingOffers_isActive', 'true');
 
-                    // Restart countdown with new time
-                    startCountdown(newEndTime);
-                    showCountdownUpdateNotification();
+                    // Reload page to apply changes
+                    console.log('Reloading page to apply countdown changes...');
+                    location.reload();
                 } else if (isActive && currentEndTime === null && newEndTime) {
                     // Section was reactivated
                     console.log('Countdown reactivated via Firebase');
                     currentEndTime = newEndTime;
 
-                    const section = document.getElementById('openingOffersSection');
-                    if (section && section.dataset.expired === 'true') {
-                        section.dataset.expired = 'false';
-                        section.style.display = '';
-                        section.style.opacity = '1';
-                        section.style.transform = '';
-                    }
-
-                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
-                    localStorage.setItem('openingOffers_isActive', 'true');
+                    // Clear expired flags
                     localStorage.removeItem('openingOffers_expired');
                     localStorage.removeItem('openingOffers_expiredTime');
+                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
+                    localStorage.setItem('openingOffers_isActive', 'true');
 
-                    startCountdown(newEndTime);
-                    showCountdownUpdateNotification();
+                    // Reload page to apply changes
+                    console.log('Reloading page to apply countdown changes...');
+                    location.reload();
                 }
             }
         }, (error) => {
@@ -206,24 +211,15 @@ function setupLocalStorageListener() {
 
             if (newEndTime && newEndTime !== currentEndTime) {
                 console.log('Countdown updated from another tab:', new Date(newEndTime));
-                currentEndTime = newEndTime;
-
-                // Show the section if it was hidden
-                const section = document.getElementById('openingOffersSection');
-                if (section && section.dataset.expired === 'true') {
-                    section.dataset.expired = 'false';
-                    section.style.display = '';
-                    section.style.opacity = '1';
-                    section.style.transform = '';
-                }
 
                 // Clear expired flags
                 localStorage.removeItem('openingOffers_expired');
                 localStorage.removeItem('openingOffers_expiredTime');
                 localStorage.setItem('openingOffers_isActive', 'true');
 
-                startCountdown(newEndTime);
-                showCountdownUpdateNotification();
+                // Reload page to apply changes
+                console.log('Reloading page to apply countdown changes...');
+                location.reload();
             } else if (!event.newValue && currentEndTime) {
                 // Timer was cleared
                 console.log('Countdown cleared from another tab');
@@ -234,12 +230,8 @@ function setupLocalStorageListener() {
 
         // Also check if expired flag was cleared
         if (event.key === 'openingOffers_expired' && !event.newValue) {
-            const section = document.getElementById('openingOffersSection');
-            if (section && section.dataset.expired === 'true') {
-                // Expired flag was cleared, try to reload countdown from storage
-                console.log('Expired flag cleared, reloading countdown...');
-                location.reload();
-            }
+            console.log('Expired flag cleared, reloading page...');
+            location.reload();
         }
     });
 
@@ -249,24 +241,16 @@ function setupLocalStorageListener() {
 
         if (endTime && endTime !== currentEndTime) {
             console.log('Countdown updated via custom event:', new Date(endTime));
-            currentEndTime = endTime;
 
-            // Show the section if it was hidden
-            const section = document.getElementById('openingOffersSection');
-            if (section && section.dataset.expired === 'true') {
-                section.dataset.expired = 'false';
-                section.style.display = '';
-                section.style.opacity = '1';
-                section.style.transform = '';
-            }
-
-            // Clear expired flags in localStorage
+            // Clear expired flags in localStorage first
             localStorage.removeItem('openingOffers_expired');
             localStorage.removeItem('openingOffers_expiredTime');
             localStorage.setItem('openingOffers_isActive', 'true');
+            localStorage.setItem('openingOffers_endTime', endTime.toString());
 
-            startCountdown(endTime);
-            showCountdownUpdateNotification();
+            // Reload page to apply changes
+            console.log('Reloading page to apply countdown changes...');
+            location.reload();
         }
     });
 }
