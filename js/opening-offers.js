@@ -420,10 +420,11 @@ function expireSection() {
     section.dataset.expired = 'true';
 
     // Store in localStorage to prevent showing on reload
-    // Set isActive to false so it won't auto-reset
+    // Clear the old endTime so there's no conflict when admin sets new time
     localStorage.setItem('openingOffers_expired', 'true');
     localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
     localStorage.setItem('openingOffers_isActive', 'false');
+    localStorage.removeItem('openingOffers_endTime'); // Clear old time to avoid conflict
 
     // Add fade-out effect
     section.style.opacity = '0';
