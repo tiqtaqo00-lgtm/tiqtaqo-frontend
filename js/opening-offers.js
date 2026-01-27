@@ -42,8 +42,8 @@ async function initOpeningOffersCountdown() {
                 isActive: true
             };
             // Save to localStorage for backup
-            localStorage.setItem('offersEndTime', offersConfig.endTime);
-            localStorage.setItem('offersActive', 'true');
+            localStorage.setItem('openingOffers_endTime', offersConfig.endTime.toString());
+            localStorage.setItem('openingOffers_isActive', 'true');
         }
 
         // Start the countdown with real-time monitoring
@@ -111,8 +111,8 @@ async function setupRealtimeListener() {
                     currentEndTime = newEndTime;
 
                     // Update localStorage for backup
-                    localStorage.setItem('offersEndTime', newEndTime.toString());
-                    localStorage.setItem('offersActive', 'true');
+                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
+                    localStorage.setItem('openingOffers_isActive', 'true');
 
                     // Restart countdown with new time
                     startCountdown(newEndTime);
@@ -136,7 +136,7 @@ async function setupRealtimeListener() {
 function setupLocalStorageListener() {
     // Listen for storage changes from other tabs
     window.addEventListener('storage', (event) => {
-        if (event.key === 'offersEndTime' || event.key === 'openingOffers_endTime') {
+        if (event.key === 'openingOffers_endTime') {
             const newEndTime = event.newValue ? parseInt(event.newValue) : null;
 
             if (newEndTime && newEndTime !== currentEndTime) {
@@ -144,6 +144,11 @@ function setupLocalStorageListener() {
                 currentEndTime = newEndTime;
                 startCountdown(newEndTime);
                 showCountdownUpdateNotification();
+            } else if (!event.newValue && currentEndTime) {
+                // Timer was cleared
+                console.log('Countdown cleared from another tab');
+                currentEndTime = null;
+                expireSection();
             }
         }
     });
@@ -248,24 +253,26 @@ async function loadOffersConfigFromFirebase() {
 
 /**
  * Load offers configuration from localStorage
+ * Uses same keys as admin.js for compatibility
  */
 function loadOffersConfigFromLocalStorage() {
-    const endTime = localStorage.getItem('offersEndTime');
-    const isActive = localStorage.getItem('offersActive') === 'true';
-    const expired = localStorage.getItem('offersExpired') === 'true';
+    // Use same keys as admin.js
+    const endTime = localStorage.getItem('openingOffers_endTime');
+    const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+    const expired = localStorage.getItem('openingOffers_expired') === 'true';
 
     if (expired) {
         // Check if we should still show the section (e.g., admin reset it)
-        const expiredTime = parseInt(localStorage.getItem('offersExpiredTime') || '0');
+        const expiredTime = parseInt(localStorage.getItem('openingOffers_expiredTime') || '0');
         const oneDayMs = 24 * 60 * 60 * 1000;
-        
+
         // If expired more than 1 day ago, allow showing again (in case of new offer period)
         if (Date.now() - expiredTime > oneDayMs) {
-            localStorage.removeItem('offersExpired');
-            localStorage.removeItem('offersExpiredTime');
+            localStorage.removeItem('openingOffers_expired');
+            localStorage.removeItem('openingOffers_expiredTime');
             return { endTime: null, isActive: true };
         }
-        
+
         return { endTime: null, isActive: false };
     }
 
@@ -330,8 +337,8 @@ function expireSection() {
     section.dataset.expired = 'true';
     
     // Store in localStorage to prevent showing on reload
-    localStorage.setItem('offersExpired', 'true');
-    localStorage.setItem('offersExpiredTime', Date.now().toString());
+    localStorage.setItem('openingOffers_expired', 'true');
+    localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
 
     // Add fade-out effect
     section.style.opacity = '0';
@@ -350,10 +357,10 @@ function expireSection() {
  */
 window.setOffersCountdown = function(days) {
     const endTime = Date.now() + (days * 24 * 60 * 60 * 1000);
-    localStorage.setItem('offersEndTime', endTime.toString());
-    localStorage.setItem('offersActive', 'true');
-    localStorage.removeItem('offersExpired');
-    localStorage.removeItem('offersExpiredTime');
+    localStorage.setItem('openingOffers_endTime', endTime.toString());
+    localStorage.setItem('openingOffers_isActive', 'true');
+    localStorage.removeItem('openingOffers_expired');
+    localStorage.removeItem('openingOffers_expiredTime');
     location.reload();
 };
 
@@ -367,11 +374,11 @@ window.setOffersEndTime = function(dateTime) {
         console.error('Invalid date format');
         return;
     }
-    
-    localStorage.setItem('offersEndTime', endTime.toString());
-    localStorage.setItem('offersActive', 'true');
-    localStorage.removeItem('offersExpired');
-    localStorage.removeItem('offersExpiredTime');
+
+    localStorage.setItem('openingOffers_endTime', endTime.toString());
+    localStorage.setItem('openingOffers_isActive', 'true');
+    localStorage.removeItem('openingOffers_expired');
+    localStorage.removeItem('openingOffers_expiredTime');
     location.reload();
 };
 
@@ -379,10 +386,10 @@ window.setOffersEndTime = function(dateTime) {
  * Admin function to reset/clear the countdown
  */
 window.resetOffersCountdown = function() {
-    localStorage.removeItem('offersEndTime');
-    localStorage.removeItem('offersActive');
-    localStorage.setItem('offersExpired', 'true');
-    localStorage.setItem('offersExpiredTime', Date.now().toString());
+    localStorage.removeItem('openingOffers_endTime');
+    localStorage.removeItem('openingOffers_isActive');
+    localStorage.setItem('openingOffers_expired', 'true');
+    localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
     location.reload();
 };
 
