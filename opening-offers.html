@@ -759,19 +759,19 @@
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderProducts();
-                    showDebugInfo(result.products);
+                    // showDebugInfo(result.products); // DEBUG - Disabled
                 } else {
                     // No products found with openingOffer flag
                     console.log('No opening offer products found');
-                    showDebugInfo(result.products);
+                    // showDebugInfo(result.products); // DEBUG - Disabled
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderDemoProducts();
                 }
-                
+
             } catch (error) {
                 console.error('Error:', error.message);
-                showDebugInfo([]);
+                // showDebugInfo([]); // DEBUG - Disabled
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
                 renderDemoProducts();
@@ -787,10 +787,11 @@
             // Then initialize Firebase and load products
             await initializeAndLoad();
         }
-        
+
         // ========== HELPER FUNCTIONS ==========
         // These must be in the same scope to be accessible
-        
+
+        /* // DEBUG - Disabled entire function
         // Show debug information on page
         function showDebugInfo(allProducts) {
             // Remove existing debug info if any
@@ -798,14 +799,14 @@
             if (existingDebug) {
                 existingDebug.remove();
             }
-            
+
             const debugDiv = document.createElement('div');
             debugDiv.id = 'debugInfo';
             debugDiv.style.cssText = 'background: rgba(0,0,0,0.9); color: #fff; padding: 20px; margin: 20px; border-radius: 10px; font-size: 14px; max-width: 800px; margin-left: auto; margin-right: auto;';
-            
+
             const openingOfferProducts = allProducts ? allProducts.filter(p => p.openingOffer === true) : [];
             const noOpeningOfferProducts = allProducts ? allProducts.filter(p => !p.openingOffer) : [];
-            
+
             let productsListHtml = '';
             if (allProducts && allProducts.length > 0) {
                 productsListHtml = `
@@ -833,7 +834,7 @@
                     </ul>
                 `;
             }
-            
+
             debugDiv.innerHTML = `
                 <h4 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px;">📊 Debug Info - Etat des Produits</h4>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
@@ -853,13 +854,14 @@
                 <hr style="border-color: #444; margin: 15px 0;">
                 ${productsListHtml}
             `;
-            
+
             // Add debug div after the section
             const section = document.getElementById('openingOffersSection');
             if (section) {
                 section.parentNode.insertBefore(debugDiv, section.nextSibling);
             }
         }
+        */
         
         // Render products from database
         function renderProducts() {
