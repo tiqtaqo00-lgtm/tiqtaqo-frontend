@@ -239,6 +239,10 @@ async function updateCountdown() {
             localStorage.setItem('openingOffers_endTime', endDate.toString());
             localStorage.setItem('openingOffers_isActive', 'true');
 
+            // Clear expired flags so section can show again
+            localStorage.removeItem('openingOffers_expired');
+            localStorage.removeItem('openingOffers_expiredTime');
+
             // Dispatch custom event for same-tab updates
             window.dispatchEvent(new CustomEvent('countdownUpdated', {
                 detail: { endTime: endDate }
@@ -246,12 +250,21 @@ async function updateCountdown() {
 
             alert('Countdown mis à jour avec succès!');
             loadCountdownDisplay();
+
+            // Reload the opening offers page to show the countdown
+            if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
+                window.open('opening-offers.html', '_blank');
+            }
         }
     } catch (error) {
         console.error('Error updating countdown:', error);
         // Fallback to localStorage
         localStorage.setItem('openingOffers_endTime', endDate.toString());
         localStorage.setItem('openingOffers_isActive', 'true');
+
+        // Clear expired flags
+        localStorage.removeItem('openingOffers_expired');
+        localStorage.removeItem('openingOffers_expiredTime');
 
         // Dispatch custom event for same-tab updates
         window.dispatchEvent(new CustomEvent('countdownUpdated', {
@@ -260,6 +273,11 @@ async function updateCountdown() {
 
         alert('Countdown enregistré dans localStorage (Firebase non disponible)!');
         loadCountdownDisplay();
+
+        // Reload the opening offers page
+        if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
+            window.open('opening-offers.html', '_blank');
+        }
     }
 }
 
@@ -329,6 +347,10 @@ async function add24Hours() {
         localStorage.setItem('openingOffers_endTime', endDate.toString());
         localStorage.setItem('openingOffers_isActive', 'true');
 
+        // Clear expired flags so section can show again
+        localStorage.removeItem('openingOffers_expired');
+        localStorage.removeItem('openingOffers_expiredTime');
+
         // Dispatch custom event for same-tab updates
         window.dispatchEvent(new CustomEvent('countdownUpdated', {
             detail: { endTime: endDate }
@@ -336,10 +358,19 @@ async function add24Hours() {
 
         alert('24 heures ajoutées! Countdown mis à jour.');
         loadCountdownDisplay();
+
+        // Reload the opening offers page to show the countdown
+        if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
+            window.open('opening-offers.html', '_blank');
+        }
     } catch (error) {
         console.error('Error adding 24 hours:', error);
         localStorage.setItem('openingOffers_endTime', endDate.toString());
         localStorage.setItem('openingOffers_isActive', 'true');
+
+        // Clear expired flags
+        localStorage.removeItem('openingOffers_expired');
+        localStorage.removeItem('openingOffers_expiredTime');
 
         // Dispatch custom event for same-tab updates
         window.dispatchEvent(new CustomEvent('countdownUpdated', {
@@ -348,6 +379,11 @@ async function add24Hours() {
 
         alert('24 heures ajoutées! (Enregistré dans localStorage)');
         loadCountdownDisplay();
+
+        // Reload the opening offers page
+        if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
+            window.open('opening-offers.html', '_blank');
+        }
     }
 }
 

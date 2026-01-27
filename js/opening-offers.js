@@ -139,20 +139,50 @@ async function setupRealtimeListener() {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 const newEndTime = data.endTime ? data.endTime.toDate().getTime() : null;
+                const isActive = data.isActive === true;
 
-                // Check if end time has changed
+                // Check if end time has changed or section was reactivated
                 if (newEndTime && newEndTime !== currentEndTime) {
                     console.log('Countdown updated via Firebase:', new Date(newEndTime));
                     currentEndTime = newEndTime;
 
+                    // Show the section if it was hidden
+                    const section = document.getElementById('openingOffersSection');
+                    if (section && section.dataset.expired === 'true') {
+                        section.dataset.expired = 'false';
+                        section.style.display = '';
+                        section.style.opacity = '1';
+                        section.style.transform = '';
+                    }
+
                     // Update localStorage for backup
                     localStorage.setItem('openingOffers_endTime', newEndTime.toString());
                     localStorage.setItem('openingOffers_isActive', 'true');
+                    localStorage.removeItem('openingOffers_expired');
+                    localStorage.removeItem('openingOffers_expiredTime');
 
                     // Restart countdown with new time
                     startCountdown(newEndTime);
+                    showCountdownUpdateNotification();
+                } else if (isActive && currentEndTime === null && newEndTime) {
+                    // Section was reactivated
+                    console.log('Countdown reactivated via Firebase');
+                    currentEndTime = newEndTime;
 
-                    // Show notification
+                    const section = document.getElementById('openingOffersSection');
+                    if (section && section.dataset.expired === 'true') {
+                        section.dataset.expired = 'false';
+                        section.style.display = '';
+                        section.style.opacity = '1';
+                        section.style.transform = '';
+                    }
+
+                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
+                    localStorage.setItem('openingOffers_isActive', 'true');
+                    localStorage.removeItem('openingOffers_expired');
+                    localStorage.removeItem('openingOffers_expiredTime');
+
+                    startCountdown(newEndTime);
                     showCountdownUpdateNotification();
                 }
             }
@@ -177,6 +207,21 @@ function setupLocalStorageListener() {
             if (newEndTime && newEndTime !== currentEndTime) {
                 console.log('Countdown updated from another tab:', new Date(newEndTime));
                 currentEndTime = newEndTime;
+
+                // Show the section if it was hidden
+                const section = document.getElementById('openingOffersSection');
+                if (section && section.dataset.expired === 'true') {
+                    section.dataset.expired = 'false';
+                    section.style.display = '';
+                    section.style.opacity = '1';
+                    section.style.transform = '';
+                }
+
+                // Clear expired flags
+                localStorage.removeItem('openingOffers_expired');
+                localStorage.removeItem('openingOffers_expiredTime');
+                localStorage.setItem('openingOffers_isActive', 'true');
+
                 startCountdown(newEndTime);
                 showCountdownUpdateNotification();
             } else if (!event.newValue && currentEndTime) {
@@ -186,15 +231,42 @@ function setupLocalStorageListener() {
                 expireSection();
             }
         }
+
+        // Also check if expired flag was cleared
+        if (event.key === 'openingOffers_expired' && !event.newValue) {
+            const section = document.getElementById('openingOffersSection');
+            if (section && section.dataset.expired === 'true') {
+                // Expired flag was cleared, try to reload countdown from storage
+                console.log('Expired flag cleared, reloading countdown...');
+                location.reload();
+            }
+        }
     });
 
     // Also listen for custom events from same tab
     window.addEventListener('countdownUpdated', (event) => {
         const { endTime } = event.detail;
+
         if (endTime && endTime !== currentEndTime) {
             console.log('Countdown updated via custom event:', new Date(endTime));
             currentEndTime = endTime;
+
+            // Show the section if it was hidden
+            const section = document.getElementById('openingOffersSection');
+            if (section && section.dataset.expired === 'true') {
+                section.dataset.expired = 'false';
+                section.style.display = '';
+                section.style.opacity = '1';
+                section.style.transform = '';
+            }
+
+            // Clear expired flags in localStorage
+            localStorage.removeItem('openingOffers_expired');
+            localStorage.removeItem('openingOffers_expiredTime');
+            localStorage.setItem('openingOffers_isActive', 'true');
+
             startCountdown(endTime);
+            showCountdownUpdateNotification();
         }
     });
 }
