@@ -26,6 +26,16 @@ async function initOpeningOffersCountdown() {
         return;
     }
 
+    // Check if expired in localStorage BEFORE loading config
+    const isExpiredInStorage = localStorage.getItem('openingOffers_expired') === 'true';
+    if (isExpiredInStorage) {
+        // Section was expired by admin or timer, keep it hidden
+        section.dataset.expired = 'true';
+        section.style.display = 'none';
+        console.log('Countdown expired - section hidden until admin resets');
+        return;
+    }
+
     try {
         // Try to load config from Firebase with real-time listener
         offersConfig = await loadOffersConfigFromFirebase();
@@ -35,8 +45,16 @@ async function initOpeningOffersCountdown() {
             offersConfig = loadOffersConfigFromLocalStorage();
         }
 
-        // If still no config, use default (7 days from now)
+        // If still no config AND not expired, use default (7 days from now)
+        // BUT only if isActive is true
         if (!offersConfig || !offersConfig.endTime) {
+            if (offersConfig && offersConfig.isActive === false) {
+                // Admin disabled offers, keep section hidden
+                section.dataset.expired = 'true';
+                section.style.display = 'none';
+                return;
+            }
+
             offersConfig = {
                 endTime: Date.now() + (7 * 24 * 60 * 60 * 1000),
                 isActive: true
@@ -44,6 +62,13 @@ async function initOpeningOffersCountdown() {
             // Save to localStorage for backup
             localStorage.setItem('openingOffers_endTime', offersConfig.endTime.toString());
             localStorage.setItem('openingOffers_isActive', 'true');
+        }
+
+        // If isActive is false, hide section
+        if (offersConfig.isActive === false) {
+            section.dataset.expired = 'true';
+            section.style.display = 'none';
+            return;
         }
 
         // Start the countdown with real-time monitoring
@@ -60,9 +85,19 @@ async function initOpeningOffersCountdown() {
         console.error('Error initializing countdown:', error);
         // Fallback to localStorage
         const fallbackConfig = loadOffersConfigFromLocalStorage();
+
+        // Check if expired
+        if (fallbackConfig && (fallbackConfig.endTime === null || fallbackConfig.isActive === false)) {
+            section.dataset.expired = 'true';
+            section.style.display = 'none';
+            return;
+        }
+
         if (fallbackConfig && fallbackConfig.endTime) {
             startCountdown(fallbackConfig.endTime);
         } else {
+            // No config at all, check if we should auto-create or stay hidden
+            // Default: auto-create for new installations
             const defaultEndTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
             startCountdown(defaultEndTime);
         }
@@ -262,17 +297,8 @@ function loadOffersConfigFromLocalStorage() {
     const expired = localStorage.getItem('openingOffers_expired') === 'true';
 
     if (expired) {
-        // Check if we should still show the section (e.g., admin reset it)
-        const expiredTime = parseInt(localStorage.getItem('openingOffers_expiredTime') || '0');
-        const oneDayMs = 24 * 60 * 60 * 1000;
-
-        // If expired more than 1 day ago, allow showing again (in case of new offer period)
-        if (Date.now() - expiredTime > oneDayMs) {
-            localStorage.removeItem('openingOffers_expired');
-            localStorage.removeItem('openingOffers_expiredTime');
-            return { endTime: null, isActive: true };
-        }
-
+        // Section is expired - keep it hidden until admin manually resets
+        // Remove the 1-day auto-reset since admin controls when to show again
         return { endTime: null, isActive: false };
     }
 
@@ -328,6 +354,7 @@ function startCountdown(endTime) {
 
 /**
  * Expire the section (hide it with animation)
+ * When timer ends, section stays hidden until admin manually resets
  */
 function expireSection() {
     const section = document.getElementById('openingOffersSection');
@@ -335,10 +362,12 @@ function expireSection() {
 
     // Mark as expired
     section.dataset.expired = 'true';
-    
+
     // Store in localStorage to prevent showing on reload
+    // Set isActive to false so it won't auto-reset
     localStorage.setItem('openingOffers_expired', 'true');
     localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
+    localStorage.setItem('openingOffers_isActive', 'false');
 
     // Add fade-out effect
     section.style.opacity = '0';
