@@ -116,6 +116,19 @@
             margin-bottom: 50px;
             flex-wrap: wrap;
         }
+
+        /* Ensure countdown is visible on all devices */
+        #countdownContainer {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        #countDays, #countHours, #countMinutes, #countSeconds {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
         
         .countdown-unit {
             background: rgba(212, 175, 55, 0.08);
@@ -437,32 +450,41 @@
         /* Responsive */
         @media (max-width: 768px) {
             .offers-title {
-            border-radius: 15px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
+                font-size: 36px;
+            }
+
+            .offers-subtitle {
+                font-size: 16px;
+            }
+
+            .countdown-unit {
+                padding: 15px 20px;
+                min-width: 70px;
+                flex: 1;
+            }
+
+            .countdown-number {
+                font-size: 28px;
+            }
+
+            .countdown-label {
+                font-size: 10px;
+            }
+
+            .countdown-container {
+                gap: 10px;
+                padding: 0 10px;
+            }
+
+            .offers-products {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 25px;
+            }
+
+            .offer-new-price {
+                font-size: 26px;
+            }
         }
-        
-        /* Stock indicator */
-        .offer-stock {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 15px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 12px;
-            color: #2ecc71;
-        }
-        
-        .offer-stock-dot {
-            width: 6px;
-            height: 6px;
-            background: #2ecc71;
-            border-radius: 50%;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
             .offers-title {
                 font-size: 36px;
             }

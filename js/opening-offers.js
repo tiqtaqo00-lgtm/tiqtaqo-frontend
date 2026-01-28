@@ -372,6 +372,34 @@ function startCountdown(endTime) {
     const section = document.getElementById('openingOffersSection');
     if (!section) return;
 
+    // Get countdown elements - need to check for both ID and data attributes for mobile
+    const getCountElement = (id) => {
+        // Try ID first
+        let el = document.getElementById(id);
+        if (el) return el;
+        // Fallback: find by class and data attribute
+        const allElements = document.querySelectorAll(`[id*="count"]`);
+        for (const elem of allElements) {
+            if (elem.id.includes(id.replace('count', '').toLowerCase())) {
+                return elem;
+            }
+        }
+        return null;
+    };
+
+    const daysEl = getCountElement('countDays');
+    const hoursEl = getCountElement('countHours');
+    const minutesEl = getCountElement('countMinutes');
+    const secondsEl = getCountElement('countSeconds');
+
+    // Debug: log which elements were found
+    console.log('Countdown elements found:', {
+        days: !!daysEl,
+        hours: !!hoursEl,
+        minutes: !!minutesEl,
+        seconds: !!secondsEl
+    });
+
     function updateCountdown() {
         const now = Date.now();
         const remaining = endTime - now;
@@ -389,23 +417,31 @@ function startCountdown(endTime) {
         const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
 
-        // Update DOM elements
-        const daysEl = document.getElementById('countDays');
-        const hoursEl = document.getElementById('countHours');
-        const minutesEl = document.getElementById('countMinutes');
-        const secondsEl = document.getElementById('countSeconds');
-
-        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
-        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
-        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
-        if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+        // Update DOM elements with null checks
+        if (daysEl) {
+            daysEl.textContent = String(days).padStart(2, '0');
+        }
+        if (hoursEl) {
+            hoursEl.textContent = String(hours).padStart(2, '0');
+        }
+        if (minutesEl) {
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+        }
+        if (secondsEl) {
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
     }
 
     // Update immediately
     updateCountdown();
 
-    // Start interval
+    // Start interval - use 1000ms for both desktop and mobile
     countdownInterval = setInterval(updateCountdown, 1000);
+
+    // Make sure section is visible
+    section.style.display = 'block';
+    section.style.visibility = 'visible';
+    section.style.opacity = '1';
 }
 
 /**
