@@ -23,6 +23,20 @@
             overflow: hidden;
             margin-top: 80px;
         }
+
+        /* Ensure section is visible on all devices */
+        @media (max-width: 768px) {
+            .opening-offers-section {
+                margin-top: 60px;
+                padding: 40px 0;
+            }
+
+            .opening-offers-section[id="openingOffersSection"] {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+        }
         
         .opening-offers-section::before {
             content: '';

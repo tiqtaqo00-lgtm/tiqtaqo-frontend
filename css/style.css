@@ -5121,7 +5121,8 @@ body {
 .page-header,
 .gender-selection-page,
 .products-section,
-.products-section + .features {
+.products-section + .features,
+.opening-offers-section {
     margin-top: 0 !important;
 }
 
