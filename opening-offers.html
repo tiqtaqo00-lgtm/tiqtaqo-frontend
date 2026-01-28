@@ -1203,6 +1203,219 @@
         document.addEventListener('DOMContentLoaded', initializePage);
     </script>
     
+    <!-- Countdown Timer Script - Non-module for better mobile compatibility -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // Global variables for countdown
+        let countdownInterval = null;
+        let countdownInitialized = false;
+        
+        /**
+         * Load offers configuration from localStorage
+         */
+        function loadOffersConfigFromLocalStorage() {
+            const endTime = localStorage.getItem('openingOffers_endTime');
+            const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+            const expired = localStorage.getItem('openingOffers_expired') === 'true';
+            
+            if (expired) {
+                return { endTime: null, isActive: false };
+            }
+            
+            return {
+                endTime: endTime ? parseInt(endTime) : null,
+                isActive: isActive
+            };
+        }
+        
+        /**
+         * Start the countdown timer
+         */
+        function startCountdown(endTime) {
+            const section = document.getElementById('openingOffersSection');
+            if (!section) return;
+            
+            // Get countdown elements
+            const daysEl = document.getElementById('countDays');
+            const hoursEl = document.getElementById('countHours');
+            const minutesEl = document.getElementById('countMinutes');
+            const secondsEl = document.getElementById('countSeconds');
+            
+            console.log('Starting countdown, elements found:', {
+                days: !!daysEl,
+                hours: !!hoursEl,
+                minutes: !!minutesEl,
+                seconds: !!secondsEl
+            });
+            
+            // Make sure section is visible
+            section.style.display = 'block';
+            section.style.visibility = 'visible';
+            section.style.opacity = '1';
+            
+            function updateCountdown() {
+                const now = Date.now();
+                const remaining = endTime - now;
+                
+                if (remaining <= 0) {
+                    // Time expired
+                    clearInterval(countdownInterval);
+                    expireSection();
+                    return;
+                }
+                
+                // Calculate time units
+                const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                
+                // Update DOM elements with null checks
+                if (daysEl) {
+                    daysEl.textContent = String(days).padStart(2, '0');
+                }
+                if (hoursEl) {
+                    hoursEl.textContent = String(hours).padStart(2, '0');
+                }
+                if (minutesEl) {
+                    minutesEl.textContent = String(minutes).padStart(2, '0');
+                }
+                if (secondsEl) {
+                    secondsEl.textContent = String(seconds).padStart(2, '0');
+                }
+            }
+            
+            // Update immediately
+            updateCountdown();
+            
+            // Start interval
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+        
+        /**
+         * Expire the section (hide it with animation)
+         */
+        function expireSection() {
+            const section = document.getElementById('openingOffersSection');
+            if (!section) return;
+            
+            // Mark as expired
+            section.dataset.expired = 'true';
+            
+            // Store in localStorage
+            localStorage.setItem('openingOffers_expired', 'true');
+            localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
+            localStorage.setItem('openingOffers_isActive', 'false');
+            localStorage.removeItem('openingOffers_endTime');
+            
+            // Add fade-out effect
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'all 1s ease';
+            
+            // Hide after animation
+            setTimeout(() => {
+                section.style.display = 'none';
+            }, 1000);
+        }
+        
+        /**
+         * Initialize the countdown timer
+         */
+        function initCountdown() {
+            if (countdownInitialized) return;
+            
+            const section = document.getElementById('openingOffersSection');
+            if (!section) return;
+            
+            console.log('Initializing countdown...');
+            
+            // Check if already expired
+            if (section.dataset.expired === 'true') {
+                const newEndTime = localStorage.getItem('openingOffers_endTime');
+                const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+                
+                if (newEndTime && isActive) {
+                    section.dataset.expired = 'false';
+                } else {
+                    section.style.display = 'none';
+                    return;
+                }
+            }
+            
+            // Check if expired in localStorage
+            const isExpiredInStorage = localStorage.getItem('openingOffers_expired') === 'true';
+            const storedEndTime = localStorage.getItem('openingOffers_endTime');
+            const storedIsActive = localStorage.getItem('openingOffers_isActive') === 'true';
+            
+            // If expired but admin has set new time, clear expired state
+            if (isExpiredInStorage && storedEndTime && storedIsActive) {
+                localStorage.removeItem('openingOffers_expired');
+                localStorage.removeItem('openingOffers_expiredTime');
+            }
+            
+            if (isExpiredInStorage) {
+                section.dataset.expired = 'true';
+                section.style.display = 'none';
+                return;
+            }
+            
+            // Load config from localStorage
+            const config = loadOffersConfigFromLocalStorage();
+            
+            // If no config, create default (7 days from now)
+            if (!config.endTime) {
+                const defaultEndTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
+                localStorage.setItem('openingOffers_endTime', defaultEndTime.toString());
+                localStorage.setItem('openingOffers_isActive', 'true');
+                config.endTime = defaultEndTime;
+                config.isActive = true;
+            }
+            
+            // If isActive is false, hide section
+            if (config.isActive === false) {
+                section.dataset.expired = 'true';
+                section.style.display = 'none';
+                return;
+            }
+            
+            // Start the countdown
+            startCountdown(config.endTime);
+            countdownInitialized = true;
+            
+            console.log('Countdown initialized successfully');
+            
+            // Set up localStorage listener for cross-tab updates
+            window.addEventListener('storage', function(event) {
+                if (event.key === 'openingOffers_endTime') {
+                    const newEndTime = event.newValue ? parseInt(event.newValue) : null;
+                    if (newEndTime) {
+                        location.reload();
+                    }
+                }
+                if (event.key === 'openingOffers_expired' && !event.newValue) {
+                    location.reload();
+                }
+            });
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCountdown);
+        } else {
+            // DOM already loaded
+            initCountdown();
+        }
+        
+        // Also try to initialize after a short delay to ensure DOM is ready
+        setTimeout(initCountdown, 100);
+        setTimeout(initCountdown, 500);
+        setTimeout(initCountdown, 1000);
+    })();
+    </script>
+    
     <script src="js/main.js"></script>
     <script src="js/firebase-health-check.js"></script>
 </body>
