@@ -235,12 +235,72 @@
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             margin: 0 auto;
+            cursor: pointer;
+            z-index: 1;
         }
         
         .offer-product-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 15px 35px rgba(26, 26, 26, 0.1);
             border-color: #d4af37;
+        }
+        
+        /* على الهاتف - التأكد من أن البطاقات قابلة للتفاعل */
+        @media (max-width: 768px) {
+            .offer-product-card {
+                cursor: pointer;
+                z-index: 1;
+                position: relative;
+                transform: none;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .offer-product-card:active {
+                transform: scale(0.98);
+                background-color: rgba(212, 175, 55, 0.05);
+            }
+            
+            /* التأكد من عدم وجود عناصر فوق البطاقات */
+            .opening-offers-section {
+                z-index: auto;
+                position: relative;
+                pointer-events: auto;
+            }
+            
+            .offers-products {
+                position: relative;
+                z-index: 1;
+                pointer-events: auto;
+            }
+            
+            /* إزالة أي عناصر مخفية قد تغطي المحتوى */
+            .overlay {
+                display: none !important;
+            }
+            
+            .cart-overlay {
+                display: none !important;
+            }
+            
+            /* التأكد من ظهور المنتجات بشكل صحيح */
+            .offer-product-card {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            /* التأكد من ظهور العداد والمنتجات بشكل صحيح */
+            .countdown-container {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .offers-header {
+                display: block !important;
+                visibility: visible !important;
+            }
         }
         
         /* شارة العرض */
