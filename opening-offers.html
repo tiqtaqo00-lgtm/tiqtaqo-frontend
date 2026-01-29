@@ -22,14 +22,20 @@
             overflow: hidden;
             margin-top: 80px;
             min-height: 100vh;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
 
-        /* Ensure section is visible on all devices */
+        /* Ensure section is visible on all devices - MAXIMUM PRIORITY */
         @media (max-width: 768px) {
             .opening-offers-section {
                 margin-top: 60px;
                 padding: 40px 0;
                 min-height: auto;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
 
             .opening-offers-section[id="openingOffersSection"] {
@@ -37,6 +43,31 @@
                 visibility: visible !important;
                 opacity: 1 !important;
             }
+        }
+        
+        /* Countdown container - always visible */
+        .countdown-container {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .countdown-unit {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .countdown-number {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        #countDays, #countHours, #countMinutes, #countSeconds {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         /* Animated background particles */
@@ -710,42 +741,34 @@
                 }
                 
                 function initCountdown() {
-                    if (initialized) {
-                        log('Already initialized, skipping...');
-                        return;
-                    }
-                    
+                    // Always try, don't check initialized to allow retries
                     var section = document.getElementById('openingOffersSection');
                     var daysEl = document.getElementById('countDays');
                     var hoursEl = document.getElementById('countHours');
                     var minutesEl = document.getElementById('countMinutes');
                     var secondsEl = document.getElementById('countSeconds');
                     
-                    log('Looking for elements...');
-                    log('Section found: ' + (!!section));
-                    log('Days element found: ' + (!!daysEl));
-                    log('Hours element found: ' + (!!hoursEl));
-                    log('Minutes element found: ' + (!!minutesEl));
-                    log('Seconds element found: ' + (!!secondsEl));
-                    
+                    // Check if all elements exist
                     if (!section || !daysEl || !hoursEl || !minutesEl || !secondsEl) {
-                        log('Elements not found, will retry...');
-                        return;
+                        log('Elements not found yet, will retry...');
+                        return false;
                     }
+                    
+                    log('All elements found, starting countdown...');
                     
                     // Check localStorage for end time
                     var endTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
                     var expired = localStorage.getItem('openingOffers_expired') === 'true';
                     
-                    log('End time from storage: ' + endTime);
+                    log('End time from storage: ' + (endTime ? new Date(parseInt(endTime)).toLocaleString() : 'NOT SET'));
                     log('Is active: ' + isActive);
                     log('Is expired: ' + expired);
                     
                     if (expired) {
                         log('Section is expired, hiding...');
                         section.style.display = 'none';
-                        return;
+                        return true;
                     }
                     
                     if (!endTime) {
@@ -759,15 +782,28 @@
                     if (!isActive) {
                         log('Section is not active, hiding...');
                         section.style.display = 'none';
-                        return;
+                        return true;
                     }
                     
-                    // Make section visible
-                    section.style.display = 'block';
-                    section.style.visibility = 'visible';
-                    section.style.opacity = '1';
+                    // Make section visible with FORCE
+                    section.style.display = 'block !important';
+                    section.style.visibility = 'visible !important';
+                    section.style.opacity = '1 !important';
+                    section.style.setProperty('display', 'block', 'important');
+                    section.style.setProperty('visibility', 'visible', 'important');
+                    
+                    // Also force visibility on countdown elements
+                    daysEl.style.setProperty('display', 'inline-block', 'important');
+                    hoursEl.style.setProperty('display', 'inline-block', 'important');
+                    minutesEl.style.setProperty('display', 'inline-block', 'important');
+                    secondsEl.style.setProperty('display', 'inline-block', 'important');
                     
                     log('Starting countdown with end time: ' + new Date(parseInt(endTime)).toLocaleString());
+                    
+                    // Clear any existing interval
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                    }
                     
                     function updateCountdown() {
                         var now = Date.now();
@@ -798,22 +834,25 @@
                         var seconds = Math.floor((remaining % (1000 * 60)) / 1000);
                         
                         // Update DOM
-                        daysEl.textContent = String(days).padStart(2, '0');
-                        hoursEl.textContent = String(hours).padStart(2, '0');
-                        minutesEl.textContent = String(minutes).padStart(2, '0');
-                        secondsEl.textContent = String(seconds).padStart(2, '0');
-                        
-                        log('Updated: ' + days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's');
+                        try {
+                            daysEl.textContent = String(days).padStart(2, '0');
+                            hoursEl.textContent = String(hours).padStart(2, '0');
+                            minutesEl.textContent = String(minutes).padStart(2, '0');
+                            secondsEl.textContent = String(seconds).padStart(2, '0');
+                        } catch (e) {
+                            log('Error updating countdown: ' + e.message);
+                        }
                     }
                     
                     // Update immediately
                     updateCountdown();
                     
-                    // Start interval
+                    // Start interval - use 1000ms
                     countdownInterval = setInterval(updateCountdown, 1000);
                     
                     initialized = true;
                     log('Countdown initialized successfully!');
+                    return true;
                 }
                 
                 // Try to initialize immediately
@@ -825,12 +864,26 @@
                     initCountdown();
                 }
                 
-                // Retry multiple times to ensure it works
-                setTimeout(initCountdown, 50);
-                setTimeout(initCountdown, 200);
-                setTimeout(initCountdown, 500);
-                setTimeout(initCountdown, 1000);
-                setTimeout(initCountdown, 2000);
+                // Retry multiple times to ensure it works on all devices
+                var retryCount = 0;
+                var maxRetries = 10;
+                
+                var retryInterval = setInterval(function() {
+                    retryCount++;
+                    if (retryCount >= maxRetries) {
+                        clearInterval(retryInterval);
+                        log('Stopped retrying after ' + maxRetries + ' attempts');
+                        return;
+                    }
+                    
+                    var result = initCountdown();
+                    if (result === true) {
+                        clearInterval(retryInterval);
+                        log('Successfully initialized on attempt ' + retryCount);
+                    } else {
+                        log('Retry ' + retryCount + '/' + maxRetries + '...');
+                    }
+                }, 100);
                 
             })();
             </script>
