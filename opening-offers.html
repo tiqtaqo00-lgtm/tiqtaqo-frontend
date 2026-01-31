@@ -708,12 +708,11 @@
                 </div>
             </div>
             
-            <!-- Countdown Timer - ONLY reads from Firebase for cross-device sync -->
+            <!-- Countdown Timer - Firebase first, localStorage fallback -->
             <script>
             (function() {
                 // Store for interval reference
                 var countdownTimer = null;
-                var countdownLoaded = false;
                 
                 // Get countdown elements
                 function getElements() {
@@ -733,65 +732,61 @@
                     return n < 10 ? '0' + n : '' + n;
                 }
                 
-                // Clear any old localStorage countdown data (causes sync issues)
-                function clearOldLocalStorage() {
-                    // Only clear if we're reading from Firebase successfully
-                    // This prevents the phone from using old stale data
-                    var storedEndTime = localStorage.getItem('openingOffers_endTime');
-                    if (storedEndTime) {
-                        console.log('[Countdown] Found old localStorage data, clearing...');
-                        localStorage.removeItem('openingOffers_endTime');
-                        localStorage.removeItem('openingOffers_isActive');
-                        localStorage.removeItem('openingOffers_expired');
-                    }
-                }
-                
                 // Read countdown from Firebase Firestore
                 async function getCountdownFromFirebase() {
                     try {
-                        // Wait for Firebase to be ready (up to 5 seconds)
+                        // Wait for Firebase (up to 3 seconds)
                         if (typeof window.getDb !== 'function') {
-                            for (var i = 0; i < 50; i++) {
+                            for (var i = 0; i < 30; i++) {
                                 await new Promise(function(resolve) { setTimeout(resolve, 100); });
                                 if (typeof window.getDb === 'function') break;
                             }
                         }
                         
                         if (typeof window.getDb !== 'function') {
-                            console.log('[Countdown] Firebase not available');
                             return null;
                         }
                         
                         var db = await window.getDb();
                         if (!db) {
-                            console.log('[Countdown] Database not available');
                             return null;
                         }
                         
-                        // Import Firestore functions
                         var firestore = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
                         var doc = firestore.doc;
                         var getDoc = firestore.getDoc;
                         
-                        // Read from config/openingOffers
                         var docRef = doc(db, 'config', 'openingOffers');
                         var docSnap = await getDoc(docRef);
                         
                         if (docSnap && docSnap.exists()) {
                             var data = docSnap.data();
-                            console.log('[Countdown] Read from Firebase:', data);
-                            
-                            // Clear old localStorage data since we have fresh Firebase data
-                            clearOldLocalStorage();
-                            
-                            return {
-                                endTime: data.endTime,
-                                isActive: data.isActive !== false,
-                                isExpired: data.isExpired === true
-                            };
+                            console.log('[Countdown] Firebase:', data);
+                            // Save to localStorage for fallback
+                            if (data.endTime) {
+                                localStorage.setItem('openingOffers_endTime', data.endTime.toString());
+                                localStorage.setItem('openingOffers_isActive', data.isActive !== false ? 'true' : 'false');
+                            }
+                            return data;
                         }
                     } catch (e) {
                         console.log('[Countdown] Firebase error:', e.message);
+                    }
+                    return null;
+                }
+                
+                // Read from localStorage (fallback)
+                function getCountdownFromLocalStorage() {
+                    var storedEndTime = localStorage.getItem('openingOffers_endTime');
+                    var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+                    var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
+                    
+                    if (storedEndTime && !isNaN(parseInt(storedEndTime))) {
+                        return {
+                            endTime: parseInt(storedEndTime),
+                            isActive: isActive,
+                            isExpired: isExpired
+                        };
                     }
                     return null;
                 }
@@ -802,26 +797,26 @@
                     
                     if (!elements.days) return false;
                     
-                    // Read from Firebase ONLY - this ensures same time on all devices
+                    // Try Firebase first
                     var data = await getCountdownFromFirebase();
                     
-                    // If no data from Firebase, hide section
+                    // Fallback to localStorage
+                    if (!data || !data.endTime) {
+                        data = getCountdownFromLocalStorage();
+                    }
+                    
+                    // If no data at all, hide countdown but keep section visible for products
                     if (!data || !data.endTime || isNaN(data.endTime)) {
-                        console.log('[Countdown] No data from Firebase - hiding section');
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return false;
+                        console.log('[Countdown] No data found');
+                        // Hide countdown only, keep products section visible
+                        elements.days.textContent = '00';
+                        elements.hours.textContent = '00';
+                        elements.minutes.textContent = '00';
+                        elements.seconds.textContent = '00';
+                        return true; // Keep running
                     }
                     
-                    // Make section visible
-                    if (elements.section && elements.section.style.display !== 'block') {
-                        elements.section.style.display = 'block';
-                        elements.section.style.visibility = 'visible';
-                        elements.section.style.opacity = '1';
-                    }
-                    
-                    // Handle expired state
+                    // Handle expired state - hide section
                     if (data.isExpired) {
                         if (elements.section) {
                             elements.section.style.display = 'none';
@@ -829,7 +824,7 @@
                         return false;
                     }
                     
-                    // Handle inactive state
+                    // Handle inactive state - hide section
                     if (!data.isActive) {
                         if (elements.section) {
                             elements.section.style.display = 'none';
@@ -837,7 +832,12 @@
                         return false;
                     }
                     
-                    countdownLoaded = true;
+                    // Make section visible
+                    if (elements.section) {
+                        elements.section.style.display = 'block';
+                        elements.section.style.visibility = 'visible';
+                        elements.section.style.opacity = '1';
+                    }
                     
                     var now = new Date().getTime();
                     var remaining = data.endTime - now;
@@ -874,27 +874,22 @@
                         return;
                     }
                     
-                    // Hide section initially
-                    if (elements.section) {
-                        elements.section.style.display = 'none';
-                    }
-                    
                     // Clear existing timer
                     if (countdownTimer) {
                         clearInterval(countdownTimer);
                     }
                     
-                    // Initial update from Firebase
+                    // Initial update
                     await updateCountdown();
                     
-                    // Start interval - update every second
+                    // Start interval
                     countdownTimer = setInterval(updateCountdown, 1000);
                     
                     console.log('[Countdown] Started');
                 }
                 
-                // Listen for countdown updates from admin panel
-                window.addEventListener('countdownUpdated', function(e) {
+                // Listen for updates
+                window.addEventListener('countdownUpdated', function() {
                     updateCountdown();
                 });
                 
@@ -957,7 +952,6 @@
     <script>
         // Global products array
         var products = [];
-        var productsLoaded = false;
         
         // Function to initialize Firebase and load products
         async function initializeProducts() {
@@ -969,29 +963,25 @@
                 return;
             }
             
-            console.log('[Products] Starting product initialization...');
+            console.log('[Products] Starting...');
             
-            // Set a timeout to hide loading after 10 seconds regardless
+            // Set timeout to hide loading after 8 seconds
             setTimeout(function() {
-                if (!productsLoaded) {
-                    console.log('[Products] Timeout - hiding loading');
-                    loadingEl.style.display = 'none';
-                    // Hide products container if still loading
+                console.log('[Products] Timeout - hiding loading');
+                loadingEl.style.display = 'none';
+                // If no products loaded, hide products container
+                if (products.length === 0) {
                     container.style.display = 'none';
                 }
-            }, 10000);
+            }, 8000);
             
             try {
-                // Step 1: Initialize Firebase
-                console.log('[Products] Initializing Firebase...');
+                // Initialize Firebase
                 if (typeof window.initFirebase === 'function') {
                     await window.initFirebase();
-                    console.log('[Products] Firebase initialized');
-                } else {
-                    console.log('[Products] initFirebase not found, trying anyway...');
                 }
                 
-                // Step 2: Wait for ProductAPI
+                // Wait for ProductAPI
                 var attempts = 0;
                 var maxAttempts = 50;
                 while (!window.ProductAPI && attempts < maxAttempts) {
@@ -1000,42 +990,37 @@
                 }
                 
                 if (!window.ProductAPI) {
-                    console.log('[Products] ProductAPI not available after timeout');
-                    // Don't hide the entire section, just products
+                    console.log('[Products] ProductAPI not available');
                     loadingEl.style.display = 'none';
                     container.style.display = 'none';
-                    productsLoaded = true;
                     return;
                 }
                 
-                console.log('[Products] ProductAPI ready, loading products...');
+                console.log('[Products] Loading products...');
                 
-                // Step 3: Load products
+                // Load products
                 var result = await window.ProductAPI.getProducts({ pageSize: 100 });
                 
                 // Filter products with openingOffer flag
                 products = result.products.filter(function(p) { return p.openingOffer === true; });
                 
-                console.log('[Products] Loaded ' + products.length + ' opening offer products');
-                productsLoaded = true;
+                console.log('[Products] Loaded:', products.length);
                 
                 if (products.length > 0) {
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderProducts();
                 } else {
-                    // No products found - hide products but keep countdown
-                    console.log('[Products] No opening offer products found');
+                    // No products - hide products only
                     loadingEl.style.display = 'none';
                     container.style.display = 'none';
                 }
 
             } catch (error) {
                 console.error('[Products] Error:', error.message);
-                // On error - hide only products, keep countdown visible
+                // On error - hide loading and products only
                 loadingEl.style.display = 'none';
                 container.style.display = 'none';
-                productsLoaded = true;
             }
         }
         
@@ -1044,12 +1029,12 @@
             var container = document.getElementById('offersProducts');
             
             if (products.length === 0) {
-                console.log('[Products] No products to render');
+                console.log('[Products] No products');
                 container.style.display = 'none';
                 return;
             }
             
-            console.log('[Products] Rendering ' + products.length + ' products');
+            console.log('[Products] Rendering:', products.length);
             
             container.innerHTML = products.map(function(product) {
                 var originalPrice = product.price || 0;
@@ -1067,7 +1052,6 @@
                     '</div>' +
                     '<div class="offer-product-image-container">' +
                         '<img src="' + (product.image || '') + '" alt="' + (product.name || 'Produit') + '" class="offer-product-image" onerror="this.src=\'https://placehold.co/400x350/1a1a1a/d4af37?text=' + encodeURIComponent(product.name || 'Produit') + '\'">' +
-                        '<div class="offer-image-overlay"></div>' +
                     '</div>' +
                     '<div class="offer-product-info">' +
                         '<h3 class="offer-product-title">' + (product.name || 'Sans nom') + '</h3>' +
@@ -1089,6 +1073,16 @@
                     '</div>' +
                 '</div>';
             }).join('');
+        }
+        
+        // Show notification
+        function showNotification(message, type) {
+            type = type || 'success';
+            var notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 100px; right: 20px; background: ' + (type === 'success' ? 'linear-gradient(135deg, #27ae60, #2ecc71)' : 'linear-gradient(135deg, #e74c3c, #c0392b)') + '; color: white; padding: 15px 25px; border-radius: 10px; font-family: Cairo, sans-serif; font-size: 14px; font-weight: 600; z-index: 10000;';
+            notification.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+            document.body.appendChild(notification);
+            setTimeout(function() { notification.remove(); }, 3000);
         }
         
         // Show notification
