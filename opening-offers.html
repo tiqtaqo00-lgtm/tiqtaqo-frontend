@@ -576,27 +576,6 @@
         }
         
         /* Demo products banner */
-        .demo-banner {
-            background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(192, 57, 43, 0.15) 100%);
-            border: 1px solid rgba(231, 76, 60, 0.3);
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .demo-banner i {
-            color: #e74c3c;
-            font-size: 20px;
-        }
-        
-        .demo-banner span {
-            font-family: 'Cairo', sans-serif;
-            color: #e74c3c;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
@@ -735,9 +714,6 @@
                 // Store for interval reference
                 var countdownTimer = null;
                 
-                // Maximum countdown duration (30 days) - anything beyond is likely a stale default
-                var MAX_COUNTDOWN_DURATION = 30 * 24 * 60 * 60 * 1000;
-                
                 // Get countdown elements
                 function getElements() {
                     return {
@@ -769,17 +745,6 @@
                     };
                 }
                 
-                // Validate if the stored countdown is legitimate (not a stale default)
-                function isValidCountdown(endTime) {
-                    if (!endTime || isNaN(endTime)) return false;
-                    
-                    var now = new Date().getTime();
-                    var duration = endTime - now;
-                    
-                    // Valid if: endTime is in the future AND duration is reasonable
-                    return duration > 0 && duration <= MAX_COUNTDOWN_DURATION;
-                }
-                
                 // Update countdown display - reads fresh data on each tick
                 function updateCountdown() {
                     var elements = getElements();
@@ -789,17 +754,6 @@
                     // Get fresh data from localStorage
                     var data = getEndTimeFromStorage();
                     
-                    // Check if we have a valid countdown
-                    var hasValidCountdown = isValidCountdown(data.endTime);
-                    
-                    // If no valid countdown, hide the section (wait for admin to set one)
-                    if (!hasValidCountdown) {
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return false;
-                    }
-                    
                     // Handle expired state
                     if (data.isExpired) {
                         if (elements.section) {
@@ -808,8 +762,16 @@
                         return false;
                     }
                     
-                    // Handle inactive state
+                    // Handle inactive state - hide section
                     if (!data.isActive) {
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
+                        return false;
+                    }
+                    
+                    // If no end time set, hide section
+                    if (!data.endTime || isNaN(data.endTime)) {
                         if (elements.section) {
                             elements.section.style.display = 'none';
                         }
@@ -860,20 +822,6 @@
                         return;
                     }
                     
-                    // Check if there's a valid countdown - if not, hide section
-                    var data = getEndTimeFromStorage();
-                    var hasValidCountdown = isValidCountdown(data.endTime);
-                    
-                    console.log('[Countdown] Valid countdown exists: ' + hasValidCountdown);
-                    
-                    if (!hasValidCountdown) {
-                        console.log('[Countdown] No valid countdown - waiting for admin to set one');
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return;
-                    }
-                    
                     // Clear existing timer
                     if (countdownTimer) {
                         clearInterval(countdownTimer);
@@ -900,10 +848,7 @@
                 
                 // Also listen for focus event (when user returns to tab)
                 window.addEventListener('focus', function() {
-                    var data = getEndTimeFromStorage();
-                    if (isValidCountdown(data.endTime)) {
-                        updateCountdown();
-                    }
+                    updateCountdown();
                 });
                 
                 // Initialize on DOM ready
@@ -1015,17 +960,21 @@
                     container.style.display = 'grid';
                     renderProducts();
                 } else {
-                    console.log('[Products] No opening offer products found, showing demo products');
-                    loadingEl.style.display = 'none';
-                    container.style.display = 'grid';
-                    renderDemoProducts();
+                    // No products found - hide section completely
+                    console.log('[Products] No opening offer products found');
+                    var section = document.getElementById('openingOffersSection');
+                    if (section) {
+                        section.style.display = 'none';
+                    }
                 }
 
             } catch (error) {
                 console.error('[Products] Error:', error.message);
-                loadingEl.style.display = 'none';
-                container.style.display = 'grid';
-                renderDemoProducts();
+                // On error - hide the section since Firebase is not working
+                var section = document.getElementById('openingOffersSection');
+                if (section) {
+                    section.style.display = 'none';
+                }
             }
         }
         
@@ -1035,7 +984,10 @@
             
             if (products.length === 0) {
                 console.log('[Products] No products to render');
-                renderDemoProducts();
+                var section = document.getElementById('openingOffersSection');
+                if (section) {
+                    section.style.display = 'none';
+                }
                 return;
             }
             
@@ -1079,57 +1031,6 @@
                     '</div>' +
                 '</div>';
             }).join('');
-        }
-        
-        // Render demo products
-        function renderDemoProducts() {
-            var container = document.getElementById('offersProducts');
-            var demoProducts = [
-                { id: 'demo-1', name: 'Montre Luxe Hommes', price: 2500, offerPrice: 1999, discount: 20 },
-                { id: 'demo-2', name: 'Portefeuille Cuir Luxe', price: 800, offerPrice: 599, discount: 25 },
-                { id: 'demo-3', name: 'Ceinture Cuir Elegante', price: 450, offerPrice: 349, discount: 22 },
-                { id: 'demo-4', name: 'Lunettes de Soleil Modernes', price: 1200, offerPrice: 899, discount: 25 },
-                { id: 'demo-5', name: 'Montre Elegante Femme', price: 2200, offerPrice: 1699, discount: 23 },
-                { id: 'demo-6', name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 }
-            ];
-                
-            container.innerHTML = demoProducts.map(function(product) {
-                var savings = product.price - product.offerPrice;
-                return '<div class="offer-product-card" style="opacity: 0.7;">' +
-                    '<span class="offer-badge">-' + product.discount + '%</span>' +
-                    '<div class="offer-quick-cart" onclick="openOrderModal(\'' + product.id + '\')">' +
-                        '<i class="fas fa-shopping-bag"></i>' +
-                    '</div>' +
-                    '<div class="offer-product-image-container">' +
-                        '<img src="https://placehold.co/400x350/1a1a1a/d4af37?text=' + encodeURIComponent(product.name) + '" alt="' + product.name + '" class="offer-product-image" onerror="this.src=\'https://placehold.co/400x350/1a1a1a/d4af37?text=Offre\'">' +
-                        '<div class="offer-image-overlay"></div>' +
-                    '</div>' +
-                    '<div class="offer-product-info">' +
-                        '<h3 class="offer-product-title">' + product.name + '</h3>' +
-                        '<div class="offer-stock">' +
-                            '<span class="offer-stock-dot"></span>' +
-                            '<span>En stock - Expedition sous 24h</span>' +
-                        '</div>' +
-                        '<div class="offer-product-price-container">' +
-                            '<span class="offer-old-price">' + product.price + ' MAD</span>' +
-                            '<span class="offer-new-price">' + product.offerPrice + ' MAD</span>' +
-                            '<span class="offer-savings">Economisez ' + savings + ' MAD</span>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="offer-actions">' +
-                        '<button class="offer-btn-primary" onclick="openOrderModal(\'' + product.id + '\')">' +
-                            '<i class="fas fa-shopping-bag"></i>' +
-                            '<span>اطلب الان</span>' +
-                        '</button>' +
-                    '</div>' +
-                '</div>';
-            }).join('');
-            
-            // Add warning banner
-            var banner = document.createElement('div');
-            banner.className = 'demo-banner';
-            banner.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Produits de demonstration - Verifiez la connexion Firebase</span>';
-            container.parentNode.insertBefore(banner, container);
         }
         
         // Show notification
