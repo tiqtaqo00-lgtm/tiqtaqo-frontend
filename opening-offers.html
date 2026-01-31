@@ -735,6 +735,9 @@
                 // Store for interval reference
                 var countdownTimer = null;
                 
+                // Maximum countdown duration (30 days) - anything beyond is likely a stale default
+                var MAX_COUNTDOWN_DURATION = 30 * 24 * 60 * 60 * 1000;
+                
                 // Get countdown elements
                 function getElements() {
                     return {
@@ -754,7 +757,7 @@
                 }
                 
                 // Get the latest end time from localStorage
-                function getEndTime() {
+                function getEndTimeFromStorage() {
                     var storedEndTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
                     var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
@@ -766,6 +769,17 @@
                     };
                 }
                 
+                // Validate if the stored countdown is legitimate (not a stale default)
+                function isValidCountdown(endTime) {
+                    if (!endTime || isNaN(endTime)) return false;
+                    
+                    var now = new Date().getTime();
+                    var duration = endTime - now;
+                    
+                    // Valid if: endTime is in the future AND duration is reasonable
+                    return duration > 0 && duration <= MAX_COUNTDOWN_DURATION;
+                }
+                
                 // Update countdown display - reads fresh data on each tick
                 function updateCountdown() {
                     var elements = getElements();
@@ -773,7 +787,18 @@
                     if (!elements.days) return false;
                     
                     // Get fresh data from localStorage
-                    var data = getEndTime();
+                    var data = getEndTimeFromStorage();
+                    
+                    // Check if we have a valid countdown
+                    var hasValidCountdown = isValidCountdown(data.endTime);
+                    
+                    // If no valid countdown, hide the section (wait for admin to set one)
+                    if (!hasValidCountdown) {
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
+                        return false;
+                    }
                     
                     // Handle expired state
                     if (data.isExpired) {
@@ -781,15 +806,6 @@
                             elements.section.style.display = 'none';
                         }
                         return false;
-                    }
-                    
-                    // Create default if not set (7 days from now) - only on first load
-                    if (!data.endTime) {
-                        var defaultEndTime = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
-                        localStorage.setItem('openingOffers_endTime', defaultEndTime.toString());
-                        localStorage.setItem('openingOffers_isActive', 'true');
-                        data.endTime = defaultEndTime;
-                        console.log('[Countdown] Created default 7-day timer');
                     }
                     
                     // Handle inactive state
@@ -805,10 +821,6 @@
                         elements.section.style.display = 'block';
                         elements.section.style.visibility = 'visible';
                         elements.section.style.opacity = '1';
-                    }
-                    
-                    if (!data.endTime || isNaN(data.endTime)) {
-                        return false;
                     }
                     
                     var now = new Date().getTime();
@@ -848,6 +860,20 @@
                         return;
                     }
                     
+                    // Check if there's a valid countdown - if not, hide section
+                    var data = getEndTimeFromStorage();
+                    var hasValidCountdown = isValidCountdown(data.endTime);
+                    
+                    console.log('[Countdown] Valid countdown exists: ' + hasValidCountdown);
+                    
+                    if (!hasValidCountdown) {
+                        console.log('[Countdown] No valid countdown - waiting for admin to set one');
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
+                        return;
+                    }
+                    
                     // Clear existing timer
                     if (countdownTimer) {
                         clearInterval(countdownTimer);
@@ -869,6 +895,14 @@
                         e.key === 'openingOffers_expired') {
                         console.log('[Countdown] Storage changed, reloading...');
                         location.reload();
+                    }
+                });
+                
+                // Also listen for focus event (when user returns to tab)
+                window.addEventListener('focus', function() {
+                    var data = getEndTimeFromStorage();
+                    if (isValidCountdown(data.endTime)) {
+                        updateCountdown();
                     }
                 });
                 
