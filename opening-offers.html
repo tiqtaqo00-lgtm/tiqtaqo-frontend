@@ -753,20 +753,74 @@
                     return n < 10 ? '0' + n : '' + n;
                 }
                 
-                // Update countdown display
-                function updateCountdown(endTime) {
+                // Get the latest end time from localStorage
+                function getEndTime() {
+                    var storedEndTime = localStorage.getItem('openingOffers_endTime');
+                    var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+                    var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
+                    
+                    return {
+                        endTime: storedEndTime ? parseInt(storedEndTime, 10) : null,
+                        isActive: isActive,
+                        isExpired: isExpired
+                    };
+                }
+                
+                // Update countdown display - reads fresh data on each tick
+                function updateCountdown() {
                     var elements = getElements();
                     
                     if (!elements.days) return false;
                     
+                    // Get fresh data from localStorage
+                    var data = getEndTime();
+                    
+                    // Handle expired state
+                    if (data.isExpired) {
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
+                        return false;
+                    }
+                    
+                    // Create default if not set (7 days from now) - only on first load
+                    if (!data.endTime) {
+                        var defaultEndTime = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+                        localStorage.setItem('openingOffers_endTime', defaultEndTime.toString());
+                        localStorage.setItem('openingOffers_isActive', 'true');
+                        data.endTime = defaultEndTime;
+                        console.log('[Countdown] Created default 7-day timer');
+                    }
+                    
+                    // Handle inactive state
+                    if (!data.isActive) {
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
+                        return false;
+                    }
+                    
+                    // Make section visible
+                    if (elements.section) {
+                        elements.section.style.display = 'block';
+                        elements.section.style.visibility = 'visible';
+                        elements.section.style.opacity = '1';
+                    }
+                    
+                    if (!data.endTime || isNaN(data.endTime)) {
+                        return false;
+                    }
+                    
                     var now = new Date().getTime();
-                    var remaining = endTime - now;
+                    var remaining = data.endTime - now;
                     
                     if (remaining <= 0) {
                         // Timer expired
                         if (elements.section) {
                             elements.section.style.display = 'none';
                         }
+                        localStorage.setItem('openingOffers_expired', 'true');
+                        localStorage.setItem('openingOffers_isActive', 'false');
                         return false;
                     }
                     
@@ -794,67 +848,16 @@
                         return;
                     }
                     
-                    // Get end time from localStorage
-                    var storedEndTime = localStorage.getItem('openingOffers_endTime');
-                    var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
-                    var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
-                    
-                    // Handle expired state
-                    if (isExpired) {
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return;
-                    }
-                    
-                    // Create default if not set (7 days from now)
-                    if (!storedEndTime) {
-                        var defaultEndTime = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
-                        localStorage.setItem('openingOffers_endTime', defaultEndTime.toString());
-                        localStorage.setItem('openingOffers_isActive', 'true');
-                        storedEndTime = defaultEndTime.toString();
-                        console.log('[Countdown] Created default 7-day timer');
-                    }
-                    
-                    // Handle inactive state
-                    if (!isActive) {
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return;
-                    }
-                    
-                    // Make section visible
-                    if (elements.section) {
-                        elements.section.style.display = 'block';
-                        elements.section.style.visibility = 'visible';
-                        elements.section.style.opacity = '1';
-                    }
-                    
-                    // Parse end time
-                    var endTime = parseInt(storedEndTime, 10);
-                    
-                    if (isNaN(endTime)) {
-                        console.log('[Countdown] Invalid end time');
-                        return;
-                    }
-                    
                     // Clear existing timer
                     if (countdownTimer) {
                         clearInterval(countdownTimer);
                     }
                     
                     // Initial update
-                    updateCountdown(endTime);
+                    updateCountdown();
                     
-                    // Start interval
-                    countdownTimer = setInterval(function() {
-                        var stillRunning = updateCountdown(endTime);
-                        if (!stillRunning) {
-                            clearInterval(countdownTimer);
-                            countdownTimer = null;
-                        }
-                    }, 1000);
+                    // Start interval - reads fresh data on each tick
+                    countdownTimer = setInterval(updateCountdown, 1000);
                     
                     console.log('[Countdown] Started successfully');
                 }
