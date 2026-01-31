@@ -708,7 +708,7 @@
                 </div>
             </div>
             
-            <!-- Countdown Timer Script - Reads ONLY from Firebase for cross-device sync -->
+            <!-- Countdown Timer Script - Firebase first, localStorage fallback -->
             <script>
             (function() {
                 // Store for interval reference
@@ -733,27 +733,40 @@
                     return n < 10 ? '0' + n : '' + n;
                 }
                 
-                // Read countdown from Firebase Firestore ONLY
+                // Read countdown from localStorage (fallback)
+                function getCountdownFromLocalStorage() {
+                    var storedEndTime = localStorage.getItem('openingOffers_endTime');
+                    var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+                    var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
+                    
+                    if (storedEndTime && !isNaN(parseInt(storedEndTime))) {
+                        return {
+                            endTime: parseInt(storedEndTime),
+                            isActive: isActive,
+                            isExpired: isExpired,
+                            source: 'localStorage'
+                        };
+                    }
+                    return null;
+                }
+                
+                // Read countdown from Firebase Firestore
                 async function getCountdownFromFirebase() {
                     try {
-                        // Wait for Firebase to be ready
+                        // Wait for Firebase to be ready (up to 3 seconds)
                         if (typeof window.getDb !== 'function') {
-                            console.log('[Countdown] getDb not available yet, waiting...');
-                            // Wait up to 5 seconds for Firebase
-                            for (var i = 0; i < 50; i++) {
+                            for (var i = 0; i < 30; i++) {
                                 await new Promise(function(resolve) { setTimeout(resolve, 100); });
                                 if (typeof window.getDb === 'function') break;
                             }
                         }
                         
                         if (typeof window.getDb !== 'function') {
-                            console.log('[Countdown] getDb function never became available');
                             return null;
                         }
                         
                         var db = await window.getDb();
                         if (!db) {
-                            console.log('[Countdown] Database not available');
                             return null;
                         }
                         
@@ -772,12 +785,32 @@
                             return {
                                 endTime: data.endTime,
                                 isActive: data.isActive !== false,
-                                isExpired: data.isExpired === true
+                                isExpired: data.isExpired === true,
+                                source: 'firebase'
                             };
                         }
                     } catch (e) {
                         console.log('[Countdown] Firebase error:', e.message);
                     }
+                    return null;
+                }
+                
+                // Get countdown data - try Firebase first, then localStorage
+                async function getCountdownData() {
+                    // Try Firebase first
+                    var fbData = await getCountdownFromFirebase();
+                    if (fbData && fbData.endTime) {
+                        return fbData;
+                    }
+                    
+                    // Fallback to localStorage
+                    var lsData = getCountdownFromLocalStorage();
+                    if (lsData) {
+                        console.log('[Countdown] Using localStorage fallback:', lsData);
+                        return lsData;
+                    }
+                    
+                    // No data at all
                     return null;
                 }
                 
@@ -787,12 +820,12 @@
                     
                     if (!elements.days) return false;
                     
-                    // Get data from Firebase ONLY
-                    var data = await getCountdownFromFirebase();
+                    // Get data from Firebase or localStorage
+                    var data = await getCountdownData();
                     
-                    // If no data from Firebase, hide section
+                    // If no data at all, hide section
                     if (!data || !data.endTime || isNaN(data.endTime)) {
-                        console.log('[Countdown] No valid data from Firebase, hiding section');
+                        console.log('[Countdown] No valid data found');
                         if (elements.section) {
                             elements.section.style.display = 'none';
                         }
@@ -860,7 +893,7 @@
                         return;
                     }
                     
-                    // Hide section initially until Firebase responds
+                    // Hide section initially until we get data
                     if (elements.section) {
                         elements.section.style.display = 'none';
                     }
