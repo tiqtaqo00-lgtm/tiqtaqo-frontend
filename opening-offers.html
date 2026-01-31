@@ -45,31 +45,6 @@
             }
         }
         
-        /* Countdown container - always visible */
-        .countdown-container {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        
-        .countdown-unit {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        
-        .countdown-number {
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        
-        #countDays, #countHours, #countMinutes, #countSeconds {
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        
         /* Animated background particles */
         .opening-offers-section::before {
             content: '';
@@ -139,24 +114,13 @@
             letter-spacing: 1px;
         }
         
-        /* Countdown Timer */
+        /* Countdown Timer - Simple and Responsive */
         .countdown-container {
             display: flex;
             justify-content: center;
             gap: 25px;
             margin-bottom: 50px;
             flex-wrap: wrap;
-        }
-
-        /* Ensure countdown is visible on all devices */
-        #countdownContainer {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-
-        #countDays, #countHours, #countMinutes, #countSeconds {
-            display: inline-block !important;
             visibility: visible !important;
             opacity: 1 !important;
         }
@@ -172,6 +136,8 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         .countdown-unit::before {
@@ -202,6 +168,8 @@
             display: block;
             line-height: 1;
             text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         .countdown-label {
@@ -213,6 +181,28 @@
             text-transform: uppercase;
             letter-spacing: 3px;
             font-weight: 600;
+        }
+        
+        /* Mobile Responsive for Countdown */
+        @media (max-width: 768px) {
+            .countdown-container {
+                gap: 10px;
+                padding: 0 10px;
+            }
+            
+            .countdown-unit {
+                padding: 15px 20px;
+                min-width: 70px;
+                flex: 1;
+            }
+            
+            .countdown-number {
+                font-size: 28px;
+            }
+            
+            .countdown-label {
+                font-size: 10px;
+            }
         }
         
         /* Products Grid */
@@ -548,25 +538,6 @@
                 font-size: 16px;
             }
 
-            .countdown-unit {
-                padding: 15px 20px;
-                min-width: 70px;
-                flex: 1;
-            }
-
-            .countdown-number {
-                font-size: 28px;
-            }
-
-            .countdown-label {
-                font-size: 10px;
-            }
-
-            .countdown-container {
-                gap: 10px;
-                padding: 0 10px;
-            }
-
             .offers-products {
                 grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
                 gap: 25px;
@@ -758,149 +729,156 @@
                 </div>
             </div>
             
-            <!-- Countdown Timer - Simple and Reliable Script for All Devices -->
+            <!-- Countdown Timer Script - Simple and Reliable for All Devices -->
             <script>
             (function() {
-                // Countdown state
-                var countdownInterval = null;
+                // Store for interval reference
+                var countdownTimer = null;
                 
-                // Get elements safely
-                function getCountElement(id) {
-                    try {
-                        return document.getElementById(id);
-                    } catch(e) {
-                        return null;
-                    }
+                // Get countdown elements
+                function getElements() {
+                    return {
+                        days: document.getElementById('countDays'),
+                        hours: document.getElementById('countHours'),
+                        minutes: document.getElementById('countMinutes'),
+                        seconds: document.getElementById('countSeconds'),
+                        section: document.getElementById('openingOffersSection')
+                    };
                 }
                 
-                // Main countdown function
-                function startCountdown() {
-                    var section = getCountElement('openingOffersSection');
-                    var daysEl = getCountElement('countDays');
-                    var hoursEl = getCountElement('countHours');
-                    var minutesEl = getCountElement('countMinutes');
-                    var secondsEl = getCountElement('countSeconds');
+                // Format number with leading zero
+                function formatNumber(num) {
+                    var n = parseInt(num, 10);
+                    if (isNaN(n)) return '00';
+                    return n < 10 ? '0' + n : '' + n;
+                }
+                
+                // Update countdown display
+                function updateCountdown(endTime) {
+                    var elements = getElements();
                     
-                    // Exit if elements not found
-                    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
-                        console.log('[Countdown] Elements not found, skipping...');
+                    if (!elements.days) return false;
+                    
+                    var now = new Date().getTime();
+                    var remaining = endTime - now;
+                    
+                    if (remaining <= 0) {
+                        // Timer expired
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
+                        return false;
+                    }
+                    
+                    // Calculate time units
+                    var days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                    
+                    // Update DOM
+                    elements.days.textContent = formatNumber(days);
+                    elements.hours.textContent = formatNumber(hours);
+                    elements.minutes.textContent = formatNumber(minutes);
+                    elements.seconds.textContent = formatNumber(seconds);
+                    
+                    return true;
+                }
+                
+                // Main initialization function
+                function initCountdown() {
+                    var elements = getElements();
+                    
+                    if (!elements.days) {
+                        console.log('[Countdown] Elements not found');
                         return;
                     }
                     
-                    console.log('[Countdown] Starting...');
-                    
-                    // Get or create endTime
-                    var endTime = localStorage.getItem('openingOffers_endTime');
+                    // Get end time from localStorage
+                    var storedEndTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
-                    var expired = localStorage.getItem('openingOffers_expired') === 'true';
-                    
-                    console.log('[Countdown] State: endTime=' + (endTime ? 'set' : 'null') + ', isActive=' + isActive + ', expired=' + expired);
+                    var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
                     
                     // Handle expired state
-                    if (expired) {
-                        if (section) section.style.display = 'none';
+                    if (isExpired) {
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
                         return;
                     }
                     
-                    // Create default if not set
-                    if (!endTime) {
-                        endTime = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
-                        localStorage.setItem('openingOffers_endTime', endTime.toString());
+                    // Create default if not set (7 days from now)
+                    if (!storedEndTime) {
+                        var defaultEndTime = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+                        localStorage.setItem('openingOffers_endTime', defaultEndTime.toString());
                         localStorage.setItem('openingOffers_isActive', 'true');
-                        console.log('[Countdown] Created new 7-day countdown');
+                        storedEndTime = defaultEndTime.toString();
+                        console.log('[Countdown] Created default 7-day timer');
                     }
                     
                     // Handle inactive state
                     if (!isActive) {
-                        if (section) section.style.display = 'none';
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                        }
                         return;
                     }
                     
                     // Make section visible
-                    if (section) {
-                        section.style.display = 'block';
-                        section.style.visibility = 'visible';
-                        section.style.opacity = '1';
+                    if (elements.section) {
+                        elements.section.style.display = 'block';
+                        elements.section.style.visibility = 'visible';
+                        elements.section.style.opacity = '1';
                     }
                     
-                    // Clear any existing interval
-                    if (countdownInterval) {
-                        clearInterval(countdownInterval);
+                    // Parse end time
+                    var endTime = parseInt(storedEndTime, 10);
+                    
+                    if (isNaN(endTime)) {
+                        console.log('[Countdown] Invalid end time');
+                        return;
                     }
                     
-                    // Update function
-                    function update() {
-                        var now = Date.now();
-                        var remaining = parseInt(endTime) - now;
-                        
-                        if (remaining <= 0) {
-                            // Expired
-                            clearInterval(countdownInterval);
-                            console.log('[Countdown] Expired!');
-                            if (section) section.style.display = 'none';
-                            localStorage.setItem('openingOffers_expired', 'true');
-                            localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
-                            localStorage.setItem('openingOffers_isActive', 'false');
-                            localStorage.removeItem('openingOffers_endTime');
-                            return;
+                    // Clear existing timer
+                    if (countdownTimer) {
+                        clearInterval(countdownTimer);
+                    }
+                    
+                    // Initial update
+                    updateCountdown(endTime);
+                    
+                    // Start interval
+                    countdownTimer = setInterval(function() {
+                        var stillRunning = updateCountdown(endTime);
+                        if (!stillRunning) {
+                            clearInterval(countdownTimer);
+                            countdownTimer = null;
                         }
-                        
-                        // Calculate time
-                        var days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-                        var hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        var minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                        var seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-                        
-                        // Update display with null checks
-                        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
-                        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
-                        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
-                        if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
-                    }
+                    }, 1000);
                     
-                    // Initial update and start interval
-                    update();
-                    countdownInterval = setInterval(update, 1000);
-                    console.log('[Countdown] Running!');
+                    console.log('[Countdown] Started successfully');
                 }
                 
-                // Listen for storage changes (admin panel updates)
+                // Listen for storage changes from admin panel
                 window.addEventListener('storage', function(e) {
                     if (e.key === 'openingOffers_endTime' || 
-                        e.key === 'openingOffers_expired' ||
-                        e.key === 'openingOffers_isActive') {
+                        e.key === 'openingOffers_isActive' ||
+                        e.key === 'openingOffers_expired') {
                         console.log('[Countdown] Storage changed, reloading...');
                         location.reload();
                     }
                 });
                 
-                // Initialize when DOM is ready
-                function init() {
-                    // Try immediately
-                    startCountdown();
-                    
-                    // Retry a few times in case DOM wasn't ready
-                    var retries = 0;
-                    var maxRetries = 10;
-                    var retryInterval = setInterval(function() {
-                        retries++;
-                        var daysEl = getCountElement('countDays');
-                        if (daysEl && daysEl.textContent === '00') {
-                            // Element exists but still shows 00, retry
-                            startCountdown();
-                        }
-                        if (retries >= maxRetries) {
-                            clearInterval(retryInterval);
-                        }
-                    }, 100);
+                // Initialize on DOM ready
+                function start() {
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', initCountdown);
+                    } else {
+                        initCountdown();
+                    }
                 }
                 
-                // Start when DOM is ready
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', init);
-                } else {
-                    init();
-                }
+                start();
             })();
             </script>
             
@@ -946,13 +924,12 @@
         </div>
     </footer>
 
-    <!-- Scripts - Products Loading Only (Countdown handled by inline script above) -->
+    <!-- Products Loading Script -->
     <script>
         // Global products array
         var products = [];
         
         // Function to initialize Firebase and load products
-        // Note: Countdown is already handled by the inline script above
         async function initializeProducts() {
             var container = document.getElementById('offersProducts');
             var loadingEl = document.getElementById('offersLoading');
