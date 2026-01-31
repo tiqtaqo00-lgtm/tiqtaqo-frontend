@@ -713,6 +713,7 @@
             (function() {
                 // Store for interval reference
                 var countdownTimer = null;
+                var lastEndTime = null;
                 
                 // Get countdown elements
                 function getElements() {
@@ -732,27 +733,37 @@
                     return n < 10 ? '0' + n : '' + n;
                 }
                 
-                // Read countdown data from Firebase or localStorage
-                async function getCountdownData() {
-                    // Try to read from Firebase first
-                    if (window.OpeningOffersAPI && typeof window.OpeningOffersAPI.getCountdown === 'function') {
-                        try {
-                            var fbData = await window.OpeningOffersAPI.getCountdown();
-                            if (fbData && fbData.endTime) {
-                                console.log('[Countdown] Read from Firebase:', fbData);
-                                return {
-                                    endTime: fbData.endTime,
-                                    isActive: fbData.isActive !== false,
-                                    isExpired: fbData.isExpired === true,
-                                    source: 'firebase'
-                                };
+                // Read countdown from Firebase Firestore
+                async function getCountdownFromFirebase() {
+                    try {
+                        // Check if Firebase is initialized and db is available
+                        if (typeof window.getDb === 'function') {
+                            var db = await window.getDb();
+                            if (db && typeof window.firebase !== 'undefined') {
+                                var { doc, getDoc } = await window.firebase.firestore;
+                                if (typeof getDoc === 'function') {
+                                    var docRef = doc(db, 'config', 'openingOffers');
+                                    var docSnap = await getDoc(docRef);
+                                    if (docSnap && docSnap.exists()) {
+                                        var data = docSnap.data();
+                                        console.log('[Countdown] Read from Firebase:', data);
+                                        return {
+                                            endTime: data.endTime,
+                                            isActive: data.isActive !== false,
+                                            isExpired: data.isExpired === true
+                                        };
+                                    }
+                                }
                             }
-                        } catch (e) {
-                            console.log('[Countdown] Firebase read failed, using localStorage');
                         }
+                    } catch (e) {
+                        console.log('[Countdown] Firebase read error:', e.message);
                     }
-                    
-                    // Fallback to localStorage
+                    return null;
+                }
+                
+                // Read countdown from localStorage (fallback)
+                function getCountdownFromLocalStorage() {
                     var storedEndTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
                     var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
@@ -760,9 +771,20 @@
                     return {
                         endTime: storedEndTime ? parseInt(storedEndTime, 10) : null,
                         isActive: isActive,
-                        isExpired: isExpired,
-                        source: 'localStorage'
+                        isExpired: isExpired
                     };
+                }
+                
+                // Get countdown data - try Firebase first, then localStorage
+                async function getCountdownData() {
+                    // Try Firebase first
+                    var fbData = await getCountdownFromFirebase();
+                    if (fbData && fbData.endTime) {
+                        return fbData;
+                    }
+                    
+                    // Fallback to localStorage
+                    return getCountdownFromLocalStorage();
                 }
                 
                 // Update countdown display
@@ -771,7 +793,7 @@
                     
                     if (!elements.days) return false;
                     
-                    // Get fresh data
+                    // Get data from Firebase or localStorage
                     var data = await getCountdownData();
                     console.log('[Countdown] Data:', data);
                     
@@ -849,15 +871,15 @@
                     // Initial update
                     await updateCountdown();
                     
-                    // Start interval
+                    // Start interval - read fresh data each second
                     countdownTimer = setInterval(updateCountdown, 1000);
                     
                     console.log('[Countdown] Started successfully');
                 }
                 
-                // Listen for Firebase changes
-                window.addEventListener('openingOffersCountdownChanged', function(e) {
-                    console.log('[Countdown] Firebase data changed, reloading...');
+                // Listen for custom countdown update events (from admin panel in same tab)
+                window.addEventListener('countdownUpdated', function(e) {
+                    console.log('[Countdown] Custom event received:', e.detail);
                     updateCountdown();
                 });
                 
