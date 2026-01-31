@@ -708,7 +708,7 @@
                 </div>
             </div>
             
-            <!-- Countdown Timer Script - Simple and Reliable for All Devices -->
+            <!-- Countdown Timer Script - Syncs from Firebase for all devices -->
             <script>
             (function() {
                 // Store for interval reference
@@ -732,8 +732,27 @@
                     return n < 10 ? '0' + n : '' + n;
                 }
                 
-                // Get the latest end time from localStorage
-                function getEndTimeFromStorage() {
+                // Read countdown data from Firebase or localStorage
+                async function getCountdownData() {
+                    // Try to read from Firebase first
+                    if (window.OpeningOffersAPI && typeof window.OpeningOffersAPI.getCountdown === 'function') {
+                        try {
+                            var fbData = await window.OpeningOffersAPI.getCountdown();
+                            if (fbData && fbData.endTime) {
+                                console.log('[Countdown] Read from Firebase:', fbData);
+                                return {
+                                    endTime: fbData.endTime,
+                                    isActive: fbData.isActive !== false,
+                                    isExpired: fbData.isExpired === true,
+                                    source: 'firebase'
+                                };
+                            }
+                        } catch (e) {
+                            console.log('[Countdown] Firebase read failed, using localStorage');
+                        }
+                    }
+                    
+                    // Fallback to localStorage
                     var storedEndTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
                     var isExpired = localStorage.getItem('openingOffers_expired') === 'true';
@@ -741,18 +760,20 @@
                     return {
                         endTime: storedEndTime ? parseInt(storedEndTime, 10) : null,
                         isActive: isActive,
-                        isExpired: isExpired
+                        isExpired: isExpired,
+                        source: 'localStorage'
                     };
                 }
                 
-                // Update countdown display - reads fresh data on each tick
-                function updateCountdown() {
+                // Update countdown display
+                async function updateCountdown() {
                     var elements = getElements();
                     
                     if (!elements.days) return false;
                     
-                    // Get fresh data from localStorage
-                    var data = getEndTimeFromStorage();
+                    // Get fresh data
+                    var data = await getCountdownData();
+                    console.log('[Countdown] Data:', data);
                     
                     // Handle expired state
                     if (data.isExpired) {
@@ -793,8 +814,6 @@
                         if (elements.section) {
                             elements.section.style.display = 'none';
                         }
-                        localStorage.setItem('openingOffers_expired', 'true');
-                        localStorage.setItem('openingOffers_isActive', 'false');
                         return false;
                     }
                     
@@ -814,7 +833,7 @@
                 }
                 
                 // Main initialization function
-                function initCountdown() {
+                async function initCountdown() {
                     var elements = getElements();
                     
                     if (!elements.days) {
@@ -828,26 +847,17 @@
                     }
                     
                     // Initial update
-                    updateCountdown();
+                    await updateCountdown();
                     
-                    // Start interval - reads fresh data on each tick
+                    // Start interval
                     countdownTimer = setInterval(updateCountdown, 1000);
                     
                     console.log('[Countdown] Started successfully');
                 }
                 
-                // Listen for storage changes from admin panel
-                window.addEventListener('storage', function(e) {
-                    if (e.key === 'openingOffers_endTime' || 
-                        e.key === 'openingOffers_isActive' ||
-                        e.key === 'openingOffers_expired') {
-                        console.log('[Countdown] Storage changed, reloading...');
-                        location.reload();
-                    }
-                });
-                
-                // Also listen for focus event (when user returns to tab)
-                window.addEventListener('focus', function() {
+                // Listen for Firebase changes
+                window.addEventListener('openingOffersCountdownChanged', function(e) {
+                    console.log('[Countdown] Firebase data changed, reloading...');
                     updateCountdown();
                 });
                 
