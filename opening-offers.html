@@ -713,7 +713,6 @@
             (function() {
                 // Store for interval reference
                 var countdownTimer = null;
-                var lastEndTime = null;
                 
                 // Get countdown elements
                 function getElements() {
@@ -736,25 +735,33 @@
                 // Read countdown from Firebase Firestore
                 async function getCountdownFromFirebase() {
                     try {
-                        // Check if Firebase is initialized and db is available
-                        if (typeof window.getDb === 'function') {
-                            var db = await window.getDb();
-                            if (db && typeof window.firebase !== 'undefined') {
-                                var { doc, getDoc } = await window.firebase.firestore;
-                                if (typeof getDoc === 'function') {
-                                    var docRef = doc(db, 'config', 'openingOffers');
-                                    var docSnap = await getDoc(docRef);
-                                    if (docSnap && docSnap.exists()) {
-                                        var data = docSnap.data();
-                                        console.log('[Countdown] Read from Firebase:', data);
-                                        return {
-                                            endTime: data.endTime,
-                                            isActive: data.isActive !== false,
-                                            isExpired: data.isExpired === true
-                                        };
-                                    }
-                                }
-                            }
+                        // Get database instance
+                        if (typeof window.getDb !== 'function') {
+                            console.log('[Countdown] getDb function not available');
+                            return null;
+                        }
+                        
+                        var db = await window.getDb();
+                        if (!db) {
+                            console.log('[Countdown] Database not available');
+                            return null;
+                        }
+                        
+                        // Import Firestore functions dynamically
+                        var { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                        
+                        // Read from config/openingOffers
+                        var docRef = doc(db, 'config', 'openingOffers');
+                        var docSnap = await getDoc(docRef);
+                        
+                        if (docSnap && docSnap.exists()) {
+                            var data = docSnap.data();
+                            console.log('[Countdown] Read from Firebase:', data);
+                            return {
+                                endTime: data.endTime,
+                                isActive: data.isActive !== false,
+                                isExpired: data.isExpired === true
+                            };
                         }
                     } catch (e) {
                         console.log('[Countdown] Firebase read error:', e.message);
