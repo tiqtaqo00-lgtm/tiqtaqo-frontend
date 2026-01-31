@@ -805,49 +805,58 @@
                         data = getCountdownFromLocalStorage();
                     }
                     
-                    // If no data at all, hide countdown but keep section visible for products
+                    // If no data at all, show countdown as 00 and KEEP section visible
                     if (!data || !data.endTime || isNaN(data.endTime)) {
-                        console.log('[Countdown] No data found');
-                        // Hide countdown only, keep products section visible
+                        console.log('[Countdown] No data found - showing 00 and keeping section');
+                        // Show 00:00:00:00 but KEEP products section visible
                         elements.days.textContent = '00';
                         elements.hours.textContent = '00';
                         elements.minutes.textContent = '00';
                         elements.seconds.textContent = '00';
+                        // ALWAYS keep section visible for products
+                        if (elements.section) {
+                            elements.section.style.display = 'block';
+                            elements.section.style.visibility = 'visible';
+                            elements.section.style.opacity = '1';
+                        }
                         return true; // Keep running
                     }
                     
-                    // Handle expired state - hide section
-                    if (data.isExpired) {
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return false;
-                    }
-                    
-                    // Handle inactive state - hide section
-                    if (!data.isActive) {
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return false;
-                    }
-                    
-                    // Make section visible
+                    // Make section visible (even with countdown data)
                     if (elements.section) {
                         elements.section.style.display = 'block';
                         elements.section.style.visibility = 'visible';
                         elements.section.style.opacity = '1';
                     }
                     
+                    // Only hide countdown display if expired, NOT the whole section
+                    if (data.isExpired || data.isExpired === 'true') {
+                        elements.days.textContent = '00';
+                        elements.hours.textContent = '00';
+                        elements.minutes.textContent = '00';
+                        elements.seconds.textContent = '00';
+                        return true; // Keep running, products still visible
+                    }
+                    
+                    // If inactive, hide countdown but keep products section visible
+                    if (!data.isActive) {
+                        elements.days.textContent = '00';
+                        elements.hours.textContent = '00';
+                        elements.minutes.textContent = '00';
+                        elements.seconds.textContent = '00';
+                        return true; // Keep running, products still visible
+                    }
+                    
                     var now = new Date().getTime();
                     var remaining = data.endTime - now;
                     
                     if (remaining <= 0) {
-                        // Timer expired
-                        if (elements.section) {
-                            elements.section.style.display = 'none';
-                        }
-                        return false;
+                        // Timer expired - show 00:00:00:00 but KEEP section visible for products
+                        elements.days.textContent = '00';
+                        elements.hours.textContent = '00';
+                        elements.minutes.textContent = '00';
+                        elements.seconds.textContent = '00';
+                        return true; // Keep running, products still visible
                     }
                     
                     // Calculate time units
