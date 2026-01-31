@@ -576,36 +576,6 @@
                 font-size: 26px;
             }
         }
-            .offers-title {
-                font-size: 36px;
-            }
-            
-            .offers-subtitle {
-                font-size: 16px;
-            }
-            
-            .countdown-unit {
-                padding: 20px 25px;
-                min-width: 80px;
-            }
-            
-            .countdown-number {
-                font-size: 36px;
-            }
-            
-            .countdown-label {
-                font-size: 11px;
-            }
-            
-            .offers-products {
-                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-                gap: 25px;
-            }
-            
-            .offer-new-price {
-                font-size: 26px;
-            }
-        }
         
         /* Loading State */
         .offers-loading {
@@ -788,96 +758,116 @@
                 </div>
             </div>
             
-            <!-- Countdown Timer - Inline Script for Maximum Compatibility -->
+            <!-- Countdown Timer - Fixed Inline Script for Mobile Compatibility -->
             <script>
             (function() {
                 'use strict';
                 
                 var countdownInterval = null;
+                var retryCount = 0;
+                var maxRetries = 20;
                 var initialized = false;
                 
                 function log(message) {
-                    console.log('[Countdown] ' + message);
+                    console.log('[Countdown-Fixed] ' + message);
                 }
                 
-                function initCountdown() {
-                    // Always try, don't check initialized to allow retries
-                    var section = document.getElementById('openingOffersSection');
+                function updateCountdownDisplay(days, hours, minutes, seconds) {
                     var daysEl = document.getElementById('countDays');
                     var hoursEl = document.getElementById('countHours');
                     var minutesEl = document.getElementById('countMinutes');
                     var secondsEl = document.getElementById('countSeconds');
                     
-                    // Check if all elements exist
-                    if (!section || !daysEl || !hoursEl || !minutesEl || !secondsEl) {
-                        log('Elements not found yet, will retry...');
+                    if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+                    if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+                    if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+                    if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+                }
+                
+                function initCountdown() {
+                    // Prevent multiple initializations
+                    if (initialized) {
+                        return true;
+                    }
+                    
+                    var section = document.getElementById('openingOffersSection');
+                    var daysEl = document.getElementById('countDays');
+                    
+                    // Check if main elements exist
+                    if (!section || !daysEl) {
+                        retryCount++;
+                        if (retryCount < maxRetries) {
+                            log('Elements not found, retry ' + retryCount + '/' + maxRetries);
+                            setTimeout(initCountdown, 50);
+                        }
                         return false;
                     }
                     
-                    log('All elements found, starting countdown...');
+                    log('Main elements found, continuing...');
                     
-                    // Check localStorage for end time
+                    // Check localStorage state
                     var endTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
                     var expired = localStorage.getItem('openingOffers_expired') === 'true';
                     
-                    log('End time from storage: ' + (endTime ? new Date(parseInt(endTime)).toLocaleString() : 'NOT SET'));
-                    log('Is active: ' + isActive);
-                    log('Is expired: ' + expired);
+                    log('State: endTime=' + (endTime ? 'set' : 'null') + ', isActive=' + isActive + ', expired=' + expired);
                     
                     if (expired) {
-                        log('Section is expired, hiding...');
+                        log('Section expired, hiding');
                         section.style.display = 'none';
+                        initialized = true;
                         return true;
                     }
                     
                     if (!endTime) {
-                        // Create default 7 day countdown
+                        // Create default 7-day countdown
                         endTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
                         localStorage.setItem('openingOffers_endTime', endTime.toString());
                         localStorage.setItem('openingOffers_isActive', 'true');
-                        log('Created new default countdown: ' + new Date(endTime).toLocaleString());
+                        log('Created new countdown: 7 days');
                     }
                     
                     if (!isActive) {
-                        log('Section is not active, hiding...');
+                        log('Section not active, hiding');
                         section.style.display = 'none';
+                        initialized = true;
                         return true;
                     }
                     
-                    // Make section visible with FORCE
-                    section.style.display = 'block !important';
-                    section.style.visibility = 'visible !important';
-                    section.style.opacity = '1 !important';
-                    section.style.setProperty('display', 'block', 'important');
-                    section.style.setProperty('visibility', 'visible', 'important');
+                    // Make section visible
+                    section.style.display = 'block';
+                    section.style.visibility = 'visible';
+                    section.style.opacity = '1';
                     
-                    // Also force visibility on countdown elements
-                    daysEl.style.setProperty('display', 'inline-block', 'important');
-                    hoursEl.style.setProperty('display', 'inline-block', 'important');
-                    minutesEl.style.setProperty('display', 'inline-block', 'important');
-                    secondsEl.style.setProperty('display', 'inline-block', 'important');
+                    // Make countdown elements visible
+                    var countdownContainer = document.getElementById('countdownContainer');
+                    if (countdownContainer) {
+                        countdownContainer.style.display = 'flex';
+                    }
                     
-                    log('Starting countdown with end time: ' + new Date(parseInt(endTime)).toLocaleString());
+                    var countdownUnits = document.querySelectorAll('.countdown-unit');
+                    for (var i = 0; i < countdownUnits.length; i++) {
+                        countdownUnits[i].style.display = 'block';
+                    }
+                    
+                    log('Starting countdown timer...');
                     
                     // Clear any existing interval
                     if (countdownInterval) {
                         clearInterval(countdownInterval);
                     }
                     
-                    function updateCountdown() {
+                    function tick() {
                         var now = Date.now();
                         var remaining = parseInt(endTime) - now;
                         
                         if (remaining <= 0) {
-                            // Time expired
+                            // Timer expired
                             clearInterval(countdownInterval);
-                            log('Countdown expired!');
+                            log('Timer expired!');
                             
                             // Hide section
                             section.style.display = 'none';
-                            section.style.visibility = 'hidden';
-                            section.style.opacity = '0';
                             
                             // Mark as expired
                             localStorage.setItem('openingOffers_expired', 'true');
@@ -885,63 +875,69 @@
                             localStorage.setItem('openingOffers_isActive', 'false');
                             localStorage.removeItem('openingOffers_endTime');
                             
+                            initialized = true;
                             return;
                         }
                         
+                        // Calculate time units
                         var days = Math.floor(remaining / (1000 * 60 * 60 * 24));
                         var hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         var minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
                         var seconds = Math.floor((remaining % (1000 * 60)) / 1000);
                         
-                        // Update DOM
-                        try {
-                            daysEl.textContent = String(days).padStart(2, '0');
-                            hoursEl.textContent = String(hours).padStart(2, '0');
-                            minutesEl.textContent = String(minutes).padStart(2, '0');
-                            secondsEl.textContent = String(seconds).padStart(2, '0');
-                        } catch (e) {
-                            log('Error updating countdown: ' + e.message);
-                        }
+                        // Update display
+                        updateCountdownDisplay(days, hours, minutes, seconds);
                     }
                     
-                    // Update immediately
-                    updateCountdown();
+                    // Initial update
+                    tick();
                     
-                    // Start interval - use 1000ms
-                    countdownInterval = setInterval(updateCountdown, 1000);
+                    // Start interval - 1000ms for accurate countdown
+                    countdownInterval = setInterval(tick, 1000);
                     
                     initialized = true;
                     log('Countdown initialized successfully!');
                     return true;
                 }
                 
-                // Try to initialize immediately
-                log('Script loaded, trying to initialize...');
+                // Listen for storage changes from other tabs (admin panel updates)
+                window.addEventListener('storage', function(event) {
+                    if (event.key === 'openingOffers_endTime' || 
+                        event.key === 'openingOffers_expired' ||
+                        event.key === 'openingOffers_isActive') {
+                        log('Storage changed, reloading page...');
+                        location.reload();
+                    }
+                });
                 
+                // Initialize when DOM is ready
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', initCountdown);
                 } else {
-                    initCountdown();
+                    // DOM already loaded, initialize after a small delay to ensure all elements are rendered
+                    setTimeout(initCountdown, 10);
                 }
                 
-                // Retry multiple times to ensure it works on all devices
-                var retryCount = 0;
-                var maxRetries = 10;
+                // Backup initialization with retries
+                var backupRetry = 0;
+                var backupMaxRetries = 30;
                 
-                var retryInterval = setInterval(function() {
-                    retryCount++;
-                    if (retryCount >= maxRetries) {
-                        clearInterval(retryInterval);
-                        log('Stopped retrying after ' + maxRetries + ' attempts');
+                var backupInterval = setInterval(function() {
+                    if (initialized) {
+                        clearInterval(backupInterval);
+                        return;
+                    }
+                    
+                    backupRetry++;
+                    if (backupRetry >= backupMaxRetries) {
+                        clearInterval(backupInterval);
+                        log('Backup retries exhausted');
                         return;
                     }
                     
                     var result = initCountdown();
                     if (result === true) {
-                        clearInterval(retryInterval);
-                        log('Successfully initialized on attempt ' + retryCount);
-                    } else {
-                        log('Retry ' + retryCount + '/' + maxRetries + '...');
+                        log('Initialized on backup attempt ' + backupRetry);
                     }
                 }, 100);
                 
@@ -990,445 +986,281 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script type="module">
-        // Import Firebase config to ensure it's loaded
-        import './js/firebase-config.js';
-        
-        // Global variables
-        let products = [];
+    <!-- Scripts - Products Loading Only (Countdown handled by inline script above) -->
+    <script>
+        // Global products array
+        var products = [];
         
         // Function to initialize Firebase and load products
-        async function initializeAndLoad() {
-            const container = document.getElementById('offersProducts');
-            const loadingEl = document.getElementById('offersLoading');
+        // Note: Countdown is already handled by the inline script above
+        async function initializeProducts() {
+            var container = document.getElementById('offersProducts');
+            var loadingEl = document.getElementById('offersLoading');
             
             if (!container || !loadingEl) {
                 console.error('Container elements not found');
                 return;
             }
             
-            console.log('Starting initialization...');
+            console.log('[Products] Starting product initialization...');
             
             try {
-                // Step 1: Explicitly initialize Firebase first
-                console.log('Initializing Firebase...');
+                // Step 1: Initialize Firebase
+                console.log('[Products] Initializing Firebase...');
                 if (typeof window.initFirebase === 'function') {
                     await window.initFirebase();
-                    console.log('Firebase initialized successfully');
+                    console.log('[Products] Firebase initialized');
                 } else {
                     throw new Error('initFirebase function not found');
                 }
                 
-                // Step 2: Wait for ProductAPI to be available (should be immediate after init)
-                let attempts = 0;
-                const maxAttempts = 50; // 5 seconds max
+                // Step 2: Wait for ProductAPI
+                var attempts = 0;
+                var maxAttempts = 50;
                 while (!window.ProductAPI && attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(function(resolve) { setTimeout(resolve, 100); });
                     attempts++;
                 }
                 
                 if (!window.ProductAPI) {
-                    throw new Error('ProductAPI not available after initialization');
+                    throw new Error('ProductAPI not available');
                 }
                 
-                console.log('ProductAPI is ready, loading products...');
+                console.log('[Products] ProductAPI ready, loading products...');
                 
-                // Step 3: Load products using ProductAPI
-                const result = await window.ProductAPI.getProducts({ pageSize: 100 });
+                // Step 3: Load products
+                var result = await window.ProductAPI.getProducts({ pageSize: 100 });
                 
                 // Filter products with openingOffer flag
-                products = result.products.filter(p => p.openingOffer === true);
+                products = result.products.filter(function(p) { return p.openingOffer === true; });
                 
-                console.log('Loaded', products.length, 'opening offer products');
-                console.log('Total products in database:', result.products.length);
+                console.log('[Products] Loaded ' + products.length + ' opening offer products');
                 
                 if (products.length > 0) {
-                    // Success - show products
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderProducts();
-                    // showDebugInfo(result.products); // DEBUG - Disabled
                 } else {
-                    // No products found with openingOffer flag
-                    console.log('No opening offer products found');
-                    // showDebugInfo(result.products); // DEBUG - Disabled
+                    console.log('[Products] No opening offer products found, showing demo products');
                     loadingEl.style.display = 'none';
                     container.style.display = 'grid';
                     renderDemoProducts();
                 }
 
             } catch (error) {
-                console.error('Error:', error.message);
-                // showDebugInfo([]); // DEBUG - Disabled
+                console.error('[Products] Error:', error.message);
                 loadingEl.style.display = 'none';
                 container.style.display = 'grid';
                 renderDemoProducts();
             }
         }
         
-        // Initialize countdown and load products
-        async function initializePage() {
-            // Initialize countdown from shared module
-            const { initOpeningOffersCountdown } = await import('./js/opening-offers.js');
-            initOpeningOffersCountdown();
-            
-            // Then initialize Firebase and load products
-            await initializeAndLoad();
-        }
-
-        // ========== HELPER FUNCTIONS ==========
-        // These must be in the same scope to be accessible
-
-        /* // DEBUG - Disabled entire function
-        // Show debug information on page
-        function showDebugInfo(allProducts) {
-            // Remove existing debug info if any
-            const existingDebug = document.getElementById('debugInfo');
-            if (existingDebug) {
-                existingDebug.remove();
-            }
-
-            const debugDiv = document.createElement('div');
-            debugDiv.id = 'debugInfo';
-            debugDiv.style.cssText = 'background: rgba(0,0,0,0.9); color: #fff; padding: 20px; margin: 20px; border-radius: 10px; font-size: 14px; max-width: 800px; margin-left: auto; margin-right: auto;';
-
-            const openingOfferProducts = allProducts ? allProducts.filter(p => p.openingOffer === true) : [];
-            const noOpeningOfferProducts = allProducts ? allProducts.filter(p => !p.openingOffer) : [];
-
-            let productsListHtml = '';
-            if (allProducts && allProducts.length > 0) {
-                productsListHtml = `
-                    <div style="margin-top: 15px;">
-                        <p style="color: #f39c12; font-weight: bold; margin-bottom: 10px;">Liste des produits dans la base de donnees:</p>
-                        <ul style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto;">
-                            ${allProducts.map(p => `
-                                <li style="padding: 8px 10px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>${p.openingOffer ? '✅' : '❌'} ${p.name || 'Sans nom'}</span>
-                                    <span style="font-size: 12px; color: ${p.openingOffer ? '#27ae60' : '#e74c3c'};">
-                                        openingOffer: ${p.openingOffer === true ? 'true' : 'false'}
-                                    </span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                `;
-            } else {
-                productsListHtml = `
-                    <p style="color: #e74c3c; margin-top: 15px;">⚠️ Aucun produit trouve dans Firebase.</p>
-                    <p>Verifiez que:</p>
-                    <ul style="text-align: left; margin-left: 20px;">
-                        <li>La connexion Firebase fonctionne</li>
-                        <li>Vous avez ajoute des produits avec "openingOffer: true"</li>
-                    </ul>
-                `;
-            }
-
-            debugDiv.innerHTML = `
-                <h4 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px;">📊 Debug Info - Etat des Produits</h4>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-                    <div style="background: #2c3e50; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: #3498db;">${allProducts ? allProducts.length : 0}</div>
-                        <div style="font-size: 12px; color: #aaa;">Total Produits</div>
-                    </div>
-                    <div style="background: #27ae60; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold;">${openingOfferProducts.length}</div>
-                        <div style="font-size: 12px; color: #aaa;">Avec Opening Offer</div>
-                    </div>
-                    <div style="background: #e74c3c; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold;">${noOpeningOfferProducts.length}</div>
-                        <div style="font-size: 12px; color: #aaa;">Sans Opening Offer</div>
-                    </div>
-                </div>
-                <hr style="border-color: #444; margin: 15px 0;">
-                ${productsListHtml}
-            `;
-
-            // Add debug div after the section
-            const section = document.getElementById('openingOffersSection');
-            if (section) {
-                section.parentNode.insertBefore(debugDiv, section.nextSibling);
-            }
-        }
-        */
-        
         // Render products from database
         function renderProducts() {
-            const container = document.getElementById('offersProducts');
+            var container = document.getElementById('offersProducts');
             
             if (products.length === 0) {
-                console.log('No products to render, showing demo products');
+                console.log('[Products] No products to render');
                 renderDemoProducts();
                 return;
             }
             
-            console.log('Rendering', products.length, 'products from database');
+            console.log('[Products] Rendering ' + products.length + ' products');
             
-            container.innerHTML = products.map(product => {
-                // Calculate offer price from promotion percentage
-                const originalPrice = product.price || 0;
-                const promotion = product.promotion || 0;
-                const offerPrice = promotion > 0 
+            container.innerHTML = products.map(function(product) {
+                var originalPrice = product.price || 0;
+                var promotion = product.promotion || 0;
+                var offerPrice = promotion > 0 
                     ? Math.round(originalPrice * (1 - promotion / 100)) 
                     : originalPrice;
-                const savings = originalPrice - offerPrice;
-                const discount = promotion > 0 ? promotion : Math.round((1 - offerPrice / originalPrice) * 100);
+                var savings = originalPrice - offerPrice;
+                var discount = promotion > 0 ? promotion : Math.round((1 - offerPrice / originalPrice) * 100);
                 
-                return `
-                <div class="offer-product-card">
-                    <span class="offer-badge">-${discount}%</span>
-                    <div class="offer-quick-cart" onclick="openOrderModal('${product.id || ''}')">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <div class="offer-product-image-container">
-                        <img src="${product.image || ''}" alt="${product.name || 'Produit'}" class="offer-product-image"
-                             onerror="this.src='https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name || 'Produit')}'">
-                        <div class="offer-image-overlay"></div>
-                    </div>
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">${product.name || 'Sans nom'}</h3>
-                        <div class="offer-stock">
-                            <span class="offer-stock-dot"></span>
-                            <span>En stock - Expedition sous 24h</span>
-                        </div>
-                        <div class="offer-product-price-container">
-                            <span class="offer-old-price">${originalPrice} MAD</span>
-                            <span class="offer-new-price">${offerPrice} MAD</span>
-                            <span class="offer-savings">Economisez ${savings} MAD</span>
-                        </div>
-                    </div>
-                    <div class="offer-actions">
-                        <button class="offer-btn-primary" onclick="openOrderModal('${product.id || ''}')">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>اطلب الان</span>
-                        </button>
-                    </div>
-                </div>
-            `}).join('');
+                return '<div class="offer-product-card">' +
+                    '<span class="offer-badge">-' + discount + '%</span>' +
+                    '<div class="offer-quick-cart" onclick="openOrderModal(\'' + (product.id || '') + '\')">' +
+                        '<i class="fas fa-shopping-bag"></i>' +
+                    '</div>' +
+                    '<div class="offer-product-image-container">' +
+                        '<img src="' + (product.image || '') + '" alt="' + (product.name || 'Produit') + '" class="offer-product-image" onerror="this.src=\'https://placehold.co/400x350/1a1a1a/d4af37?text=' + encodeURIComponent(product.name || 'Produit') + '\'">' +
+                        '<div class="offer-image-overlay"></div>' +
+                    '</div>' +
+                    '<div class="offer-product-info">' +
+                        '<h3 class="offer-product-title">' + (product.name || 'Sans nom') + '</h3>' +
+                        '<div class="offer-stock">' +
+                            '<span class="offer-stock-dot"></span>' +
+                            '<span>En stock - Expedition sous 24h</span>' +
+                        '</div>' +
+                        '<div class="offer-product-price-container">' +
+                            '<span class="offer-old-price">' + originalPrice + ' MAD</span>' +
+                            '<span class="offer-new-price">' + offerPrice + ' MAD</span>' +
+                            '<span class="offer-savings">Economisez ' + savings + ' MAD</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="offer-actions">' +
+                        '<button class="offer-btn-primary" onclick="openOrderModal(\'' + (product.id || '') + '\')">' +
+                            '<i class="fas fa-shopping-bag"></i>' +
+                            '<span>اطلب الان</span>' +
+                        '</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
         }
         
-        // Render demo products (for testing when no database products found)
+        // Render demo products
         function renderDemoProducts() {
-            const container = document.getElementById('offersProducts');
-            const demoProducts = [
+            var container = document.getElementById('offersProducts');
+            var demoProducts = [
                 { id: 'demo-1', name: 'Montre Luxe Hommes', price: 2500, offerPrice: 1999, discount: 20 },
                 { id: 'demo-2', name: 'Portefeuille Cuir Luxe', price: 800, offerPrice: 599, discount: 25 },
                 { id: 'demo-3', name: 'Ceinture Cuir Elegante', price: 450, offerPrice: 349, discount: 22 },
                 { id: 'demo-4', name: 'Lunettes de Soleil Modernes', price: 1200, offerPrice: 899, discount: 25 },
                 { id: 'demo-5', name: 'Montre Elegante Femme', price: 2200, offerPrice: 1699, discount: 23 },
-                { id: 'demo-6', name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 },
+                { id: 'demo-6', name: 'Ensemble Accessoires', price: 1500, offerPrice: 1099, discount: 27 }
             ];
                 
-            container.innerHTML = demoProducts.map(product => {
-                const savings = product.price - product.offerPrice;
-                return `
-                <div class="offer-product-card" style="opacity: 0.7;">
-                    <span class="offer-badge">-${product.discount}%</span>
-                    <div class="offer-quick-cart" onclick="openOrderModal('${product.id}')">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <div class="offer-product-image-container">
-                        <img src="https://placehold.co/400x350/1a1a1a/d4af37?text=${encodeURIComponent(product.name)}"
-                             alt="${product.name}" class="offer-product-image"
-                             onerror="this.src='https://placehold.co/400x350/1a1a1a/d4af37?text=Offre'">
-                        <div class="offer-image-overlay"></div>
-                    </div>
-                    <div class="offer-product-info">
-                        <h3 class="offer-product-title">${product.name}</h3>
-                        <div class="offer-stock">
-                            <span class="offer-stock-dot"></span>
-                            <span>En stock - Expedition sous 24h</span>
-                        </div>
-                        <div class="offer-product-price-container">
-                            <span class="offer-old-price">${product.price} MAD</span>
-                            <span class="offer-new-price">${product.offerPrice} MAD</span>
-                            <span class="offer-savings">Economisez ${savings} MAD</span>
-                        </div>
-                    </div>
-                    <div class="offer-actions">
-                        <button class="offer-btn-primary" onclick="openOrderModal('${product.id}')">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>اطلب الان</span>
-                        </button>
-                    </div>
-                </div>
-            `}).join('');
+            container.innerHTML = demoProducts.map(function(product) {
+                var savings = product.price - product.offerPrice;
+                return '<div class="offer-product-card" style="opacity: 0.7;">' +
+                    '<span class="offer-badge">-' + product.discount + '%</span>' +
+                    '<div class="offer-quick-cart" onclick="openOrderModal(\'' + product.id + '\')">' +
+                        '<i class="fas fa-shopping-bag"></i>' +
+                    '</div>' +
+                    '<div class="offer-product-image-container">' +
+                        '<img src="https://placehold.co/400x350/1a1a1a/d4af37?text=' + encodeURIComponent(product.name) + '" alt="' + product.name + '" class="offer-product-image" onerror="this.src=\'https://placehold.co/400x350/1a1a1a/d4af37?text=Offre\'">' +
+                        '<div class="offer-image-overlay"></div>' +
+                    '</div>' +
+                    '<div class="offer-product-info">' +
+                        '<h3 class="offer-product-title">' + product.name + '</h3>' +
+                        '<div class="offer-stock">' +
+                            '<span class="offer-stock-dot"></span>' +
+                            '<span>En stock - Expedition sous 24h</span>' +
+                        '</div>' +
+                        '<div class="offer-product-price-container">' +
+                            '<span class="offer-old-price">' + product.price + ' MAD</span>' +
+                            '<span class="offer-new-price">' + product.offerPrice + ' MAD</span>' +
+                            '<span class="offer-savings">Economisez ' + savings + ' MAD</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="offer-actions">' +
+                        '<button class="offer-btn-primary" onclick="openOrderModal(\'' + product.id + '\')">' +
+                            '<i class="fas fa-shopping-bag"></i>' +
+                            '<span>اطلب الان</span>' +
+                        '</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
             
             // Add warning banner
-            const banner = document.createElement('div');
+            var banner = document.createElement('div');
             banner.className = 'demo-banner';
-            banner.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Produits de demonstration affiches - Verifiez la connexion Firebase ou ajoutez des produits avec "Opening Offer" active.</span>';
+            banner.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Produits de demonstration - Verifiez la connexion Firebase</span>';
             container.parentNode.insertBefore(banner, container);
         }
         
-        // Quick add to cart from icon
+        // Show notification
+        function showNotification(message, type) {
+            type = type || 'success';
+            var notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 100px; right: 20px; background: ' + (type === 'success' ? 'linear-gradient(135deg, #27ae60, #2ecc71)' : 'linear-gradient(135deg, #e74c3c, #c0392b)') + '; color: white; padding: 15px 25px; border-radius: 10px; font-family: Cairo, sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.3);';
+            notification.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+            document.body.appendChild(notification);
+            setTimeout(function() { notification.remove(); }, 3000);
+        }
+        
+        // Quick add to cart
         window.quickAddToCart = async function(productId, productName, price) {
-            if (productId && productId.startsWith('demo-')) {
-                showNotification('Produit de démonstration!', 'warning');
+            if (productId && productId.indexOf('demo-') === 0) {
+                showNotification('Produit de demonstration!', 'warning');
                 return;
             }
             
             try {
-                // Get product data using the global getProduct function from main.js
-                let product = null;
+                var product = null;
                 if (typeof window.getProduct === 'function') {
                     product = await window.getProduct(productId);
                 }
                 
-                // If getProduct is not available, create a minimal product object
                 if (!product) {
-                    product = {
-                        id: productId,
-                        name: productName,
-                        price: price,
-                        image: ''
-                    };
+                    product = { id: productId, name: productName, price: price, image: '' };
                 }
                 
-                // Use the global addToCart function from main.js
                 if (typeof window.addToCart === 'function') {
                     window.addToCart(product);
                 } else {
-                    // Fallback: add to cart manually using localStorage
-                    const cart = JSON.parse(localStorage.getItem('tiqtaqo_cart') || '[]');
-                    const existingItem = cart.find(item => item.id === productId);
+                    var cart = JSON.parse(localStorage.getItem('tiqtaqo_cart') || '[]');
+                    var existingItem = cart.find(function(item) { return item.id === productId; });
                     
                     if (existingItem) {
                         existingItem.quantity += 1;
                     } else {
-                        cart.push({
-                            id: product.id,
-                            name: product.name,
-                            price: product.price,
-                            image: product.image || '',
-                            quantity: 1
-                        });
+                        cart.push({ id: product.id, name: product.name, price: product.price, image: product.image || '', quantity: 1 });
                     }
                     
                     localStorage.setItem('tiqtaqo_cart', JSON.stringify(cart));
                     
-                    // Update cart UI
                     if (typeof window.updateCartUI === 'function') {
                         window.updateCartUI();
                     }
                 }
                 
-                // Visual feedback on the icon
-                const icon = event.currentTarget.querySelector('i');
+                // Visual feedback
+                var icon = event.currentTarget.querySelector('i');
                 if (icon) {
-                    icon.classList.remove('fa-shopping-cart');
+                    icon.classList.remove('fa-shopping-bag');
                     icon.classList.add('fa-check');
                     icon.style.color = '#2ecc71';
-                    
-                    setTimeout(() => {
+                    setTimeout(function() {
                         icon.classList.remove('fa-check');
-                        icon.classList.add('fa-shopping-cart');
+                        icon.classList.add('fa-shopping-bag');
                         icon.style.color = '';
                     }, 1500);
                 }
                 
             } catch (error) {
                 console.error('Error adding to cart:', error);
-                showNotification('Erreur lors de l\'ajout au panier', 'warning');
+                showNotification('Erreur lors de lajout au panier', 'warning');
             }
-        }
+        };
         
-        // Show notification function
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                background: ${type === 'success' ? 'linear-gradient(135deg, #27ae60, #2ecc71)' : 'linear-gradient(135deg, #e74c3c, #c0392b)'};
-                color: white;
-                padding: 15px 25px;
-                border-radius: 10px;
-                font-family: 'Cairo', sans-serif;
-                font-size: 14px;
-                font-weight: 600;
-                z-index: 10000;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-            `;
-            notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-            
-            // Add animation styles
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                @keyframes fadeOut {
-                    from { opacity: 1; }
-                    to { opacity: 0; transform: translateX(50px); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-        
-        // Add to cart function - properly adds product to cart
+        // Add to cart function
         window.addToCart = async function(productId) {
-            if (productId && productId.startsWith('demo-')) {
-                showNotification('Ceci est un produit de démonstration!', 'warning');
+            if (productId && productId.indexOf('demo-') === 0) {
+                showNotification('Ceci est un produit de demonstration!', 'warning');
                 return;
             }
             
             try {
-                // Get product data from loaded products first
-                let product = products.find(p => p.id === productId);
+                var product = products.find(function(p) { return p.id === productId; });
                 
-                // If not found in loaded products, try to fetch from Firebase
                 if (!product && typeof window.getProduct === 'function') {
                     product = await window.getProduct(productId);
                 }
                 
-                // If still not found, create a minimal product object
                 if (!product) {
-                    showNotification('Produit non trouvé!', 'warning');
+                    showNotification('Produit non trouve!', 'warning');
                     return;
                 }
                 
-                // Calculate offer price
-                const originalPrice = product.price || 0;
-                const promotion = product.promotion || 0;
-                const offerPrice = promotion > 0 
-                    ? Math.round(originalPrice * (1 - promotion / 100)) 
-                    : originalPrice;
-                
-                // Update product price to offer price
+                var originalPrice = product.price || 0;
+                var promotion = product.promotion || 0;
+                var offerPrice = promotion > 0 ? Math.round(originalPrice * (1 - promotion / 100)) : originalPrice;
                 product.price = offerPrice;
                 
-                // Use the global addToCart function from main.js
                 if (typeof window.addToCart === 'function') {
                     window.addToCart(product);
                 } else {
-                    // Fallback: add to cart manually
-                    const cart = JSON.parse(localStorage.getItem('tiqtaqo_cart') || '[]');
-                    const existingItem = cart.find(item => item.id === productId);
+                    var cart = JSON.parse(localStorage.getItem('tiqtaqo_cart') || '[]');
+                    var existingItem = cart.find(function(item) { return item.id === productId; });
                     
                     if (existingItem) {
                         existingItem.quantity += 1;
                     } else {
-                        cart.push({
-                            id: product.id,
-                            name: product.name,
-                            price: product.price,
-                            image: product.image || '',
-                            quantity: 1
-                        });
+                        cart.push({ id: product.id, name: product.name, price: product.price, image: product.image || '', quantity: 1 });
                     }
                     
                     localStorage.setItem('tiqtaqo_cart', JSON.stringify(cart));
                     
-                    // Update cart UI
                     if (typeof window.updateCartUI === 'function') {
                         window.updateCartUI();
                     }
@@ -1436,22 +1268,15 @@
                 
             } catch (error) {
                 console.error('Error adding to cart:', error);
-                showNotification('Erreur lors de l\'ajout au panier', 'warning');
+                showNotification('Erreur lors de lajout au panier', 'warning');
             }
         };
         
-        // Update cart badge
-        function updateCartBadge() {
-            const badge = document.getElementById('cartBadge');
-            if (badge) {
-                let currentCount = parseInt(badge.textContent) || 0;
-                badge.textContent = currentCount + 1;
-                badge.style.display = 'inline-block';
-            }
-        }
-        
-        // Start initialization on page load
-        document.addEventListener('DOMContentLoaded', initializePage);
+        // Start product initialization when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Small delay to ensure countdown script has priority
+            setTimeout(initializeProducts, 100);
+        });
     </script>
     
     <!-- Scripts -->
