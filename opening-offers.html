@@ -758,189 +758,149 @@
                 </div>
             </div>
             
-            <!-- Countdown Timer - Fixed Inline Script for Mobile Compatibility -->
+            <!-- Countdown Timer - Simple and Reliable Script for All Devices -->
             <script>
             (function() {
-                'use strict';
-                
+                // Countdown state
                 var countdownInterval = null;
-                var retryCount = 0;
-                var maxRetries = 20;
-                var initialized = false;
                 
-                function log(message) {
-                    console.log('[Countdown-Fixed] ' + message);
+                // Get elements safely
+                function getCountElement(id) {
+                    try {
+                        return document.getElementById(id);
+                    } catch(e) {
+                        return null;
+                    }
                 }
                 
-                function updateCountdownDisplay(days, hours, minutes, seconds) {
-                    var daysEl = document.getElementById('countDays');
-                    var hoursEl = document.getElementById('countHours');
-                    var minutesEl = document.getElementById('countMinutes');
-                    var secondsEl = document.getElementById('countSeconds');
+                // Main countdown function
+                function startCountdown() {
+                    var section = getCountElement('openingOffersSection');
+                    var daysEl = getCountElement('countDays');
+                    var hoursEl = getCountElement('countHours');
+                    var minutesEl = getCountElement('countMinutes');
+                    var secondsEl = getCountElement('countSeconds');
                     
-                    if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
-                    if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
-                    if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
-                    if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
-                }
-                
-                function initCountdown() {
-                    // Prevent multiple initializations
-                    if (initialized) {
-                        return true;
+                    // Exit if elements not found
+                    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
+                        console.log('[Countdown] Elements not found, skipping...');
+                        return;
                     }
                     
-                    var section = document.getElementById('openingOffersSection');
-                    var daysEl = document.getElementById('countDays');
+                    console.log('[Countdown] Starting...');
                     
-                    // Check if main elements exist
-                    if (!section || !daysEl) {
-                        retryCount++;
-                        if (retryCount < maxRetries) {
-                            log('Elements not found, retry ' + retryCount + '/' + maxRetries);
-                            setTimeout(initCountdown, 50);
-                        }
-                        return false;
-                    }
-                    
-                    log('Main elements found, continuing...');
-                    
-                    // Check localStorage state
+                    // Get or create endTime
                     var endTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
                     var expired = localStorage.getItem('openingOffers_expired') === 'true';
                     
-                    log('State: endTime=' + (endTime ? 'set' : 'null') + ', isActive=' + isActive + ', expired=' + expired);
+                    console.log('[Countdown] State: endTime=' + (endTime ? 'set' : 'null') + ', isActive=' + isActive + ', expired=' + expired);
                     
+                    // Handle expired state
                     if (expired) {
-                        log('Section expired, hiding');
-                        section.style.display = 'none';
-                        initialized = true;
-                        return true;
+                        if (section) section.style.display = 'none';
+                        return;
                     }
                     
+                    // Create default if not set
                     if (!endTime) {
-                        // Create default 7-day countdown
-                        endTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
+                        endTime = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
                         localStorage.setItem('openingOffers_endTime', endTime.toString());
                         localStorage.setItem('openingOffers_isActive', 'true');
-                        log('Created new countdown: 7 days');
+                        console.log('[Countdown] Created new 7-day countdown');
                     }
                     
+                    // Handle inactive state
                     if (!isActive) {
-                        log('Section not active, hiding');
-                        section.style.display = 'none';
-                        initialized = true;
-                        return true;
+                        if (section) section.style.display = 'none';
+                        return;
                     }
                     
                     // Make section visible
-                    section.style.display = 'block';
-                    section.style.visibility = 'visible';
-                    section.style.opacity = '1';
-                    
-                    // Make countdown elements visible
-                    var countdownContainer = document.getElementById('countdownContainer');
-                    if (countdownContainer) {
-                        countdownContainer.style.display = 'flex';
+                    if (section) {
+                        section.style.display = 'block';
+                        section.style.visibility = 'visible';
+                        section.style.opacity = '1';
                     }
-                    
-                    var countdownUnits = document.querySelectorAll('.countdown-unit');
-                    for (var i = 0; i < countdownUnits.length; i++) {
-                        countdownUnits[i].style.display = 'block';
-                    }
-                    
-                    log('Starting countdown timer...');
                     
                     // Clear any existing interval
                     if (countdownInterval) {
                         clearInterval(countdownInterval);
                     }
                     
-                    function tick() {
+                    // Update function
+                    function update() {
                         var now = Date.now();
                         var remaining = parseInt(endTime) - now;
                         
                         if (remaining <= 0) {
-                            // Timer expired
+                            // Expired
                             clearInterval(countdownInterval);
-                            log('Timer expired!');
-                            
-                            // Hide section
-                            section.style.display = 'none';
-                            
-                            // Mark as expired
+                            console.log('[Countdown] Expired!');
+                            if (section) section.style.display = 'none';
                             localStorage.setItem('openingOffers_expired', 'true');
                             localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
                             localStorage.setItem('openingOffers_isActive', 'false');
                             localStorage.removeItem('openingOffers_endTime');
-                            
-                            initialized = true;
                             return;
                         }
                         
-                        // Calculate time units
+                        // Calculate time
                         var days = Math.floor(remaining / (1000 * 60 * 60 * 24));
                         var hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         var minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
                         var seconds = Math.floor((remaining % (1000 * 60)) / 1000);
                         
-                        // Update display
-                        updateCountdownDisplay(days, hours, minutes, seconds);
+                        // Update display with null checks
+                        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+                        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+                        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+                        if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
                     }
                     
-                    // Initial update
-                    tick();
-                    
-                    // Start interval - 1000ms for accurate countdown
-                    countdownInterval = setInterval(tick, 1000);
-                    
-                    initialized = true;
-                    log('Countdown initialized successfully!');
-                    return true;
+                    // Initial update and start interval
+                    update();
+                    countdownInterval = setInterval(update, 1000);
+                    console.log('[Countdown] Running!');
                 }
                 
-                // Listen for storage changes from other tabs (admin panel updates)
-                window.addEventListener('storage', function(event) {
-                    if (event.key === 'openingOffers_endTime' || 
-                        event.key === 'openingOffers_expired' ||
-                        event.key === 'openingOffers_isActive') {
-                        log('Storage changed, reloading page...');
+                // Listen for storage changes (admin panel updates)
+                window.addEventListener('storage', function(e) {
+                    if (e.key === 'openingOffers_endTime' || 
+                        e.key === 'openingOffers_expired' ||
+                        e.key === 'openingOffers_isActive') {
+                        console.log('[Countdown] Storage changed, reloading...');
                         location.reload();
                     }
                 });
                 
                 // Initialize when DOM is ready
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initCountdown);
-                } else {
-                    // DOM already loaded, initialize after a small delay to ensure all elements are rendered
-                    setTimeout(initCountdown, 10);
+                function init() {
+                    // Try immediately
+                    startCountdown();
+                    
+                    // Retry a few times in case DOM wasn't ready
+                    var retries = 0;
+                    var maxRetries = 10;
+                    var retryInterval = setInterval(function() {
+                        retries++;
+                        var daysEl = getCountElement('countDays');
+                        if (daysEl && daysEl.textContent === '00') {
+                            // Element exists but still shows 00, retry
+                            startCountdown();
+                        }
+                        if (retries >= maxRetries) {
+                            clearInterval(retryInterval);
+                        }
+                    }, 100);
                 }
                 
-                // Backup initialization with retries
-                var backupRetry = 0;
-                var backupMaxRetries = 30;
-                
-                var backupInterval = setInterval(function() {
-                    if (initialized) {
-                        clearInterval(backupInterval);
-                        return;
-                    }
-                    
-                    backupRetry++;
-                    if (backupRetry >= backupMaxRetries) {
-                        clearInterval(backupInterval);
-                        log('Backup retries exhausted');
-                        return;
-                    }
-                    
-                    var result = initCountdown();
-                    if (result === true) {
-                        log('Initialized on backup attempt ' + backupRetry);
-                    }
-                }, 100);
-                
+                // Start when DOM is ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', init);
+                } else {
+                    init();
+                }
             })();
             </script>
             
