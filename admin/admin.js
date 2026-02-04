@@ -219,66 +219,97 @@ async function toggleProductOpeningOffer(id) {
 async function updateCountdown() {
     const endDateInput = document.getElementById('countdownEndDate').value;
     if (!endDateInput) {
-        alert('Veuillez sélectionner une date de fin!');
+        alert('يرجى اختيار تاريخ النهاية!');
         return;
     }
     
     const endDate = new Date(endDateInput).getTime();
+    console.log('[Countdown] جاري حفظ الوقت:', new Date(endDate).toLocaleString());
     
+    // Method 1: Try using ensureFirebaseInitialized directly
     try {
-        const db = await getDb();
-        if (db) {
+        console.log('[Countdown] الطريقة 1: استخدام ensureFirebaseInitialized');
+        
+        // Make sure Firebase is initialized
+        if (typeof ensureFirebaseInitialized === 'function') {
+            await ensureFirebaseInitialized();
+        }
+        
+        // Wait a bit for Firebase to initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (firebaseDb) {
             const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-            await setDoc(doc(db, 'config', 'openingOffers'), {
+            console.log('[Countdown] جاري الحفظ في Firebase...');
+            
+            await setDoc(doc(firebaseDb, 'config', 'openingOffers'), {
                 endTime: endDate,
                 isActive: true,
                 updatedAt: new Date().toISOString()
             });
             
-            // Also save to localStorage as backup
+            console.log('[Countdown] ✓ تم الحفظ في Firebase بنجاح!');
+            
+            // Save to localStorage as backup
             localStorage.setItem('openingOffers_endTime', endDate.toString());
             localStorage.setItem('openingOffers_isActive', 'true');
-
-            // Clear expired flags so section can show again
             localStorage.removeItem('openingOffers_expired');
             localStorage.removeItem('openingOffers_expiredTime');
-
-            // Dispatch custom event for same-tab updates
-            window.dispatchEvent(new CustomEvent('countdownUpdated', {
-                detail: { endTime: endDate }
-            }));
-
-            alert('Countdown mis à jour avec succès!');
+            
+            alert('✓ تم حفظ العداد في Firebase بنجاح!');
             loadCountdownDisplay();
-
-            // Reload the opening offers page to show the countdown
-            if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
+            
+            if (confirm('تم حفظ العداد. هل تريد فتح صفحة التخفيضات للتحقق؟')) {
                 window.open('opening-offers.html', '_blank');
             }
+            return;
         }
     } catch (error) {
-        console.error('Error updating countdown:', error);
-        // Fallback to localStorage
+        console.log('[Countdown] الطريقة 1 فشلت:', error.message);
+    }
+    
+    // Method 2: Try using dynamic import with Firebase SDK
+    try {
+        console.log('[Countdown] الطريقة 2: استخدام Firebase SDK مباشرة');
+        
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { getFirestore, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        
+        const tempApp = initializeApp(firebaseConfig);
+        const tempDb = getFirestore(tempApp);
+        
+        console.log('[Countdown] جاري الحفظ مباشرة...');
+        
+        await setDoc(doc(tempDb, 'config', 'openingOffers'), {
+            endTime: endDate,
+            isActive: true,
+            updatedAt: new Date().toISOString()
+        });
+        
+        console.log('[Countdown] ✓ الطريقة 2 نجحت!');
+        
+        // Save to localStorage
         localStorage.setItem('openingOffers_endTime', endDate.toString());
         localStorage.setItem('openingOffers_isActive', 'true');
-
-        // Clear expired flags
-        localStorage.removeItem('openingOffers_expired');
-        localStorage.removeItem('openingOffers_expiredTime');
-
-        // Dispatch custom event for same-tab updates
-        window.dispatchEvent(new CustomEvent('countdownUpdated', {
-            detail: { endTime: endDate }
-        }));
-
-        alert('Countdown enregistré dans localStorage (Firebase non disponible)!');
+        
+        alert('✓ تم حفظ العداد بنجاح!');
         loadCountdownDisplay();
-
-        // Reload the opening offers page
-        if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
-            window.open('opening-offers.html', '_blank');
-        }
+        
+        return;
+        
+    } catch (error2) {
+        console.log('[Countdown] الطريقة 2 فشلت:', error2.message);
     }
+    
+    // Method 3: Fallback - save only to localStorage
+    console.log('[Countdown] جميع الطرق فشلت، جاري الحفظ محلياً');
+    localStorage.setItem('openingOffers_endTime', endDate.toString());
+    localStorage.setItem('openingOffers_isActive', 'true');
+    localStorage.removeItem('openingOffers_expired');
+    
+    alert('⚠️ Firebase غير متاح. تم حفظ البيانات محلياً فقط.\n\nللمزامنة عبر الأجهزة، يرجى:\n1. التحقق من اتصال الإنترنت\n2. التأكد من تفعيل Firestore في Firebase Console');
+    
+    loadCountdownDisplay();
 }
 
 async function resetCountdown() {
