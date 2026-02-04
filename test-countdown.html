@@ -58,10 +58,21 @@
             white-space: pre-wrap;
             margin: 15px 0;
         }
+        .info {
+            background: #3498db;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <h1>🔧 فحص العداد</h1>
+    
+    <div class="info">
+        <strong>⚠️ ملاحظة:</strong> إذا كان العداد عالق في "جاري الحفظ"، فهذا يعني أن هناك مشكلة في الاتصال بـ Firebase. جرب استخدام زر "الحفظ اليدوي" أدناه.
+    </div>
     
     <div class="test-box">
         <h3>الحالة:</h3>
@@ -74,9 +85,15 @@
         <h3>إدخال وقت العداد:</h3>
         <label>وقت النهاية:</label>
         <input type="datetime-local" id="endDateInput" style="width: 100%; padding: 10px; margin: 10px 0;">
-        <button onclick="saveCountdown()">💾 حفظ العداد</button>
-        <button onclick="readCountdown()">📖 قراءة العداد</button>
-        <button onclick="deleteCountdown()">🗑️ حذف العداد</button>
+        <button onclick="saveCountdownREST()">💾 الحفظ اليدوي (REST API)</button>
+        <button onclick="readCountdownREST()">📖 قراءة العداد</button>
+        <button onclick="deleteCountdownREST()">🗑️ حذف العداد</button>
+    </div>
+    
+    <div class="test-box">
+        <h3>أدوات المسؤول:</h3>
+        <button onclick="clearLocalStorage()" style="background: #e74c3c; color: white;">🗑️ حذف بيانات العداد المحلية</button>
+        <button onclick="testLocalStorageOnly()">🔧 اختبار فقط بدون Firebase</button>
     </div>
     
     <div class="test-box">
@@ -84,7 +101,7 @@
         <div class="log" id="logBox">...</div>
     </div>
 
-    <script type="module">
+    <script>
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
@@ -95,8 +112,8 @@
             appId: "1:747111253966:web:84c265ac397b644fe28d9f"
         };
 
-        let db = null;
-        let app = null;
+        const PROJECT_ID = 'tiqtaqo-store';
+        const API_KEY = 'AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA';
 
         function log(message, type = 'info') {
             const logBox = document.getElementById('logBox');
@@ -106,39 +123,8 @@
             console.log(message);
         }
 
-        async function initFirebase() {
-            try {
-                log('جاري تهيئة Firebase...');
-                
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-                const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-                
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                
-                log('✓ Firebase تم تهيئته بنجاح!', 'success');
-                document.getElementById('firebaseStatus').textContent = '✅ Firebase متصل';
-                document.getElementById('firebaseStatus').className = 'status success';
-                
-                return db;
-            } catch (error) {
-                log('✗ خطأ في تهيئة Firebase: ' + error.message, 'error');
-                document.getElementById('firebaseStatus').textContent = '❌ Firebase غير متصل';
-                document.getElementById('firebaseStatus').className = 'status error';
-                return null;
-            }
-        }
-
-        // Make functions global
-        window.initFirebase = initFirebase;
-        window.db = db;
-
-        // Auto-init
-        initFirebase();
-    </script>
-
-    <script>
-        async function saveCountdown() {
+        // Save countdown using REST API
+        async function saveCountdownREST() {
             const endDateInput = document.getElementById('endDateInput').value;
             if (!endDateInput) {
                 alert('الرجاء اختيار وقت النهاية!');
@@ -146,138 +132,255 @@
             }
 
             const endDate = new Date(endDateInput).getTime();
+            const now = new Date().toISOString();
             
             try {
                 document.getElementById('writeStatus').textContent = 'جاري الحفظ...';
                 document.getElementById('writeStatus').className = 'status warning';
                 
-                log('جاري حفظ العداد في Firebase...');
+                log('جاري حفظ العداد باستخدام REST API...');
                 log('وقت النهاية: ' + new Date(endDate).toLocaleString());
                 
-                const { doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                // Use REST API to save
+                const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/config/openingOffers?key=${API_KEY}`;
                 
-                if (!window.db) {
-                    await window.initFirebase();
+                const data = {
+                    fields: {
+                        endTime: { integerValue: endDate },
+                        isActive: { booleanValue: true },
+                        updatedAt: { stringValue: now }
+                    }
+                };
+                
+                // First try to patch (update)
+                try {
+                    const response = await fetch(url, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        log('✓ تم حفظ البيانات بنجاح عبر REST API!', 'success');
+                        
+                        // Save to localStorage as backup
+                        localStorage.setItem('openingOffers_endTime', endDate.toString());
+                        localStorage.setItem('openingOffers_isActive', 'true');
+                        
+                        document.getElementById('writeStatus').textContent = '✅ تم الحفظ بنجاح!';
+                        document.getElementById('writeStatus').className = 'status success';
+                        
+                        alert('تم حفظ العداد بنجاح!\n\nالآن:\n1. افتح صفحة "تخفيضات الافتتاحية" في الحاسوب والهاتف\n2. احذف ذاكرة التخزين المؤقت في الهاتف\n3. ستظهر نفس الوقت في جميع الأجهزة');
+                        
+                        return;
+                    }
+                } catch (e) {
+                    log('PATCH failed: ' + e.message);
                 }
                 
-                const docRef = doc(window.db, 'config', 'openingOffers');
+                // If PATCH failed, try POST (create)
+                const postUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/config/openingOffers?key=${API_KEY}&documentId=openingOffers`;
                 
-                // Save the data
-                await setDoc(docRef, {
-                    endTime: endDate,
-                    isActive: true,
-                    updatedAt: new Date().toISOString()
+                const response = await fetch(postUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
                 });
                 
-                log('✓ تم حفظ البيانات في Firebase بنجاح!', 'success');
-                
-                // Verify the save
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    log('✓ تم التحقق: البيانات موجودة في Firebase', 'success');
-                    log('  endTime: ' + data.endTime);
-                    log('  isActive: ' + data.isActive);
-                    log('  updatedAt: ' + data.updatedAt);
+                if (response.ok) {
+                    log('✓ تم إنشاء البيانات بنجاح عبر REST API!', 'success');
+                    
+                    // Save to localStorage as backup
+                    localStorage.setItem('openingOffers_endTime', endDate.toString());
+                    localStorage.setItem('openingOffers_isActive', 'true');
+                    
+                    document.getElementById('writeStatus').textContent = '✅ تم الحفظ بنجاح!';
+                    document.getElementById('writeStatus').className = 'status success';
+                    
+                    alert('تم حفظ العداد بنجاح!');
                 } else {
-                    log('✗ خطأ: البيانات ليست موجودة رغم الحفظ!', 'error');
+                    throw new Error('REST API failed: ' + response.status);
                 }
-                
-                document.getElementById('writeStatus').textContent = '✅ تم الحفظ بنجاح!';
-                document.getElementById('writeStatus').className = 'status success';
-                
-                alert('تم حفظ العداد بنجاح!\n\nالآن افتح صفحة "تخفيضات الافتتاحية" لترى العداد.');
                 
             } catch (error) {
                 log('✗ خطأ في الحفظ: ' + error.message, 'error');
-                document.getElementById('writeStatus').textContent = '❌ خطأ في الحفظ';
-                document.getElementById('writeStatus').className = 'status error';
-                alert('خطأ في الحفظ: ' + error.message);
+                log('جرب حفظ البيانات محلياً...', 'warning');
+                
+                // Fallback to localStorage
+                localStorage.setItem('openingOffers_endTime', endDate.toString());
+                localStorage.setItem('openingOffers_isActive', 'true');
+                
+                log('✓ تم حفظ البيانات في localStorage!', 'success');
+                document.getElementById('writeStatus').textContent = '✅ حفظ محلي فقط';
+                document.getElementById('writeStatus').className = 'status warning';
+                
+                alert('Firebase غير متاح حالياً. تم حفظ البيانات محلياً.\n\nللمزامنة عبر الأجهزة، تحتاج إلى تفعيل CORS في Firebase Console.');
             }
         }
 
-        async function readCountdown() {
+        // Read countdown using REST API
+        async function readCountdownREST() {
             try {
                 document.getElementById('readStatus').textContent = 'جاري القراءة...';
                 document.getElementById('readStatus').className = 'status warning';
                 
-                log('جاري قراءة العداد من Firebase...');
+                log('جاري قراءة العداد باستخدام REST API...');
                 
-                const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/config/openingOffers?key=${API_KEY}`;
                 
-                if (!window.db) {
-                    await window.initFirebase();
-                }
+                const response = await fetch(url);
                 
-                const docRef = doc(window.db, 'config', 'openingOffers');
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    log('✓ تم العثور على بيانات العداد!', 'success');
-                    log('  endTime: ' + data.endTime);
-                    log('  isActive: ' + data.isActive);
-                    log('  updatedAt: ' + data.updatedAt);
+                if (response.ok) {
+                    const data = await response.json();
                     
-                    // Calculate remaining time
-                    const now = new Date().getTime();
-                    const remaining = data.endTime - now;
-                    
-                    if (remaining > 0) {
-                        const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                    if (data.fields) {
+                        const endTime = data.fields.endTime ? data.fields.endTime.integerValue : null;
+                        const isActive = data.fields.isActive ? data.fields.isActive.booleanValue : true;
                         
-                        log(`  الوقت المتبقي: ${days} يوم ${hours} ساعة ${minutes} دقيقة ${seconds} ثانية`);
+                        log('✓ تم العثور على بيانات العداد في Firebase!', 'success');
+                        log('  endTime: ' + endTime);
+                        log('  isActive: ' + isActive);
+                        
+                        // Calculate remaining time
+                        const now = new Date().getTime();
+                        const remaining = endTime - now;
+                        
+                        if (remaining > 0) {
+                            const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                            
+                            log(`الوقت المتبقي: ${days} يوم ${hours} ساعة ${minutes} دقيقة ${seconds} ثانية`);
+                            
+                            document.getElementById('readStatus').textContent = `✅ ${days} يوم ${hours}:${minutes}:${seconds}`;
+                            document.getElementById('readStatus').className = 'status success';
+                        } else {
+                            log('انتهى الوقت!');
+                            document.getElementById('readStatus').textContent = '❌ انتهى الوقت';
+                            document.getElementById('readStatus').className = 'status error';
+                        }
                     } else {
-                        log('  انتهى الوقت!');
+                        log('لا توجد بيانات للعداد في Firebase', 'warning');
+                        document.getElementById('readStatus').textContent = '❌ لا توجد بيانات';
+                        document.getElementById('readStatus').className = 'status error';
                     }
+                } else if (response.status === 404) {
+                    log('لا توجد وثيقة للعداد في Firebase', 'warning');
                     
-                    document.getElementById('readStatus').textContent = '✅ تم العثور على البيانات';
-                    document.getElementById('readStatus').className = 'status success';
+                    // Check localStorage
+                    const localEndTime = localStorage.getItem('openingOffers_endTime');
+                    if (localEndTime) {
+                        log('جرب قراءة من localStorage...', 'warning');
+                        testLocalStorageOnly();
+                    } else {
+                        document.getElementById('readStatus').textContent = '❌ لا توجد بيانات';
+                        document.getElementById('readStatus').className = 'status error';
+                    }
                 } else {
-                    log('✗ لا توجد بيانات للعداد في Firebase', 'error');
-                    document.getElementById('readStatus').textContent = '❌ لا توجد بيانات';
-                    document.getElementById('readStatus').className = 'status error';
-                    alert('لا توجد بيانات للعداد في Firebase!\n\nهذا يعني أن الحفظ من صفحة المسؤول لم يعمل.');
+                    throw new Error('REST API failed: ' + response.status);
                 }
                 
             } catch (error) {
                 log('✗ خطأ في القراءة: ' + error.message, 'error');
-                document.getElementById('readStatus').textContent = '❌ خطأ في القراءة';
-                document.getElementById('readStatus').className = 'status error';
+                log('جرب قراءة من localStorage...', 'warning');
+                testLocalStorageOnly();
             }
         }
 
-        async function deleteCountdown() {
+        // Delete countdown using REST API
+        async function deleteCountdownREST() {
             if (!confirm('هل أنت متأكد من حذف العداد؟')) return;
             
             try {
                 log('جاري حذف العداد...');
                 
-                const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/config/openingOffers?key=${API_KEY}`;
                 
-                if (!window.db) {
-                    await window.initFirebase();
-                }
-                
-                const docRef = doc(window.db, 'config', 'openingOffers');
-                
-                await setDoc(docRef, {
-                    endTime: null,
-                    isActive: false,
-                    deletedAt: new Date().toISOString()
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
-                log('✓ تم حذف العداد بنجاح!', 'success');
+                if (response.ok || response.status === 404) {
+                    log('✓ تم حذف البيانات من Firebase!', 'success');
+                } else {
+                    log('Firebase DELETE failed, clearing localStorage only', 'warning');
+                }
+                
+                // Also clear localStorage
+                localStorage.removeItem('openingOffers_endTime');
+                localStorage.removeItem('openingOffers_isActive');
+                
+                log('✓ تم حذف البيانات المحلية!', 'success');
                 alert('تم حذف العداد!');
+                
+                document.getElementById('readStatus').textContent = '❌ لا توجد بيانات';
+                document.getElementById('readStatus').className = 'status error';
                 
             } catch (error) {
                 log('✗ خطأ في الحذف: ' + error.message, 'error');
+                
+                // At least clear localStorage
+                localStorage.removeItem('openingOffers_endTime');
+                localStorage.removeItem('openingOffers_isActive');
+                log('✓ تم حذف البيانات المحلية فقط', 'warning');
+                alert('تم حذف البيانات المحلية (Firebase غير متاح)');
             }
         }
 
+        // Clear localStorage
+        function clearLocalStorage() {
+            if (!confirm('حذف جميع البيانات المحلية؟')) return;
+            
+            localStorage.removeItem('openingOffers_endTime');
+            localStorage.removeItem('openingOffers_isActive');
+            localStorage.removeItem('openingOffers_products');
+            
+            log('✓ تم حذف جميع البيانات المحلية!', 'success');
+            alert('تم حذف البيانات!');
+        }
+
+        // Test localStorage only
+        function testLocalStorageOnly() {
+            const endTime = localStorage.getItem('openingOffers_endTime');
+            const isActive = localStorage.getItem('openingOffers_isActive');
+            
+            if (endTime && isActive === 'true') {
+                const remaining = parseInt(endTime) - new Date().getTime();
+                
+                if (remaining > 0) {
+                    const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                    
+                    log('✓ تم العثور على بيانات في localStorage!', 'success');
+                    log(`الوقت: ${days} يوم ${hours}:${minutes}:${seconds}`);
+                    
+                    document.getElementById('readStatus').textContent = `🔧 محلي: ${days} يوم ${hours}:${minutes}:${seconds}`;
+                    document.getElementById('readStatus').className = 'status warning';
+                } else {
+                    log('الوقت انتهى في localStorage', 'warning');
+                    document.getElementById('readStatus').textContent = '🔧 انتهى محلياً';
+                    document.getElementById('readStatus').className = 'status warning';
+                }
+            } else {
+                log('لا توجد بيانات في localStorage', 'error');
+                document.getElementById('readStatus').textContent = '❌ لا توجد بيانات';
+                document.getElementById('readStatus').className = 'status error';
+            }
+        }
+
+        // Initialize
+        log('صفحة فحص العداد جاهزة', 'success');
+        
         // Set default date to 7 days from now
         const defaultDate = new Date();
         defaultDate.setDate(defaultDate.getDate() + 7);
