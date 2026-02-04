@@ -962,10 +962,43 @@
         // Global products array
         var products = [];
         
+        // Load products from cache
+        function loadProductsFromCache() {
+            var cachedProducts = localStorage.getItem('openingOffers_products');
+            if (cachedProducts) {
+                try {
+                    var data = JSON.parse(cachedProducts);
+                    var now = new Date().getTime();
+                    // Cache valid for 24 hours
+                    if (data && data.products && data.timestamp && (now - data.timestamp < 86400000)) {
+                        console.log('[Products] Loaded from cache:', data.products.length);
+                        return data.products;
+                    }
+                } catch (e) {
+                    console.log('[Products] Cache parse error:', e);
+                }
+            }
+            return null;
+        }
+        
+        // Save products to cache
+        function saveProductsToCache(products) {
+            var data = {
+                products: products,
+                timestamp: new Date().getTime()
+            };
+            try {
+                localStorage.setItem('openingOffers_products', JSON.stringify(data));
+            } catch (e) {
+                console.log('[Products] Cache save error:', e);
+            }
+        }
+        
         // Function to initialize Firebase and load products
         async function initializeProducts() {
             var container = document.getElementById('offersProducts');
             var loadingEl = document.getElementById('offersLoading');
+            var sectionEl = document.getElementById('openingOffersSection');
             
             if (!container || !loadingEl) {
                 console.error('Container elements not found');
@@ -974,62 +1007,83 @@
             
             console.log('[Products] Starting...');
             
-            // Set timeout to hide loading after 8 seconds
-            setTimeout(function() {
-                console.log('[Products] Timeout - hiding loading');
-                loadingEl.style.display = 'none';
-                // If no products loaded, hide products container
-                if (products.length === 0) {
-                    container.style.display = 'none';
-                }
-            }, 8000);
+            // ALWAYS show section - NEVER hide it completely
+            if (sectionEl) {
+                sectionEl.style.display = 'block';
+                sectionEl.style.visibility = 'visible';
+                sectionEl.style.opacity = '1';
+            }
+            
+            // Try Firebase first, then cache
+            var loadedFromCache = false;
+            var firebaseWorked = false;
             
             try {
                 // Initialize Firebase
                 if (typeof window.initFirebase === 'function') {
-                    await window.initFirebase();
+                    try {
+                        await window.initFirebase();
+                    } catch (e) {
+                        console.log('[Products] Firebase init failed:', e.message);
+                    }
                 }
                 
                 // Wait for ProductAPI
                 var attempts = 0;
-                var maxAttempts = 50;
+                var maxAttempts = 30;
                 while (!window.ProductAPI && attempts < maxAttempts) {
                     await new Promise(function(resolve) { setTimeout(resolve, 100); });
                     attempts++;
                 }
                 
-                if (!window.ProductAPI) {
-                    console.log('[Products] ProductAPI not available');
-                    loadingEl.style.display = 'none';
-                    container.style.display = 'none';
-                    return;
+                if (window.ProductAPI) {
+                    console.log('[Products] Loading products from Firebase...');
+                    var result = await window.ProductAPI.getProducts({ pageSize: 100 });
+                    
+                    // Filter products with openingOffer flag
+                    products = result.products.filter(function(p) { return p.openingOffer === true; });
+                    
+                    console.log('[Products] Loaded from Firebase:', products.length);
+                    
+                    if (products.length > 0) {
+                        // Save to cache for offline use
+                        saveProductsToCache(products);
+                        firebaseWorked = true;
+                    }
                 }
-                
-                console.log('[Products] Loading products...');
-                
-                // Load products
-                var result = await window.ProductAPI.getProducts({ pageSize: 100 });
-                
-                // Filter products with openingOffer flag
-                products = result.products.filter(function(p) { return p.openingOffer === true; });
-                
-                console.log('[Products] Loaded:', products.length);
-                
-                if (products.length > 0) {
-                    loadingEl.style.display = 'none';
-                    container.style.display = 'grid';
-                    renderProducts();
-                } else {
-                    // No products - hide products only
-                    loadingEl.style.display = 'none';
-                    container.style.display = 'none';
-                }
-
             } catch (error) {
-                console.error('[Products] Error:', error.message);
-                // On error - hide loading and products only
+                console.error('[Products] Firebase error:', error.message);
+            }
+            
+            // If Firebase failed, try cache
+            if (!firebaseWorked || products.length === 0) {
+                console.log('[Products] Trying cache...');
+                var cachedProducts = loadProductsFromCache();
+                if (cachedProducts && cachedProducts.length > 0) {
+                    products = cachedProducts;
+                    loadedFromCache = true;
+                    console.log('[Products] Loaded from cache:', products.length);
+                }
+            }
+            
+            // ALWAYS show section and products if we have any
+            if (products.length > 0) {
+                loadingEl.style.display = 'none';
+                container.style.display = 'grid';
+                renderProducts();
+                
+                if (loadedFromCache) {
+                    showNotification('المنتجات محملة من الذاكرة المؤقتة', 'info');
+                }
+            } else {
+                // No products at all - show message but keep section visible
                 loadingEl.style.display = 'none';
                 container.style.display = 'none';
+                // Show placeholder message in header area
+                var headerEl = document.querySelector('.offers-subtitle');
+                if (headerEl) {
+                    headerEl.textContent = 'لا توجد منتجات متاحة حالياً';
+                }
             }
         }
         
