@@ -268,14 +268,24 @@ async function updateCountdown() {
         console.log('[Countdown] الطريقة 1 فشلت:', error.message);
     }
     
-    // Method 2: Try using dynamic import with Firebase SDK
+    // Method 2: Try using dynamic import with Firebase SDK - check for existing app first
     try {
-        console.log('[Countdown] الطريقة 2: استخدام Firebase SDK مباشرة');
+        console.log('[Countdown] الطريقة 2: استخدام Firebase SDK مع التحقق من التطبيق الموجود');
         
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { initializeApp, getApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getFirestore, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
         
-        const tempApp = initializeApp(firebaseConfig);
+        let tempApp;
+        try {
+            // Try to get existing app first - this prevents "app already exists" error
+            tempApp = getApp();
+            console.log('[Countdown] تم العثور على تطبيق Firebase موجود');
+        } catch (noAppError) {
+            // Only initialize if no app exists
+            console.log('[Countdown] لا يوجد تطبيق، جاري إنشاء تطبيق جديد...');
+            tempApp = initializeApp(firebaseConfig);
+        }
+        
         const tempDb = getFirestore(tempApp);
         
         console.log('[Countdown] جاري الحفظ مباشرة...');
