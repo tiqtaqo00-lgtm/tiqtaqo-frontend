@@ -1,15 +1,18 @@
 /**
  * Opening Offers Countdown Timer - Centralized Firebase Sync Integration
  * Uses the centralized FirebaseSync module for countdown management
+ * Fixed: Now loads from Firebase immediately on first load
  */
 
 // Global variables
 let countdownInterval = null;
 let countdownInitialized = false;
+let countdownData = null; // Store countdown data globally
 
 /**
  * Initialize the opening offers countdown timer
  * Uses FirebaseSync module for countdown management
+ * Fixed: Loads from Firebase FIRST, then localStorage as fallback
  */
 async function initOpeningOffersCountdown() {
     if (countdownInitialized) return;
@@ -21,22 +24,38 @@ async function initOpeningOffersCountdown() {
     }
 
     try {
-        // Initialize Firebase using centralized module
+        // Initialize Firebase using centralized module FIRST
         if (window.FirebaseSync && window.FirebaseSync.init) {
             await window.FirebaseSync.init();
             console.log('[OpeningOffers] Firebase initialized via FirebaseSync');
         }
 
-        // Load countdown using centralized module
-        let countdownData = null;
+        // CRITICAL FIX: Load countdown from Firebase FIRST (before localStorage)
         if (window.FirebaseSync && window.FirebaseSync.loadCountdown) {
             countdownData = await window.FirebaseSync.loadCountdown();
-            console.log('[OpeningOffers] Countdown loaded:', countdownData);
+            console.log('[OpeningOffers] Countdown loaded from Firebase:', countdownData);
         }
 
-        // If no countdown data, hide section
+        // If no countdown data from Firebase, try localStorage as fallback
         if (!countdownData || !countdownData.endTime) {
-            console.log('[OpeningOffers] No countdown data found, hiding section');
+            const storedEndTime = localStorage.getItem('openingOffers_endTime');
+            const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+            const isExpired = localStorage.getItem('openingOffers_expired') === 'true';
+            
+            if (storedEndTime && isActive && !isExpired) {
+                countdownData = {
+                    endTime: parseInt(storedEndTime),
+                    isActive: true,
+                    source: 'localStorage'
+                };
+                console.log('[OpeningOffers] Countdown loaded from localStorage:', countdownData);
+            }
+        }
+
+        // If STILL no countdown data, check if we should create default or hide
+        if (!countdownData || !countdownData.endTime) {
+            // No countdown set anywhere - hide section
+            console.log('[OpeningOffers] No countdown data found anywhere, hiding section');
             section.style.display = 'none';
             return;
         }
@@ -48,20 +67,34 @@ async function initOpeningOffersCountdown() {
             return;
         }
 
+        // If countdown is expired, hide section
+        const now = Date.now();
+        if (countdownData.endTime && countdownData.endTime <= now) {
+            console.log('[OpeningOffers] Countdown expired, hiding section');
+            section.style.display = 'none';
+            return;
+        }
+
         // Start the countdown
         startCountdown(countdownData.endTime);
         countdownInitialized = true;
 
-        // Set up real-time listener for changes
+        // Set up real-time listener for changes (after countdown is working)
         if (window.FirebaseSync && window.FirebaseSync.subscribeToCountdown) {
             window.FirebaseSync.subscribeToCountdown(function(newData) {
                 console.log('[OpeningOffers] Real-time countdown update:', newData);
                 
                 if (newData && newData.endTime && newData.isActive) {
+                    // Update countdown data
+                    countdownData = newData;
                     startCountdown(newData.endTime);
                 } else {
                     // Countdown was reset or deactivated
-                    expireSection();
+                    stopCountdown();
+                    const section = document.getElementById('openingOffersSection');
+                    if (section) {
+                        section.style.display = 'none';
+                    }
                 }
             });
         }
@@ -72,18 +105,37 @@ async function initOpeningOffersCountdown() {
     } catch (error) {
         console.error('[OpeningOffers] Error initializing countdown:', error);
         
-        // Fallback to localStorage
+        // Fallback to localStorage only (no default creation)
         const storedEndTime = localStorage.getItem('openingOffers_endTime');
         const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+        const isExpired = localStorage.getItem('openingOffers_expired') === 'true';
         
-        if (storedEndTime && isActive) {
-            startCountdown(parseInt(storedEndTime));
+        if (storedEndTime && isActive && !isExpired) {
+            countdownData = {
+                endTime: parseInt(storedEndTime),
+                isActive: true,
+                source: 'localStorage'
+            };
+            startCountdown(countdownData.endTime);
             countdownInitialized = true;
             setupLocalStorageListener();
         } else {
             // No data at all, hide section
-            section.style.display = 'none';
+            const section = document.getElementById('openingOffersSection');
+            if (section) {
+                section.style.display = 'none';
+            }
         }
+    }
+}
+
+/**
+ * Stop the countdown timer
+ */
+function stopCountdown() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
     }
 }
 
@@ -131,7 +183,7 @@ function startCountdown(endTime) {
 
         if (remaining <= 0) {
             // Time expired
-            clearInterval(countdownInterval);
+            stopCountdown();
             expireSection();
             return;
         }
@@ -256,4 +308,4 @@ window.resetOffersCountdown = async function() {
 document.addEventListener('DOMContentLoaded', initOpeningOffersCountdown);
 
 // Export for use in other modules
-export { initOpeningOffersCountdown, startCountdown, expireSection };
+export { initOpeningOffersCountdown, startCountdown, stopCountdown, expireSection };
