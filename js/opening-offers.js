@@ -1,202 +1,89 @@
 /**
- * Opening Offers Countdown Timer - Firebase Integration
- * Manages countdown timer for opening offers section with real-time updates
+ * Opening Offers Countdown Timer - Centralized Firebase Sync Integration
+ * Uses the centralized FirebaseSync module for countdown management
  */
 
 // Global variables
-let offersConfig = null;
 let countdownInterval = null;
 let countdownInitialized = false;
-let currentEndTime = null;
 
 /**
  * Initialize the opening offers countdown timer
- * Uses Firebase to get the end time, with fallback to localStorage
- * Includes real-time listener for automatic updates
+ * Uses FirebaseSync module for countdown management
  */
 async function initOpeningOffersCountdown() {
     if (countdownInitialized) return;
 
     const section = document.getElementById('openingOffersSection');
-    if (!section) return;
-
-    // Check if already expired in this session
-    if (section.dataset.expired === 'true') {
-        // Check if admin has set a new endTime while section was hidden
-        const newEndTime = localStorage.getItem('openingOffers_endTime');
-        const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
-
-        if (newEndTime && isActive) {
-            // Admin has set a new countdown, clear expired state
-            section.dataset.expired = 'false';
-            console.log('New countdown detected, clearing expired state...');
-        } else {
-            section.style.display = 'none';
-            return;
-        }
-    }
-
-    // Check if expired in localStorage
-    const isExpiredInStorage = localStorage.getItem('openingOffers_expired') === 'true';
-    const storedEndTime = localStorage.getItem('openingOffers_endTime');
-    const storedIsActive = localStorage.getItem('openingOffers_isActive') === 'true';
-
-    // If expired but admin has set new time, clear expired state
-    if (isExpiredInStorage && storedEndTime && storedIsActive) {
-        console.log('Admin reset countdown, clearing expired flags...');
-        localStorage.removeItem('openingOffers_expired');
-        localStorage.removeItem('openingOffers_expiredTime');
-        isExpiredInStorage = false;
-    }
-
-    if (isExpiredInStorage) {
-        // Section was expired by admin or timer, keep it hidden
-        section.dataset.expired = 'true';
-        section.style.display = 'none';
-        console.log('Countdown expired - section hidden until admin resets');
+    if (!section) {
+        console.log('[OpeningOffers] Section not found, skipping initialization');
         return;
     }
 
     try {
-        // Try to load config from Firebase with real-time listener
-        offersConfig = await loadOffersConfigFromFirebase();
-
-        // If Firebase fails or no config, try localStorage
-        if (!offersConfig || !offersConfig.endTime) {
-            offersConfig = loadOffersConfigFromLocalStorage();
+        // Initialize Firebase using centralized module
+        if (window.FirebaseSync && window.FirebaseSync.init) {
+            await window.FirebaseSync.init();
+            console.log('[OpeningOffers] Firebase initialized via FirebaseSync');
         }
 
-        // If still no config AND not expired, use default (7 days from now)
-        // BUT only if isActive is true
-        if (!offersConfig || !offersConfig.endTime) {
-            if (offersConfig && offersConfig.isActive === false) {
-                // Admin disabled offers, keep section hidden
-                section.dataset.expired = 'true';
-                section.style.display = 'none';
-                return;
-            }
-
-            offersConfig = {
-                endTime: Date.now() + (7 * 24 * 60 * 60 * 1000),
-                isActive: true
-            };
-            // Save to localStorage for backup
-            localStorage.setItem('openingOffers_endTime', offersConfig.endTime.toString());
-            localStorage.setItem('openingOffers_isActive', 'true');
+        // Load countdown using centralized module
+        let countdownData = null;
+        if (window.FirebaseSync && window.FirebaseSync.loadCountdown) {
+            countdownData = await window.FirebaseSync.loadCountdown();
+            console.log('[OpeningOffers] Countdown loaded:', countdownData);
         }
 
-        // If isActive is false, hide section
-        if (offersConfig.isActive === false) {
-            section.dataset.expired = 'true';
+        // If no countdown data, hide section
+        if (!countdownData || !countdownData.endTime) {
+            console.log('[OpeningOffers] No countdown data found, hiding section');
             section.style.display = 'none';
             return;
         }
 
-        // Start the countdown with real-time monitoring
-        startCountdown(offersConfig.endTime);
+        // If countdown is inactive, hide section
+        if (!countdownData.isActive) {
+            console.log('[OpeningOffers] Countdown inactive, hiding section');
+            section.style.display = 'none';
+            return;
+        }
+
+        // Start the countdown
+        startCountdown(countdownData.endTime);
         countdownInitialized = true;
 
         // Set up real-time listener for changes
-        setupRealtimeListener();
-
-        // Set up localStorage listener for cross-tab communication
-        setupLocalStorageListener();
-
-    } catch (error) {
-        console.error('Error initializing countdown:', error);
-        // Fallback to localStorage
-        const fallbackConfig = loadOffersConfigFromLocalStorage();
-
-        // Check if expired
-        if (fallbackConfig && (fallbackConfig.endTime === null || fallbackConfig.isActive === false)) {
-            section.dataset.expired = 'true';
-            section.style.display = 'none';
-            return;
-        }
-
-        if (fallbackConfig && fallbackConfig.endTime) {
-            startCountdown(fallbackConfig.endTime);
-        } else {
-            // No config at all, check if we should auto-create or stay hidden
-            // Default: auto-create for new installations
-            const defaultEndTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
-            startCountdown(defaultEndTime);
-        }
-        countdownInitialized = true;
-
-        // Still set up listeners even if there's an error
-        setupLocalStorageListener();
-    }
-}
-
-/**
- * Set up Firebase real-time listener for countdown changes
- */
-async function setupRealtimeListener() {
-    try {
-        // Wait for Firebase to be ready
-        if (typeof initFirebaseFn === 'function') {
-            await initFirebaseFn();
-        }
-
-        // Check if db is available
-        if (!window.getDb) {
-            console.log('Firebase not available, skipping real-time listener');
-            return;
-        }
-
-        const db = window.getDb();
-        if (!db) {
-            console.log('Firebase db not initialized, skipping real-time listener');
-            return;
-        }
-
-        // Import Firebase functions
-        const { doc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-
-        // Set up real-time listener
-        const configRef = doc(db, 'config', 'openingOffers');
-        onSnapshot(configRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const newEndTime = data.endTime ? data.endTime.toDate().getTime() : null;
-                const isActive = data.isActive === true;
-
-                // Check if end time has changed or section was reactivated
-                if (newEndTime && newEndTime !== currentEndTime) {
-                    console.log('Countdown updated via Firebase:', new Date(newEndTime));
-
-                    // Clear expired flags
-                    localStorage.removeItem('openingOffers_expired');
-                    localStorage.removeItem('openingOffers_expiredTime');
-                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
-                    localStorage.setItem('openingOffers_isActive', 'true');
-
-                    // Reload page to apply changes
-                    console.log('Reloading page to apply countdown changes...');
-                    location.reload();
-                } else if (isActive && currentEndTime === null && newEndTime) {
-                    // Section was reactivated
-                    console.log('Countdown reactivated via Firebase');
-                    currentEndTime = newEndTime;
-
-                    // Clear expired flags
-                    localStorage.removeItem('openingOffers_expired');
-                    localStorage.removeItem('openingOffers_expiredTime');
-                    localStorage.setItem('openingOffers_endTime', newEndTime.toString());
-                    localStorage.setItem('openingOffers_isActive', 'true');
-
-                    // Reload page to apply changes
-                    console.log('Reloading page to apply countdown changes...');
-                    location.reload();
+        if (window.FirebaseSync && window.FirebaseSync.subscribeToCountdown) {
+            window.FirebaseSync.subscribeToCountdown(function(newData) {
+                console.log('[OpeningOffers] Real-time countdown update:', newData);
+                
+                if (newData && newData.endTime && newData.isActive) {
+                    startCountdown(newData.endTime);
+                } else {
+                    // Countdown was reset or deactivated
+                    expireSection();
                 }
-            }
-        }, (error) => {
-            console.log('Firebase listener error (using localStorage fallback):', error.message);
-        });
+            });
+        }
+
+        // Set up localStorage listener for cross-tab updates
+        setupLocalStorageListener();
 
     } catch (error) {
-        console.log('Could not set up Firebase listener:', error.message);
+        console.error('[OpeningOffers] Error initializing countdown:', error);
+        
+        // Fallback to localStorage
+        const storedEndTime = localStorage.getItem('openingOffers_endTime');
+        const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+        
+        if (storedEndTime && isActive) {
+            startCountdown(parseInt(storedEndTime));
+            countdownInitialized = true;
+            setupLocalStorageListener();
+        } else {
+            // No data at all, hide section
+            section.style.display = 'none';
+        }
     }
 }
 
@@ -204,164 +91,19 @@ async function setupRealtimeListener() {
  * Set up localStorage listener for cross-tab updates
  */
 function setupLocalStorageListener() {
-    // Listen for storage changes from other tabs
     window.addEventListener('storage', (event) => {
-        if (event.key === 'openingOffers_endTime') {
-            const newEndTime = event.newValue ? parseInt(event.newValue) : null;
-
-            if (newEndTime && newEndTime !== currentEndTime) {
-                console.log('Countdown updated from another tab:', new Date(newEndTime));
-
-                // Clear expired flags
-                localStorage.removeItem('openingOffers_expired');
-                localStorage.removeItem('openingOffers_expiredTime');
-                localStorage.setItem('openingOffers_isActive', 'true');
-
-                // Reload page to apply changes
-                console.log('Reloading page to apply countdown changes...');
-                location.reload();
-            } else if (!event.newValue && currentEndTime) {
-                // Timer was cleared
-                console.log('Countdown cleared from another tab');
-                currentEndTime = null;
-                expireSection();
-            }
-        }
-
-        // Also check if expired flag was cleared
-        if (event.key === 'openingOffers_expired' && !event.newValue) {
-            console.log('Expired flag cleared, reloading page...');
+        if (event.key === 'openingOffers_endTime' || event.key === 'openingOffers_isActive') {
+            // Reload page to apply changes from other tabs
+            console.log('[OpeningOffers] Storage changed, reloading page...');
             location.reload();
         }
     });
 
     // Also listen for custom events from same tab
-    window.addEventListener('countdownUpdated', (event) => {
-        const { endTime } = event.detail;
-
-        if (endTime && endTime !== currentEndTime) {
-            console.log('Countdown updated via custom event:', new Date(endTime));
-
-            // Clear expired flags in localStorage first
-            localStorage.removeItem('openingOffers_expired');
-            localStorage.removeItem('openingOffers_expiredTime');
-            localStorage.setItem('openingOffers_isActive', 'true');
-            localStorage.setItem('openingOffers_endTime', endTime.toString());
-
-            // Reload page to apply changes
-            console.log('Reloading page to apply countdown changes...');
-            location.reload();
-        }
+    window.addEventListener('countdownUpdated', () => {
+        console.log('[OpeningOffers] Countdown updated via custom event');
+        location.reload();
     });
-}
-
-/**
- * Show notification when countdown is updated
- */
-function showCountdownUpdateNotification() {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #d4af37, #aa8a2e);
-        color: #1a1a1a;
-        padding: 15px 25px;
-        border-radius: 10px;
-        font-weight: 600;
-        z-index: 10000;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        animation: slideIn 0.3s ease;
-    `;
-    notification.innerHTML = '<i class="fas fa-clock"></i> Countdown mis à jour!';
-
-    // Add animation style
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
-
-    document.body.appendChild(notification);
-
-    // Remove after 3 seconds
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-/**
- * Load offers configuration from Firebase
- */
-async function loadOffersConfigFromFirebase() {
-    try {
-        // Wait for Firebase to be ready
-        if (typeof initFirebaseFn === 'function') {
-            await initFirebaseFn();
-        }
-
-        // Check if db is available
-        if (!window.getDb) {
-            console.log('Firebase not available, using localStorage');
-            return null;
-        }
-
-        const db = window.getDb();
-        if (!db) {
-            console.log('Firebase db not initialized, using localStorage');
-            return null;
-        }
-
-        // Get the config document
-        const configRef = doc(db, 'config', 'openingOffers');
-        const configSnap = await getDoc(configRef);
-
-        if (configSnap.exists()) {
-            const data = configSnap.data();
-            console.log('Firebase offers config loaded:', data);
-            return {
-                endTime: data.endTime ? data.endTime.toDate().getTime() : null,
-                isActive: data.isActive || false
-            };
-        }
-
-        console.log('No Firebase config found, using localStorage');
-        return null;
-
-    } catch (error) {
-        console.log('Firebase config load failed, using localStorage:', error.message);
-        return null;
-    }
-}
-
-/**
- * Load offers configuration from localStorage
- * Uses same keys as admin.js for compatibility
- */
-function loadOffersConfigFromLocalStorage() {
-    // Use same keys as admin.js
-    const endTime = localStorage.getItem('openingOffers_endTime');
-    const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
-    const expired = localStorage.getItem('openingOffers_expired') === 'true';
-
-    if (expired) {
-        // Section is expired - keep it hidden until admin manually resets
-        // Remove the 1-day auto-reset since admin controls when to show again
-        return { endTime: null, isActive: false };
-    }
-
-    return {
-        endTime: endTime ? parseInt(endTime) : null,
-        isActive: isActive
-    };
 }
 
 /**
@@ -372,33 +114,16 @@ function startCountdown(endTime) {
     const section = document.getElementById('openingOffersSection');
     if (!section) return;
 
-    // Get countdown elements - need to check for both ID and data attributes for mobile
-    const getCountElement = (id) => {
-        // Try ID first
-        let el = document.getElementById(id);
-        if (el) return el;
-        // Fallback: find by class and data attribute
-        const allElements = document.querySelectorAll(`[id*="count"]`);
-        for (const elem of allElements) {
-            if (elem.id.includes(id.replace('count', '').toLowerCase())) {
-                return elem;
-            }
-        }
-        return null;
-    };
+    // Get countdown elements
+    const daysEl = document.getElementById('countDays');
+    const hoursEl = document.getElementById('countHours');
+    const minutesEl = document.getElementById('countMinutes');
+    const secondsEl = document.getElementById('countSeconds');
 
-    const daysEl = getCountElement('countDays');
-    const hoursEl = getCountElement('countHours');
-    const minutesEl = getCountElement('countMinutes');
-    const secondsEl = getCountElement('countSeconds');
-
-    // Debug: log which elements were found
-    console.log('Countdown elements found:', {
-        days: !!daysEl,
-        hours: !!hoursEl,
-        minutes: !!minutesEl,
-        seconds: !!secondsEl
-    });
+    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
+        console.log('[OpeningOffers] Countdown elements not found');
+        return;
+    }
 
     function updateCountdown() {
         const now = Date.now();
@@ -417,36 +142,29 @@ function startCountdown(endTime) {
         const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
 
-        // Update DOM elements with null checks
-        if (daysEl) {
-            daysEl.textContent = String(days).padStart(2, '0');
-        }
-        if (hoursEl) {
-            hoursEl.textContent = String(hours).padStart(2, '0');
-        }
-        if (minutesEl) {
-            minutesEl.textContent = String(minutes).padStart(2, '0');
-        }
-        if (secondsEl) {
-            secondsEl.textContent = String(seconds).padStart(2, '0');
-        }
+        // Update DOM elements
+        daysEl.textContent = String(days).padStart(2, '0');
+        hoursEl.textContent = String(hours).padStart(2, '0');
+        minutesEl.textContent = String(minutes).padStart(2, '0');
+        secondsEl.textContent = String(seconds).padStart(2, '0');
     }
 
     // Update immediately
     updateCountdown();
 
-    // Start interval - use 1000ms for both desktop and mobile
+    // Start interval
     countdownInterval = setInterval(updateCountdown, 1000);
 
     // Make sure section is visible
     section.style.display = 'block';
     section.style.visibility = 'visible';
     section.style.opacity = '1';
+    
+    console.log('[OpeningOffers] Countdown started with end time:', new Date(endTime));
 }
 
 /**
- * Expire the section (hide it with animation)
- * When timer ends, section stays hidden until admin manually resets
+ * Expire the section (hide it when timer ends)
  */
 function expireSection() {
     const section = document.getElementById('openingOffersSection');
@@ -455,12 +173,11 @@ function expireSection() {
     // Mark as expired
     section.dataset.expired = 'true';
 
-    // Store in localStorage to prevent showing on reload
-    // Clear the old endTime so there's no conflict when admin sets new time
+    // Store in localStorage
     localStorage.setItem('openingOffers_expired', 'true');
     localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
     localStorage.setItem('openingOffers_isActive', 'false');
-    localStorage.removeItem('openingOffers_endTime'); // Clear old time to avoid conflict
+    localStorage.removeItem('openingOffers_endTime');
 
     // Add fade-out effect
     section.style.opacity = '0';
@@ -477,12 +194,19 @@ function expireSection() {
  * Admin function to set the countdown end time
  * @param {number} days - Number of days from now
  */
-window.setOffersCountdown = function(days) {
+window.setOffersCountdown = async function(days) {
     const endTime = Date.now() + (days * 24 * 60 * 60 * 1000);
-    localStorage.setItem('openingOffers_endTime', endTime.toString());
-    localStorage.setItem('openingOffers_isActive', 'true');
-    localStorage.removeItem('openingOffers_expired');
-    localStorage.removeItem('openingOffers_expiredTime');
+    
+    // Save to Firebase and localStorage
+    if (window.FirebaseSync && window.FirebaseSync.saveCountdown) {
+        await window.FirebaseSync.saveCountdown(endTime, true);
+    } else {
+        localStorage.setItem('openingOffers_endTime', endTime.toString());
+        localStorage.setItem('openingOffers_isActive', 'true');
+        localStorage.removeItem('openingOffers_expired');
+        localStorage.removeItem('openingOffers_expiredTime');
+    }
+    
     location.reload();
 };
 
@@ -490,28 +214,39 @@ window.setOffersCountdown = function(days) {
  * Admin function to set a specific end date/time
  * @param {string} dateTime - ISO date string or timestamp
  */
-window.setOffersEndTime = function(dateTime) {
+window.setOffersEndTime = async function(dateTime) {
     const endTime = new Date(dateTime).getTime();
     if (isNaN(endTime)) {
         console.error('Invalid date format');
         return;
     }
 
-    localStorage.setItem('openingOffers_endTime', endTime.toString());
-    localStorage.setItem('openingOffers_isActive', 'true');
-    localStorage.removeItem('openingOffers_expired');
-    localStorage.removeItem('openingOffers_expiredTime');
+    // Save to Firebase and localStorage
+    if (window.FirebaseSync && window.FirebaseSync.saveCountdown) {
+        await window.FirebaseSync.saveCountdown(endTime, true);
+    } else {
+        localStorage.setItem('openingOffers_endTime', endTime.toString());
+        localStorage.setItem('openingOffers_isActive', 'true');
+        localStorage.removeItem('openingOffers_expired');
+        localStorage.removeItem('openingOffers_expiredTime');
+    }
+    
     location.reload();
 };
 
 /**
  * Admin function to reset/clear the countdown
  */
-window.resetOffersCountdown = function() {
-    localStorage.removeItem('openingOffers_endTime');
-    localStorage.removeItem('openingOffers_isActive');
-    localStorage.setItem('openingOffers_expired', 'true');
-    localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
+window.resetOffersCountdown = async function() {
+    if (window.FirebaseSync && window.FirebaseSync.resetCountdown) {
+        await window.FirebaseSync.resetCountdown();
+    } else {
+        localStorage.removeItem('openingOffers_endTime');
+        localStorage.setItem('openingOffers_isActive', 'false');
+        localStorage.setItem('openingOffers_expired', 'true');
+        localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
+    }
+    
     location.reload();
 };
 
