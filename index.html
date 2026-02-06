@@ -466,6 +466,13 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
                 padding: 8px 5px;
+                justify-items: center;
+            }
+            
+            /* Center the last product when there's an odd number (like 3 products) */
+            .offers-preview-grid .offer-product-card:last-child:nth-child(odd) {
+                grid-column: 1 / -1;
+                max-width: 50%;
             }
             
             .offers-title {
