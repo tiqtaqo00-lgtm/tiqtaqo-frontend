@@ -1058,20 +1058,56 @@
             var firebaseWorked = false;
 
             try {
-                // Initialize Firebase
-                if (typeof window.initFirebase === 'function') {
+                // Initialize Firebase and get database reference
+                var db = null;
+                
+                // Method 1: Try getDb from window
+                if (typeof window.getDb === 'function') {
                     try {
-                        await window.initFirebase();
+                        db = await window.getDb();
+                        console.log('[Products] getDb() returned:', db ? 'success' : 'null/false');
                     } catch (e) {
-                        console.log('[Products] Firebase init failed:', e.message);
+                        console.log('[Products] getDb() error:', e.message);
+                    }
+                }
+                
+                // Method 2: Direct Firebase initialization as fallback
+                if (!db) {
+                    console.log('[Products] Trying direct Firebase init...');
+                    try {
+                        const { getApps, initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+                        const { getFirestore, collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                        
+                        // Firebase config from firebase-config.js
+                        const firebaseConfig = {
+                            apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
+                            authDomain: "tiqtaqo-store.firebaseapp.com",
+                            projectId: "tiqtaqo-store",
+                            storageBucket: "tiqtaqo-store.firebasestorage.app",
+                            messagingSenderId: "82321149258",
+                            appId: "1:82321149258:web:3d2e9c9d9c9c9c9c9c9c9c"
+                        };
+                        
+                        // Initialize only if not already initialized
+                        if (!getApps().length) {
+                            initializeApp(firebaseConfig);
+                            console.log('[Products] Firebase app initialized');
+                        } else {
+                            console.log('[Products] Firebase app already exists');
+                        }
+                        
+                        db = getFirestore();
+                        console.log('[Products] Firestore initialized directly');
+                    } catch (initError) {
+                        console.log('[Products] Direct Firebase init failed:', initError.message);
                     }
                 }
 
-                // Direct Firebase query - Load ALL products and filter client-side
-                if (window.getDb && window.getDb()) {
+                // Query Firebase if we have a valid database reference
+                if (db) {
                     const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
 
-                    const productsRef = collection(window.getDb(), 'products');
+                    const productsRef = collection(db, 'products');
                     const snapshot = await getDocs(productsRef);
 
                     // Filter products with openingOffer flag on client side
@@ -1090,6 +1126,8 @@
                         saveProductsToCache(products);
                         firebaseWorked = true;
                     }
+                } else {
+                    console.log('[Products] Could not get database reference');
                 }
             } catch (error) {
                 console.error('[Products] Firebase error:', error.message);
