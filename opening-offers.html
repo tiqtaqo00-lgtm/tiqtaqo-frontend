@@ -1110,7 +1110,7 @@
                     const productsRef = collection(db, 'products');
                     const snapshot = await getDocs(productsRef);
 
-                    // Filter products with openingOffer flag on client side
+                    // Filter products with openingOffer flag on client side - SHOW ALL PRODUCTS (no limit)
                     products = snapshot.docs
                         .map(doc => ({
                             id: doc.id,
@@ -1119,7 +1119,7 @@
                         .filter(function(p) { return p.openingOffer === true; });
 
                     console.log('[Products] Total products in Firebase:', snapshot.size);
-                    console.log('[Products] Products with openingOffer=true:', products.length);
+                    console.log('[Products] ALL Products with openingOffer=true:', products.length);
 
                     if (products.length > 0) {
                         // Save to cache for offline use
