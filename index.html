@@ -939,11 +939,16 @@
                     var remaining = data.endTime - now;
 
                     if (remaining <= 0) {
-                        elements.days.textContent = '00';
-                        elements.hours.textContent = '00';
-                        elements.minutes.textContent = '00';
-                        elements.seconds.textContent = '00';
-                        return true;
+                        // Timer expired - HIDE the ENTIRE section
+                        console.log('[Countdown] Timer expired - hiding section');
+                        if (elements.section) {
+                            elements.section.style.display = 'none';
+                            elements.section.style.visibility = 'hidden';
+                            elements.section.style.opacity = '0';
+                        }
+                        // Save expired state to localStorage
+                        localStorage.setItem('openingOffers_expired', 'true');
+                        return false; // Stop the timer
                     }
 
                     // Calculate time units
