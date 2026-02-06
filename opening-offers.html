@@ -1053,7 +1053,7 @@
                 sectionEl.style.opacity = '1';
             }
             
-            // Try Firebase first, then cache - Direct query like homepage
+            // Try Firebase first, then cache - Load all and filter client-side
             var loadedFromCache = false;
             var firebaseWorked = false;
 
@@ -1067,35 +1067,29 @@
                     }
                 }
 
-                // Direct Firebase query - same as homepage
+                // Direct Firebase query - Load ALL products and filter client-side
                 if (window.getDb && window.getDb()) {
-                    const { collection, getDocs, query, where, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                    const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
 
                     const productsRef = collection(window.getDb(), 'products');
-                    const q = query(productsRef, where('openingOffer', '==', true), limit(100));
-                    const snapshot = await getDocs(q);
+                    const snapshot = await getDocs(productsRef);
 
-                    products = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
+                    // Filter products with openingOffer flag on client side
+                    products = snapshot.docs
+                        .map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }))
+                        .filter(function(p) { return p.openingOffer === true; });
 
-                    console.log('[Products] Direct Firebase query loaded:', products.length);
+                    console.log('[Products] Total products in Firebase:', snapshot.size);
+                    console.log('[Products] Products with openingOffer=true:', products.length);
 
                     if (products.length > 0) {
                         // Save to cache for offline use
                         saveProductsToCache(products);
                         firebaseWorked = true;
                     }
-
-                    // Debug: Get all products count
-                    const allSnapshot = await getDocs(productsRef);
-                    const allProducts = allSnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    console.log('[Products] Total products:', allProducts.length);
-                    console.log('[Products] Products with openingOffer=true:', allProducts.filter(p => p.openingOffer === true).length);
                 }
             } catch (error) {
                 console.error('[Products] Firebase error:', error.message);
