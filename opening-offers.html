@@ -531,20 +531,94 @@
         /* Responsive */
         @media (max-width: 768px) {
             .offers-title {
-                font-size: 36px;
+                font-size: 32px;
             }
 
             .offers-subtitle {
-                font-size: 16px;
+                font-size: 14px;
             }
 
             .offers-products {
-                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-                gap: 25px;
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 10px 5px;
+            }
+
+            .offer-product-card {
+                max-width: 100%;
+                width: 100%;
+                border-radius: 6px;
+            }
+
+            .offer-product-image-container {
+                height: 220px;
+            }
+
+            .offer-product-info {
+                padding: 15px 12px;
+            }
+
+            .offer-product-title {
+                font-size: 15px;
+            }
+
+            .offer-product-description {
+                font-size: 11px;
+                -webkit-line-clamp: 2;
+            }
+
+            .offer-product-title-en {
+                font-size: 11px;
+            }
+
+            .offer-product-price-container {
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .offer-old-price {
+                font-size: 12px;
             }
 
             .offer-new-price {
-                font-size: 26px;
+                font-size: 20px;
+            }
+
+            .offer-currency {
+                font-size: 12px;
+            }
+
+            .offer-savings {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+
+            .offer-stock {
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+
+            .offer-btn-primary {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .offer-badge {
+                top: 10px;
+                left: 10px;
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .offer-quick-cart {
+                top: 10px;
+                right: 10px;
+                width: 32px;
+                height: 32px;
+            }
+
+            .offer-quick-cart i {
+                font-size: 12px;
             }
         }
         
