@@ -31,10 +31,11 @@
                 padding: 40px 0;
             }
 
+            /* Allow inline styles to control visibility when needed */
             .opening-offers-section[id="openingOffersSection"] {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
+                display: block;
+                visibility: visible;
+                opacity: 1;
             }
         }
         
@@ -942,9 +943,9 @@
                         // Timer expired - HIDE the ENTIRE section
                         console.log('[Countdown] Timer expired - hiding section');
                         if (elements.section) {
-                            elements.section.style.display = 'none';
-                            elements.section.style.visibility = 'hidden';
-                            elements.section.style.opacity = '0';
+                            elements.section.style.display = 'none !important';
+                            elements.section.style.visibility = 'hidden !important';
+                            elements.section.style.opacity = '0 !important';
                         }
                         // Save expired state to localStorage
                         localStorage.setItem('openingOffers_expired', 'true');
