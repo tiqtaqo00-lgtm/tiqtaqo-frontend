@@ -1197,7 +1197,7 @@
             const savingsAmount = originalPrice - offerPrice;
             
             return `
-            <div class="offer-product-card" onclick="window.location.href='product-details.html?id=${product.id}'">
+            <div class="offer-product-card" onclick="window.location.href='product.html?id=${product.id}'">
                 <span class="offer-badge">-${discount}%</span>
                 <div class="offer-quick-cart" onclick="event.stopPropagation(); quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
                     <i class="fas fa-shopping-cart"></i>

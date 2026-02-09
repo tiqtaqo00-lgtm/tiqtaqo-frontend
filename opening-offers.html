@@ -1281,7 +1281,7 @@
                 var savings = originalPrice - offerPrice;
                 var discount = promotion > 0 ? promotion : Math.round((1 - offerPrice / originalPrice) * 100);
                 
-                return '<div class="offer-product-card" onclick="window.location.href=\'product-details.html?id=' + (product.id || '') + '\'">' +
+                return '<div class="offer-product-card" onclick="window.location.href=\'product.html?id=' + (product.id || '') + '\'">' +
                     '<span class="offer-badge">-' + discount + '%</span>' +
                     '<div class="offer-quick-cart" onclick="event.stopPropagation(); openOrderModal(\'' + (product.id || '') + '\')">' +
                         '<i class="fas fa-shopping-bag"></i>' +
