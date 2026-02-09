@@ -1281,9 +1281,9 @@
                 var savings = originalPrice - offerPrice;
                 var discount = promotion > 0 ? promotion : Math.round((1 - offerPrice / originalPrice) * 100);
                 
-                return '<div class="offer-product-card">' +
+                return '<div class="offer-product-card" onclick="window.location.href=\'product-details.html?id=' + (product.id || '') + '\'">' +
                     '<span class="offer-badge">-' + discount + '%</span>' +
-                    '<div class="offer-quick-cart" onclick="openOrderModal(\'' + (product.id || '') + '\')">' +
+                    '<div class="offer-quick-cart" onclick="event.stopPropagation(); openOrderModal(\'' + (product.id || '') + '\')">' +
                         '<i class="fas fa-shopping-bag"></i>' +
                     '</div>' +
                     '<div class="offer-product-image-container">' +
@@ -1302,7 +1302,7 @@
                         '</div>' +
                     '</div>' +
                     '<div class="offer-actions">' +
-                        '<button class="offer-btn-primary" onclick="openOrderModal(\'' + (product.id || '') + '\')">' +
+                        '<button class="offer-btn-primary" onclick="event.stopPropagation(); openOrderModal(\'' + (product.id || '') + '\')">' +
                             '<i class="fas fa-shopping-bag"></i>' +
                             '<span>اطلب الان</span>' +
                         '</button>' +

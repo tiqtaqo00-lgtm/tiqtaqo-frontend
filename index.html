@@ -1197,9 +1197,9 @@
             const savingsAmount = originalPrice - offerPrice;
             
             return `
-            <div class="offer-product-card">
+            <div class="offer-product-card" onclick="window.location.href='product-details.html?id=${product.id}'">
                 <span class="offer-badge">-${discount}%</span>
-                <div class="offer-quick-cart" onclick="quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
+                <div class="offer-quick-cart" onclick="event.stopPropagation(); quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
                 <div class="offer-product-image-container">
@@ -1219,7 +1219,7 @@
                         <span class="offer-savings">Économisez ${savingsAmount} MAD</span>
                     </div>
                 </div>
-                <button class="offer-btn-primary" onclick="openOrderModal('${product.id}')">
+                <button class="offer-btn-primary" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
                     <i class="fas fa-shopping-bag"></i>
                     <span>اطلب الان</span>
                 </button>
