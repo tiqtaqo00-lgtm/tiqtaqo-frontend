@@ -973,9 +973,10 @@
                         // Timer expired - HIDE the ENTIRE section
                         console.log('[Countdown] Timer expired - hiding section');
                         if (elements.section) {
-                            elements.section.style.display = 'none !important';
-                            elements.section.style.visibility = 'hidden !important';
-                            elements.section.style.opacity = '0 !important';
+                            // Use setProperty with 'important' flag for proper override
+                            elements.section.style.setProperty('display', 'none', 'important');
+                            elements.section.style.setProperty('visibility', 'hidden', 'important');
+                            elements.section.style.setProperty('opacity', '0', 'important');
                         }
                         // Save expired state to localStorage
                         localStorage.setItem('openingOffers_expired', 'true');
