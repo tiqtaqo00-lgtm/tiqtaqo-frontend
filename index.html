@@ -1200,7 +1200,7 @@
             <div class="offer-product-card" onclick="window.location.href='product.html?id=${product.id}'">
                 <span class="offer-badge">-${discount}%</span>
                 <div class="offer-quick-cart" onclick="event.stopPropagation(); quickAddToCart('${product.id}', '${product.name}', ${offerPrice})">
-                    <i class="fas fa-shopping-cart"></i>
+                    <i class="fas fa-shopping-bag"></i>
                 </div>
                 <div class="offer-product-image-container">
                     <img src="${product.image}" alt="${product.name}" class="offer-product-image" 
@@ -1220,7 +1220,7 @@
                     </div>
                 </div>
                 <button class="offer-btn-primary" onclick="event.stopPropagation(); openOrderModal('${product.id}')">
-                    <i class="fas fa-shopping-bag"></i>
+                    <i class="fas fa-shopping-cart"></i>
                     <span>اطلب الان</span>
                 </button>
             </div>
