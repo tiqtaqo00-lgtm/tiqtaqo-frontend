@@ -1283,9 +1283,6 @@
                 
                 return '<div class="offer-product-card" onclick="window.location.href=\'product.html?id=' + (product.id || '') + '\'">' +
                     '<span class="offer-badge">-' + discount + '%</span>' +
-                    '<div class="offer-quick-cart" onclick="event.stopPropagation(); openOrderModal(\'' + (product.id || '') + '\')">' +
-                        '<i class="fas fa-shopping-bag"></i>' +
-                    '</div>' +
                     '<div class="offer-product-image-container">' +
                         '<img src="' + (product.image || '') + '" alt="' + (product.name || 'Produit') + '" class="offer-product-image" onerror="this.src=\'https://placehold.co/400x350/1a1a1a/d4af37?text=' + encodeURIComponent(product.name || 'Produit') + '\'">' +
                     '</div>' +
@@ -1303,7 +1300,7 @@
                     '</div>' +
                     '<div class="offer-actions">' +
                         '<button class="offer-btn-primary" onclick="event.stopPropagation(); openOrderModal(\'' + (product.id || '') + '\')">' +
-                            '<i class="fas fa-shopping-bag"></i>' +
+                            '<i class="fas fa-shopping-cart"></i>' +
                             '<span>اطلب الان</span>' +
                         '</button>' +
                     '</div>' +
