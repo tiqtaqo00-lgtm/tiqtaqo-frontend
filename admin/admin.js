@@ -238,57 +238,30 @@ async function updateCountdown() {
     const endDate = new Date(endDateInput).getTime();
     console.log('[Countdown] جاري حفظ الوقت:', new Date(endDate).toLocaleString());
     
-    // Use centralized Firebase sync module
-    if (window.FirebaseSync && window.FirebaseSync.saveCountdown) {
-        const result = await window.FirebaseSync.saveCountdown(endDate, true);
-        
-        if (result.success) {
-            console.log('[Countdown] ✓ تم الحفظ في Firebase بنجاح!');
-            alert('✓ تم حفظ العداد في Firebase بنجاح!\nالآن سيظهر نفس العداد في جميع الأجهزة.');
-            loadCountdownDisplay();
-            
-            if (confirm('تم حفظ العداد. هل تريد فتح صفحة التخفيضات للتحقق؟')) {
-                window.open('../opening-offers.html', '_blank');
-            }
-        } else {
-            console.log('[Countdown] Firebase save failed:', result.error);
-            
-            if (result.localOnly) {
-                alert('⚠️ تم حفظ البيانات محلياً فقط.\nFirebase: ' + result.error + '\n\nللحصول على المزامنة عبر الأجهزة، يرجى التحقق من اتصال الإنترنت.');
-            } else {
-                alert('⚠️ Firebase غير متاح. تم حفظ البيانات محلياً فقط.');
-            }
-            loadCountdownDisplay();
-        }
-    } else {
-        // Fallback if FirebaseSync module not loaded
-        console.log('[Countdown] FirebaseSync module not available, using localStorage');
-        localStorage.setItem('openingOffers_endTime', endDate.toString());
-        localStorage.setItem('openingOffers_isActive', 'true');
-        localStorage.removeItem('openingOffers_expired');
-        
-        alert('⚠️ Firebase Sync غير متاح. تم حفظ البيانات محلياً فقط.');
-        loadCountdownDisplay();
+    // Save to localStorage (works offline)
+    localStorage.setItem('openingOffers_endTime', endDate.toString());
+    localStorage.setItem('openingOffers_isActive', 'true');
+    localStorage.removeItem('openingOffers_expired');
+    
+    console.log('[Countdown] ✓ تم حفظ الوقت بنجاح!');
+    alert('✓ تم حفظ العداد بنجاح!');
+    loadCountdownDisplay();
+    
+    if (confirm('تم حفظ العداد. هل تريد فتح صفحة التخفيضات للتحقق؟')) {
+        window.open('../opening-offers.html', '_blank');
     }
 }
 
 async function resetCountdown() {
     if (!confirm('Êtes-vous sûr de vouloir réinitialiser le countdown?')) return;
     
-    // Use centralized Firebase sync module
-    if (window.FirebaseSync && window.FirebaseSync.resetCountdown) {
-        const result = await window.FirebaseSync.resetCountdown();
-        
-        if (result.success) {
-            alert('Countdown réinitialisé avec succès dans Firebase!');
-        } else {
-            alert('Countdown réinitialisé dans localStorage! Firebase: ' + result.error);
-        }
-    } else {
-        localStorage.removeItem('openingOffers_endTime');
-        localStorage.setItem('openingOffers_isActive', 'false');
-        alert('Countdown réinitialisé dans localStorage!');
-    }
+    // Reset countdown in localStorage
+    localStorage.removeItem('openingOffers_endTime');
+    localStorage.setItem('openingOffers_isActive', 'false');
+    localStorage.removeItem('openingOffers_expired');
+    localStorage.removeItem('openingOffers_expiredTime');
+    
+    alert('Countdown réinitialisé avec succès!');
     
     document.getElementById('countdownEndDate').value = '';
     loadCountdownDisplay();
@@ -301,37 +274,21 @@ async function add24Hours() {
     
     document.getElementById('countdownEndDate').value = endDateStr;
     
-    // Auto-save using centralized module
+    // Save to localStorage
     const endDate = newEndDate.getTime();
+    localStorage.setItem('openingOffers_endTime', endDate.toString());
+    localStorage.setItem('openingOffers_isActive', 'true');
+    localStorage.removeItem('openingOffers_expired');
+    localStorage.removeItem('openingOffers_expiredTime');
     
-    if (window.FirebaseSync && window.FirebaseSync.saveCountdown) {
-        const result = await window.FirebaseSync.saveCountdown(endDate, true);
-        
-        if (result.success) {
-            alert('24 heures ajoutées! Countdown sync on all devices.');
-            
-            if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
-                window.open('../opening-offers.html', '_blank');
-            }
-        } else {
-            alert('24 heures ajoutées! (Enregistré localement) Firebase: ' + result.error);
-            
-            if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
-                window.open('../opening-offers.html', '_blank');
-            }
-        }
-    } else {
-        localStorage.setItem('openingOffers_endTime', endDate.toString());
-        localStorage.setItem('openingOffers_isActive', 'true');
-        localStorage.removeItem('openingOffers_expired');
-        localStorage.removeItem('openingOffers_expiredTime');
-        
-        alert('24 heures ajoutées! (Enregistré dans localStorage)');
-        
-        if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
-            window.open('../opening-offers.html', '_blank');
-        }
+    alert('24 heures ajoutées avec succès!');
+    
+    if (confirm('Le countdown a été mis à jour. Voulez-vous recharger la page des offres pour voir les changements?')) {
+        window.open('../opening-offers.html', '_blank');
     }
+    
+    loadCountdownDisplay();
+}
     
     loadCountdownDisplay();
 }
