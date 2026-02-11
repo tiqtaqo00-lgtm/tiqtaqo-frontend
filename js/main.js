@@ -172,6 +172,18 @@ async function getCategories() {
             return updatedCategories;
         }
         
+        // Check if 'casquettes' category exists, if not add it
+        if (!categories.find(c => c.id === 'casquettes')) {
+            // Add 'casquettes' category at the end
+            const updatedCategories = [
+                ...categories,
+                { id: 'casquettes', name: 'Casquettes', icon: 'fa-hat-cowboy', visible: true, order: categories.length + 1 }
+            ];
+            
+            localStorage.setItem('luxury_categories', JSON.stringify(updatedCategories));
+            return updatedCategories;
+        }
+        
         return categories;
     }
 
