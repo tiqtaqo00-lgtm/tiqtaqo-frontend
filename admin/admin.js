@@ -289,9 +289,6 @@ async function add24Hours() {
     
     loadCountdownDisplay();
 }
-    
-    loadCountdownDisplay();
-}
 
 async function loadCountdownDisplay() {
     let endTime = null;
