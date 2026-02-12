@@ -1209,53 +1209,12 @@ async function saveProduct(event) {
     const newColors = getProductColors();
     productData.colors = newColors.length > 0 ? newColors : (existingProduct?.colors || []);
     
-    // Save product with Firebase
+    // Save product using localStorage only
     try {
-        // Debug: Log the product data before saving
-        console.log('Saving product data:', JSON.stringify(productData, null, 2));
-        
-        // Ensure Firebase is initialized
-        const db = await getDb();
-        
-        if (db) {
-            // Import Firebase functions dynamically
-            const { collection, doc, addDoc, updateDoc, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-            
-            if (id) {
-                // Update existing product
-                await updateDoc(doc(db, 'products', id), productData);
-                console.log('Product updated successfully:', productData);
-            } else {
-                // Add new product with auto-generated ID
-                const docRef = await addDoc(collection(db, 'products'), productData);
-                productData.id = docRef.id;
-                products.push(productData);
-                console.log('Product added successfully:', productData);
-            }
-            
-            // Also save to localStorage as backup
-            localStorage.setItem('luxury_products', JSON.stringify(products));
-            
-            closeProductModal();
-            await loadProductsTable();
-            await updateStats();
-            
-            alert('Produit enregistré avec succès dans Firebase!');
-        } else {
-            // Fallback if Firebase not available
-            await finalizeSaveProduct(id, productData, products);
-        }
+        await finalizeSaveProduct(id, productData, products);
     } catch (error) {
         console.error('Error saving product:', error);
-        
-        // Try fallback to localStorage
-        console.log('Trying localStorage fallback...');
-        try {
-            await finalizeSaveProduct(id, productData, products);
-        } catch (fallbackError) {
-            console.error('Fallback also failed:', fallbackError);
-            alert('Erreur lors de l\'enregistrement: ' + error.message);
-        }
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
     }
 }
 
@@ -1278,7 +1237,7 @@ async function finalizeSaveProduct(id, productData, products) {
     await loadProductsTable();
     await updateStats();
     
-    alert('Produit enregistré dans localStorage (Firebase non disponible)!');
+    alert('Produit enregistré avec succès!');
 }
 
 // Save category
@@ -1439,12 +1398,7 @@ async function getDb() {
 
 // Initialize dashboard
 async function initializeDashboard() {
-    // Initialize Firebase first
-    await getDb();
-    
-    // Short delay to ensure Firebase is ready
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+    // Initialize dashboard directly without Firebase
     if (checkAuth()) {
         loadAdminInfo();
         await updateStats();
