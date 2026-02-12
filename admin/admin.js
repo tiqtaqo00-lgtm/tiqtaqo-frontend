@@ -291,35 +291,16 @@ async function add24Hours() {
 }
 
 async function loadCountdownDisplay() {
+    // Read directly from localStorage
     let endTime = null;
     let isActive = false;
     
-    try {
-        const db = await getDb();
-        if (db) {
-            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-            const docSnap = await getDoc(doc(db, 'config', 'openingOffers'));
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                endTime = data.endTime;
-                isActive = data.isActive;
-            }
-        }
-    } catch (error) {
-        console.log('Firebase not available, using localStorage');
+    const localEndTime = localStorage.getItem('openingOffers_endTime');
+    if (localEndTime) {
+        endTime = parseInt(localEndTime);
     }
     
-    // Fallback to localStorage
-    if (!endTime) {
-        const localEndTime = localStorage.getItem('openingOffers_endTime');
-        if (localEndTime) {
-            endTime = parseInt(localEndTime);
-        }
-    }
-    
-    if (!isActive) {
-        isActive = localStorage.getItem('openingOffers_isActive') === 'true';
-    }
+    isActive = localStorage.getItem('openingOffers_isActive') === 'true';
     
     const display = document.getElementById('countdownDisplay');
     const dateInput = document.getElementById('countdownEndDate');
