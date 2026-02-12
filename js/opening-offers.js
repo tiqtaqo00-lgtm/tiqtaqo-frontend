@@ -1,7 +1,6 @@
 /**
- * Opening Offers Countdown Timer - Centralized Firebase Sync Integration
- * Uses the centralized FirebaseSync module for countdown management
- * Fixed: Now loads from Firebase immediately on first load
+ * Opening Offers Countdown Timer - LocalStorage Only Version
+ * Simplified to use localStorage only (no Firebase)
  */
 
 // Global variables
@@ -11,8 +10,7 @@ let countdownData = null; // Store countdown data globally
 
 /**
  * Initialize the opening offers countdown timer
- * Uses FirebaseSync module for countdown management
- * Fixed: Loads from Firebase FIRST, then localStorage as fallback
+ * Uses localStorage only for countdown management
  */
 async function initOpeningOffersCountdown() {
     if (countdownInitialized) return;
@@ -24,38 +22,29 @@ async function initOpeningOffersCountdown() {
     }
 
     try {
-        // Initialize Firebase using centralized module FIRST
-        if (window.FirebaseSync && window.FirebaseSync.init) {
-            await window.FirebaseSync.init();
-            console.log('[OpeningOffers] Firebase initialized via FirebaseSync');
+        // Read countdown from localStorage directly
+        const storedEndTime = localStorage.getItem('openingOffers_endTime');
+        const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
+        const isExpired = localStorage.getItem('openingOffers_expired') === 'true';
+        
+        console.log('[OpeningOffers] Checking localStorage:', {
+            storedEndTime,
+            isActive,
+            isExpired
+        });
+        
+        if (storedEndTime && isActive && !isExpired) {
+            countdownData = {
+                endTime: parseInt(storedEndTime),
+                isActive: true,
+                source: 'localStorage'
+            };
+            console.log('[OpeningOffers] Countdown loaded from localStorage:', countdownData);
         }
 
-        // CRITICAL FIX: Load countdown from Firebase FIRST (before localStorage)
-        if (window.FirebaseSync && window.FirebaseSync.loadCountdown) {
-            countdownData = await window.FirebaseSync.loadCountdown();
-            console.log('[OpeningOffers] Countdown loaded from Firebase:', countdownData);
-        }
-
-        // If no countdown data from Firebase, try localStorage as fallback
+        // If no countdown data, hide section
         if (!countdownData || !countdownData.endTime) {
-            const storedEndTime = localStorage.getItem('openingOffers_endTime');
-            const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
-            const isExpired = localStorage.getItem('openingOffers_expired') === 'true';
-            
-            if (storedEndTime && isActive && !isExpired) {
-                countdownData = {
-                    endTime: parseInt(storedEndTime),
-                    isActive: true,
-                    source: 'localStorage'
-                };
-                console.log('[OpeningOffers] Countdown loaded from localStorage:', countdownData);
-            }
-        }
-
-        // If STILL no countdown data, check if we should create default or hide
-        if (!countdownData || !countdownData.endTime) {
-            // No countdown set anywhere - hide section
-            console.log('[OpeningOffers] No countdown data found anywhere, hiding section');
+            console.log('[OpeningOffers] No countdown data found, hiding section');
             section.style.display = 'none';
             return;
         }
@@ -79,33 +68,13 @@ async function initOpeningOffersCountdown() {
         startCountdown(countdownData.endTime);
         countdownInitialized = true;
 
-        // Set up real-time listener for changes (after countdown is working)
-        if (window.FirebaseSync && window.FirebaseSync.subscribeToCountdown) {
-            window.FirebaseSync.subscribeToCountdown(function(newData) {
-                console.log('[OpeningOffers] Real-time countdown update:', newData);
-                
-                if (newData && newData.endTime && newData.isActive) {
-                    // Update countdown data
-                    countdownData = newData;
-                    startCountdown(newData.endTime);
-                } else {
-                    // Countdown was reset or deactivated
-                    stopCountdown();
-                    const section = document.getElementById('openingOffersSection');
-                    if (section) {
-                        section.style.display = 'none';
-                    }
-                }
-            });
-        }
-
         // Set up localStorage listener for cross-tab updates
         setupLocalStorageListener();
 
     } catch (error) {
         console.error('[OpeningOffers] Error initializing countdown:', error);
         
-        // Fallback to localStorage only (no default creation)
+        // Fallback to localStorage only
         const storedEndTime = localStorage.getItem('openingOffers_endTime');
         const isActive = localStorage.getItem('openingOffers_isActive') === 'true';
         const isExpired = localStorage.getItem('openingOffers_expired') === 'true';
@@ -249,15 +218,11 @@ function expireSection() {
 window.setOffersCountdown = async function(days) {
     const endTime = Date.now() + (days * 24 * 60 * 60 * 1000);
     
-    // Save to Firebase and localStorage
-    if (window.FirebaseSync && window.FirebaseSync.saveCountdown) {
-        await window.FirebaseSync.saveCountdown(endTime, true);
-    } else {
-        localStorage.setItem('openingOffers_endTime', endTime.toString());
-        localStorage.setItem('openingOffers_isActive', 'true');
-        localStorage.removeItem('openingOffers_expired');
-        localStorage.removeItem('openingOffers_expiredTime');
-    }
+    // Save to localStorage only
+    localStorage.setItem('openingOffers_endTime', endTime.toString());
+    localStorage.setItem('openingOffers_isActive', 'true');
+    localStorage.removeItem('openingOffers_expired');
+    localStorage.removeItem('openingOffers_expiredTime');
     
     location.reload();
 };
@@ -273,15 +238,11 @@ window.setOffersEndTime = async function(dateTime) {
         return;
     }
 
-    // Save to Firebase and localStorage
-    if (window.FirebaseSync && window.FirebaseSync.saveCountdown) {
-        await window.FirebaseSync.saveCountdown(endTime, true);
-    } else {
-        localStorage.setItem('openingOffers_endTime', endTime.toString());
-        localStorage.setItem('openingOffers_isActive', 'true');
-        localStorage.removeItem('openingOffers_expired');
-        localStorage.removeItem('openingOffers_expiredTime');
-    }
+    // Save to localStorage only
+    localStorage.setItem('openingOffers_endTime', endTime.toString());
+    localStorage.setItem('openingOffers_isActive', 'true');
+    localStorage.removeItem('openingOffers_expired');
+    localStorage.removeItem('openingOffers_expiredTime');
     
     location.reload();
 };
@@ -290,16 +251,14 @@ window.setOffersEndTime = async function(dateTime) {
  * Admin function to reset/clear the countdown
  */
 window.resetOffersCountdown = async function() {
-    if (window.FirebaseSync && window.FirebaseSync.resetCountdown) {
-        await window.FirebaseSync.resetCountdown();
-    } else {
-        localStorage.removeItem('openingOffers_endTime');
-        localStorage.setItem('openingOffers_isActive', 'false');
-        localStorage.setItem('openingOffers_expired', 'true');
-        localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
-    }
+    // Reset using localStorage only
+    localStorage.removeItem('openingOffers_endTime');
+    localStorage.setItem('openingOffers_isActive', 'false');
+    localStorage.setItem('openingOffers_expired', 'true');
+    localStorage.setItem('openingOffers_expiredTime', Date.now().toString());
     
     location.reload();
+};
 };
 
 /**
