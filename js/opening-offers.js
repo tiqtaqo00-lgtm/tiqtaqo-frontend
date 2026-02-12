@@ -259,7 +259,6 @@ window.resetOffersCountdown = async function() {
     
     location.reload();
 };
-};
 
 /**
  * Initialize when DOM is ready
