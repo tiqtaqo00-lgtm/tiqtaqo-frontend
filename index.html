@@ -785,78 +785,14 @@
                     return n < 10 ? '0' + n : '' + n;
                 }
 
-                // Read countdown from Firebase Firestore - Using direct REST API
+                // Read countdown from localStorage only (no Firebase)
                 async function getCountdownFromFirebase() {
-                    try {
-                        // Use REST API instead of SDK to avoid CORS issues
-                        var projectId = 'tiqtaqo-store';
-                        var url = 'https://firestore.googleapis.com/v1/projects/' + projectId + '/databases/(default)/documents/config/openingOffers?key=AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA';
-
-                        var response = await fetch(url, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('REST API failed: ' + response.status);
-                        }
-
-                        var data = await response.json();
-
-                        if (data && data.fields) {
-                            var result = {
-                                endTime: data.fields.endTime ? data.fields.endTime.integerValue : null,
-                                isActive: data.fields.isActive ? data.fields.isActive.booleanValue : true
-                            };
-
-                            console.log('[Countdown] Firebase REST:', result);
-
-                            // Save to localStorage for fallback
-                            if (result.endTime) {
-                                localStorage.setItem('openingOffers_endTime', result.endTime.toString());
-                                localStorage.setItem('openingOffers_isActive', result.isActive !== false ? 'true' : 'false');
-                            }
-
-                            return result;
-                        }
-
-                    } catch (e) {
-                        console.log('[Countdown] Firebase REST error:', e.message);
-                        // Try SDK method as fallback
-                        try {
-                            if (typeof window.getDb === 'function') {
-                                var db = await window.getDb();
-                                if (db) {
-                                    var firestore = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-                                    var doc = firestore.doc;
-                                    var getDoc = firestore.getDoc;
-                                    var docRef = doc(db, 'config', 'openingOffers');
-                                    var docSnap = await getDoc(docRef);
-
-                                    if (docSnap && docSnap.exists()) {
-                                        var sdkData = docSnap.data();
-                                        console.log('[Countdown] Firebase SDK:', sdkData);
-                                        if (sdkData.endTime) {
-                                            localStorage.setItem('openingOffers_endTime', sdkData.endTime.toString());
-                                            localStorage.setItem('openingOffers_isActive', sdkData.isActive !== false ? 'true' : 'false');
-                                        }
-                                        return sdkData;
-                                    }
-                                }
-                            }
-                        } catch (sdkError) {
-                            console.log('[Countdown] SDK also failed:', sdkError.message);
-                        }
-                    }
-
-                    // Try to read from localStorage as final fallback
+                    // Read directly from localStorage
                     var storedEndTime = localStorage.getItem('openingOffers_endTime');
                     var isActive = localStorage.getItem('openingOffers_isActive') === 'true';
 
                     if (storedEndTime && !isNaN(parseInt(storedEndTime))) {
-                        console.log('[Countdown] Using localStorage fallback:', storedEndTime);
+                        console.log('[Countdown] Using localStorage:', storedEndTime);
                         return {
                             endTime: parseInt(storedEndTime),
                             isActive: isActive
