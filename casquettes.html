@@ -168,13 +168,14 @@
         </div>
     </footer>
 
-    <!-- Load main.js for product loading -->
+    <!-- Load scripts like other category pages -->
+    <script type="module" src="js/firebase-config.js"></script>
     <script src="js/main.js"></script>
 
-    <!-- Fast initialization - wait for functions then load from localStorage -->
-    <script>
-        // Wait for function to be available (max 2 seconds)
-        async function waitForFunction(funcName, timeout = 2000) {
+    <!-- Initialize category page - optimized version -->
+    <script type="module">
+        // Wait for function to be available
+        async function waitForFunction(funcName, timeout = 5000) {
             const startTime = Date.now();
             while (Date.now() - startTime < timeout) {
                 if (typeof window[funcName] === 'function') {
@@ -185,45 +186,52 @@
             return false;
         }
         
-        async function initCategoryPageFast() {
+        async function initCategoryPage() {
             try {
-                console.log('Fast init: Starting...');
+                console.log('Category page: Starting...');
                 
-                // Wait for main.js functions to be available
-                const isReady = await waitForFunction('loadCategoryProducts');
-                if (!isReady) {
-                    console.error('loadCategoryProducts not available');
-                    return;
-                }
+                // Wait for main.js functions
+                await waitForFunction('loadCategoryProducts');
                 console.log('Functions ready');
                 
-                // Initialize filter sidebar
+                // Quick Firebase init (with short timeout)
+                if (typeof initFirebase === 'function') {
+                    try {
+                        await Promise.race([
+                            initFirebase(),
+                            new Promise(resolve => setTimeout(resolve, 2000))
+                        ]);
+                    } catch(e) {
+                        console.log('Firebase init skipped');
+                    }
+                }
+                
+                // Initialize UI
                 if (typeof initFilterSidebar === 'function') {
                     initFilterSidebar();
                 }
                 
-                // Load products directly from localStorage
+                // Load products
                 if (typeof loadCategoryProducts === 'function') {
                     await loadCategoryProducts('casquettes');
                 }
                 
-                // Initialize infinite scroll
                 if (typeof initInfiniteScroll === 'function') {
                     initInfiniteScroll();
                 }
                 
-                console.log('Fast init: Complete');
+                console.log('Category page: Complete');
             } catch (error) {
-                console.error('Fast init error:', error);
-                // Fallback - try to load anyway
+                console.error('Error:', error);
                 if (typeof loadCategoryProducts === 'function') {
                     loadCategoryProducts('casquettes');
                 }
             }
         }
         
-        // Start fast initialization after small delay
-        setTimeout(initCategoryPageFast, 50);
+        setTimeout(initCategoryPage, 100);
     </script>
+    <script src="js/firebase-health-check.js"></script>
+    <script src="js/bulk-import.js"></script>
 </body>
 </html>
