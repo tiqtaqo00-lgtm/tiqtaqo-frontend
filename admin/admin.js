@@ -52,8 +52,19 @@ async function getProducts() {
 // Save products to Firebase
 async function saveProducts(products) {
     try {
-        // Ensure Firebase is initialized
-        const db = await getDb();
+        // Try to save to Firebase first
+        console.log('[saveProducts] Attempting to save to Firebase...');
+        
+        // Ensure Firebase is initialized with timeout
+        let db = null;
+        try {
+            db = await Promise.race([
+                getDb(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
+            ]);
+        } catch (e) {
+            console.log('[saveProducts] Firebase init timeout or error:', e.message);
+        }
         
         if (db) {
             // Import Firebase functions dynamically
@@ -69,14 +80,17 @@ async function saveProducts(products) {
             }
             
             await batch.commit();
-            console.log('Products saved to Firebase');
+            console.log('[saveProducts] Products saved to Firebase successfully!');
+        } else {
+            console.log('[saveProducts] Firebase not available, localStorage only');
         }
     } catch (e) {
-        console.log('Firebase save failed, using localStorage:', e.message);
+        console.log('[saveProducts] Firebase save failed:', e.message);
     }
     
     // Always save to localStorage as backup
     localStorage.setItem('luxury_products', JSON.stringify(products));
+    console.log('[saveProducts] Products saved to localStorage');
 }
 
 // Get categories from localStorage

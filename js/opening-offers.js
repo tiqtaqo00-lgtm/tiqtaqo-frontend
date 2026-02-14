@@ -58,8 +58,8 @@ async function initOpeningOffersCountdown() {
 
         // If countdown is expired, hide section
         const now = Date.now();
-        if (countdownData.endTime && countdownData.endTime <= now) {
-            console.log('[OpeningOffers] Countdown expired, hiding section');
+        if (!countdownData || !countdownData.endTime || countdownData.endTime <= now) {
+            console.log('[OpeningOffers] Countdown expired or no data, hiding section');
             section.style.display = 'none';
             return;
         }

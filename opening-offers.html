@@ -925,21 +925,19 @@
                         data = getCountdownFromLocalStorage();
                     }
                     
-                    // If no data at all, show countdown as 00 and KEEP section visible
-                    if (!data || !data.endTime || isNaN(data.endTime)) {
-                        console.log('[Countdown] No data found - showing 00 and keeping section');
-                        // Show 00:00:00:00 but KEEP products section visible
+                    // If no data at all or expired, hide the section
+                    if (!data || !data.endTime || isNaN(data.endTime) || data.isExpired || data.isExpired === 'true') {
+                        console.log('[Countdown] No data or expired - hiding section');
+                        // Hide the section
                         elements.days.textContent = '00';
                         elements.hours.textContent = '00';
                         elements.minutes.textContent = '00';
                         elements.seconds.textContent = '00';
-                        // ALWAYS keep section visible for products
+                        // Hide the section
                         if (elements.section) {
-                            elements.section.style.display = 'block';
-                            elements.section.style.visibility = 'visible';
-                            elements.section.style.opacity = '1';
+                            elements.section.style.display = 'none';
                         }
-                        return true; // Keep running
+                        return true; // Stop
                     }
                     
                     // Make section visible (even with countdown data)
