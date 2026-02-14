@@ -1215,7 +1215,39 @@ async function finalizeSaveProduct(id, productData, products) {
     await loadProductsTable();
     await updateStats();
     
-    alert('Produit enregistré avec succès!');
+    // Get the category to redirect to
+    const category = productData.category;
+    const categoryPageMap = {
+        'homme': '../homme.html',
+        'femme': '../femme.html', 
+        'casquettes': '../casquettes.html',
+        'packs': '../packs-select.html',
+        'wallets': '../portefeuilles.html',
+        'glasses': '../lunettes.html',
+        'accessoires': '../accessoires-select.html',
+        'belts': '../ceintures.html'
+    };
+    
+    const redirectPage = categoryPageMap[category] || '../index.html';
+    
+    // Show success message with redirect option
+    const userLanguage = localStorage.getItem('userLanguage') || 'fr';
+    const messages = {
+        'fr': {
+            success: 'Produit enregistré avec succès!',
+            redirect: 'Voulez-vous voir le produit dans la catégorie?'
+        },
+        'ar': {
+            success: 'تم حفظ المنتج بنجاح!',
+            redirect: 'هل تريد رؤية المنتج في القسم؟'
+        }
+    };
+    
+    const msg = messages[userLanguage] || messages['fr'];
+    
+    if (confirm(msg.success + '\n\n' + msg.redirect)) {
+        window.location.href = redirectPage;
+    }
 }
 
 // Save category
