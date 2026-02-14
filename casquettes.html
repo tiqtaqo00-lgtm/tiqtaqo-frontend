@@ -168,70 +168,47 @@
         </div>
     </footer>
 
-    <!-- Load scripts like other category pages -->
-    <script type="module" src="js/firebase-config.js"></script>
+    <!-- Load main.js only - skip Firebase for fast loading -->
     <script src="js/main.js"></script>
 
-    <!-- Initialize category page - optimized version -->
-    <script type="module">
-        // Wait for function to be available
-        async function waitForFunction(funcName, timeout = 5000) {
-            const startTime = Date.now();
-            while (Date.now() - startTime < timeout) {
-                if (typeof window[funcName] === 'function') {
-                    return true;
-                }
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            return false;
-        }
-        
+    <!-- Fast initialization - use localStorage only -->
+    <script>
         async function initCategoryPage() {
             try {
-                console.log('Category page: Starting...');
+                console.log('Loading...');
                 
-                // Wait for main.js functions
-                await waitForFunction('loadCategoryProducts');
-                console.log('Functions ready');
-                
-                // Quick Firebase init (with short timeout)
-                if (typeof initFirebase === 'function') {
-                    try {
-                        await Promise.race([
-                            initFirebase(),
-                            new Promise(resolve => setTimeout(resolve, 2000))
-                        ]);
-                    } catch(e) {
-                        console.log('Firebase init skipped');
-                    }
+                // Wait for main.js to be ready (max 1 second)
+                for (let i = 0; i < 20; i++) {
+                    if (typeof loadCategoryProducts === 'function') break;
+                    await new Promise(r => setTimeout(r, 50));
                 }
                 
-                // Initialize UI
+                // Initialize filters
                 if (typeof initFilterSidebar === 'function') {
                     initFilterSidebar();
                 }
                 
-                // Load products
+                // Load products from localStorage only
                 if (typeof loadCategoryProducts === 'function') {
                     await loadCategoryProducts('casquettes');
                 }
                 
+                // Infinite scroll
                 if (typeof initInfiniteScroll === 'function') {
                     initInfiniteScroll();
                 }
                 
-                console.log('Category page: Complete');
-            } catch (error) {
-                console.error('Error:', error);
+                console.log('Done');
+            } catch (e) {
+                console.error(e);
                 if (typeof loadCategoryProducts === 'function') {
                     loadCategoryProducts('casquettes');
                 }
             }
         }
         
-        setTimeout(initCategoryPage, 100);
+        // Start immediately
+        initCategoryPage();
     </script>
-    <script src="js/firebase-health-check.js"></script>
-    <script src="js/bulk-import.js"></script>
 </body>
 </html>
