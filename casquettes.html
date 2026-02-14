@@ -168,87 +168,42 @@
         </div>
     </footer>
 
-    <script type="module">
-    </footer>
-
-    <!-- Load Firebase first as module -->
-    <script type="module" src="js/firebase-config.js"></script>
+    <!-- Load main.js for product loading -->
     <script src="js/main.js"></script>
 
-    <!-- Initialize category page - use localStorage for faster loading -->
-    <script type="module">
-        // Note: initFirebase is available as window.initFirebase (global function)
-        
-        async function waitForFunction(funcName, timeout = 5000) {
-            const startTime = Date.now();
-            while (Date.now() - startTime < timeout) {
-                if (typeof window[funcName] === 'function') {
-                    return true;
-                }
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            return false;
-        }
-        
-        async function initCategoryPage() {
+    <!-- Fast initialization - skip Firebase and use localStorage directly -->
+    <script>
+        async function initCategoryPageFast() {
             try {
-                console.log('Category page: Starting initialization...');
+                console.log('Fast init: Starting...');
                 
-                // Wait for main.js functions to be available (max 5 seconds)
-                console.log('Waiting for loadCategoryProducts...');
-                await waitForFunction('loadCategoryProducts');
-                console.log('main.js functions ready');
-                
-                // Try to initialize Firebase but don't wait too long
-                console.log('Attempting Firebase initialization...');
-                if (typeof initFirebase === 'function') {
-                    // Try Firebase but continue even if it fails
-                    try {
-                        await Promise.race([
-                            initFirebase(),
-                            new Promise(resolve => setTimeout(resolve, 3000)) // 3 second timeout
-                        ]);
-                        console.log('Category page: Firebase initialized or timeout');
-                    } catch (e) {
-                        console.log('Firebase initialization failed, continuing with localStorage:', e.message);
-                    }
-                }
-                
-                // Small delay
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                // Initialize UI
-                console.log('Initializing filter sidebar...');
+                // Initialize filter sidebar
                 if (typeof initFilterSidebar === 'function') {
                     initFilterSidebar();
                 }
                 
-                // Load products for this category
-                console.log('Loading category products...');
+                // Load products directly from localStorage
                 if (typeof loadCategoryProducts === 'function') {
                     await loadCategoryProducts('casquettes');
                 }
                 
-                // Initialize infinite scroll if available
+                // Initialize infinite scroll
                 if (typeof initInfiniteScroll === 'function') {
                     initInfiniteScroll();
                 }
                 
-                console.log('Category page: Initialization complete');
+                console.log('Fast init: Complete');
             } catch (error) {
-                console.error('Category page error:', error);
-                // Try to load products anyway as fallback
+                console.error('Fast init error:', error);
+                // Fallback
                 if (typeof loadCategoryProducts === 'function') {
-                    console.log('Attempting fallback product load...');
                     loadCategoryProducts('casquettes');
                 }
             }
         }
         
-        // Start initialization after a small delay to ensure scripts are loaded
-        setTimeout(initCategoryPage, 100);
+        // Start fast initialization immediately
+        initCategoryPageFast();
     </script>
-    <script src="js/firebase-health-check.js"></script>
-    <script src="js/bulk-import.js"></script>
 </body>
 </html>
