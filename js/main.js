@@ -127,7 +127,8 @@ const collectionIcons = {
         description: 'Élégantes boîtes de rangement pour vos précieuses montres'
     },
     'casquettes': {
-        icon: 'fa-cap',
+        icon: 'fa-hat-cowboy',  // Fallback
+        customIcon: '<span style="font-size:48px;">🧢</span>',
         gradient: 'linear-gradient(135deg, #ff6a00 0%, #ee0979 100%)',
         description: 'Casquettes élégantes pour un style décontracté'
     }
@@ -177,7 +178,7 @@ async function getCategories() {
             // Add 'casquettes' category at the end
             const updatedCategories = [
                 ...categories,
-                { id: 'casquettes', name: 'Casquettes', icon: 'fa-cap', visible: true, order: categories.length + 1 }
+                { id: 'casquettes', name: 'Casquettes', icon: 'fa-hat-cowboy', visible: true, order: categories.length + 1 }
             ];
             
             localStorage.setItem('luxury_categories', JSON.stringify(updatedCategories));
@@ -197,7 +198,7 @@ async function getCategories() {
         { id: 'belts', name: 'Belts', icon: 'fa-ribbon', visible: true, order: 6 },
         { id: 'glasses', name: 'Glasses', icon: 'fa-glasses', visible: true, order: 7 },
         { id: 'accessoires', name: 'Accessoires', icon: 'fa-gem', visible: true, order: 8 },
-        { id: 'casquettes', name: 'Casquettes', icon: 'fa-cap', visible: true, order: 9 }
+        { id: 'casquettes', name: 'Casquettes', icon: 'fa-hat-cowboy', visible: true, order: 9 }
     ];
     
     localStorage.setItem('luxury_categories', JSON.stringify(defaultCategories));
@@ -238,10 +239,15 @@ async function loadCollections() {
             ? `${category.id}-select.html` 
             : `${category.id}.html`;
         
+        // Check if there's a custom SVG icon
+        const iconHtml = iconData.customIcon 
+            ? iconData.customIcon 
+            : `<i class="fas ${iconData.icon}"></i>`;
+        
         return `
             <div class="collection-card" onclick="location.href='${linkUrl}'">
                 <div class="card-image" style="background: ${iconData.gradient};">
-                    <i class="fas ${iconData.icon}"></i>
+                    ${iconHtml}
                 </div>
                 <h3>${category.name}</h3>
                 <p>${iconData.description}</p>
