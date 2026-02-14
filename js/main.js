@@ -128,7 +128,7 @@ const collectionIcons = {
     },
     'casquettes': {
         icon: 'fa-hat-cowboy',  // Fallback
-        customIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#FFD700"><path d="M12 36c0-10 8-18 20-18s20 8 20 18v8H12v-8z"/><path d="M8 44c0-4 4-8 24-8s24 4 24 8v4H8v-4z"/><path d="M8 48h48v2c0 2-2 4-6 4H14c-4 0-6-2-6-4v-2z"/><circle cx="32" cy="20" r="3"/></svg>',
+        customIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#FFD700"><path d="M10 38c0-14 10-22 22-22s22 8 22 22v4H10v-4z"/><path d="M6 42c0-6 6-10 26-10s26 4 26 10v6H6v-6z"/><path d="M6 48h52v2c0 2-4 4-8 4H14c-4 0-8-2-8-4v-2z"/><path d="M50 42c4 2 8 6 8 12"/></svg>',
         gradient: 'linear-gradient(135deg, #ff6a00 0%, #ee0979 100%)',
         description: 'Casquettes élégantes pour un style décontracté'
     }
