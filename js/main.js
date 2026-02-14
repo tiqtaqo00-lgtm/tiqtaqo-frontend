@@ -30,19 +30,12 @@ console.log('main.js loaded');
 document.addEventListener('DOMContentLoaded', async function() {
     // Check if this is a category page - category pages handle their own initialization
     const isCategoryPage = document.getElementById('productsGrid') && !document.getElementById('bestSellersGrid');
+    const isCasquettesPage = window.location.href.includes('casquettes.html');
     
-    if (isCategoryPage) {
-        // Category pages have their own init logic in inline scripts
-        // Just wait for Firebase to be available for other functions
-        for (let i = 0; i < 50; i++) {
-            await new Promise(resolve => setTimeout(resolve, 50));
-            if (window.ProductAPI !== undefined) {
-                break;
-            }
-            if (i === 49) {
-                console.log('Warning: ProductAPI not available after 2.5s');
-            }
-        }
+    if (isCategoryPage || isCasettesPage) {
+        // Category pages (including casquettes) have their own init logic in inline scripts
+        // Skip Firebase initialization entirely for faster loading
+        console.log('Category page detected - skipping Firebase initialization');
         return;
     }
     
@@ -269,7 +262,37 @@ async function getProducts(options = {}) {
 
     updateDiagnostic('getProducts called - category: ' + (category || 'all') + ', forceRefresh: ' + forceRefresh);
     
-    // Use Firebase API if available
+    // Check if we're on a category page (casquettes, homme, femme, etc.)
+    const isCategoryPage = typeof window !== 'undefined' && 
+        window.location.href && 
+        (window.location.href.includes('casquettes.html') || 
+         window.location.href.includes('homme.html') || 
+         window.location.href.includes('femme.html') ||
+         window.location.href.includes('packs-select.html') ||
+         window.location.href.includes('accessoires-select.html'));
+
+    // Skip Firebase for category pages - use localStorage directly for faster loading
+    if (isCategoryPage) {
+        console.log('Category page detected - using localStorage only');
+        
+        const localProducts = localStorage.getItem('luxury_products');
+        if (localProducts) {
+            let products = JSON.parse(localProducts);
+
+            // Apply filters locally
+            if (category) {
+                products = products.filter(p => p.category === category || p.secondaryCategory === category);
+            }
+            
+            // Sort products
+            products = sortProducts(products, sortBy);
+            
+            return { products, hasMore: false };
+        }
+        return { products: [], hasMore: false };
+    }
+    
+    // Use Firebase API if available (for homepage and other pages)
     if (window.ProductAPI && typeof ProductAPI.getProducts === 'function') {
         updateDiagnostic('Using Firebase API (window.ProductAPI available)', 'success');
         try {
