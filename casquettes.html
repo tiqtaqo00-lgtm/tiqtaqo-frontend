@@ -171,11 +171,31 @@
     <!-- Load main.js for product loading -->
     <script src="js/main.js"></script>
 
-    <!-- Fast initialization - skip Firebase and use localStorage directly -->
+    <!-- Fast initialization - wait for functions then load from localStorage -->
     <script>
+        // Wait for function to be available (max 2 seconds)
+        async function waitForFunction(funcName, timeout = 2000) {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                if (typeof window[funcName] === 'function') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return false;
+        }
+        
         async function initCategoryPageFast() {
             try {
                 console.log('Fast init: Starting...');
+                
+                // Wait for main.js functions to be available
+                const isReady = await waitForFunction('loadCategoryProducts');
+                if (!isReady) {
+                    console.error('loadCategoryProducts not available');
+                    return;
+                }
+                console.log('Functions ready');
                 
                 // Initialize filter sidebar
                 if (typeof initFilterSidebar === 'function') {
@@ -195,15 +215,15 @@
                 console.log('Fast init: Complete');
             } catch (error) {
                 console.error('Fast init error:', error);
-                // Fallback
+                // Fallback - try to load anyway
                 if (typeof loadCategoryProducts === 'function') {
                     loadCategoryProducts('casquettes');
                 }
             }
         }
         
-        // Start fast initialization immediately
-        initCategoryPageFast();
+        // Start fast initialization after small delay
+        setTimeout(initCategoryPageFast, 50);
     </script>
 </body>
 </html>

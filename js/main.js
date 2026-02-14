@@ -30,9 +30,9 @@ console.log('main.js loaded');
 document.addEventListener('DOMContentLoaded', async function() {
     // Check if this is a category page - category pages handle their own initialization
     const isCategoryPage = document.getElementById('productsGrid') && !document.getElementById('bestSellersGrid');
-    const isCasquettesPage = window.location.href.includes('casquettes.html');
+    const isCasquettesPage = window.location.href.includes('casquettes');
     
-    if (isCategoryPage || isCasettesPage) {
+    if (isCategoryPage || isCasquettesPage) {
         // Category pages (including casquettes) have their own init logic in inline scripts
         // Skip Firebase initialization entirely for faster loading
         console.log('Category page detected - skipping Firebase initialization');
@@ -265,11 +265,11 @@ async function getProducts(options = {}) {
     // Check if we're on a category page (casquettes, homme, femme, etc.)
     const isCategoryPage = typeof window !== 'undefined' && 
         window.location.href && 
-        (window.location.href.includes('casquettes.html') || 
-         window.location.href.includes('homme.html') || 
-         window.location.href.includes('femme.html') ||
-         window.location.href.includes('packs-select.html') ||
-         window.location.href.includes('accessoires-select.html'));
+        (window.location.href.includes('casquettes') || 
+         window.location.href.includes('homme') || 
+         window.location.href.includes('femme') ||
+         window.location.href.includes('packs-select') ||
+         window.location.href.includes('accessoires-select'));
 
     // Skip Firebase for category pages - use localStorage directly for faster loading
     if (isCategoryPage) {
