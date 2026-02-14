@@ -175,11 +175,11 @@
     <script type="module" src="js/firebase-config.js"></script>
     <script src="js/main.js"></script>
 
-    <!-- Initialize category page after Firebase is ready -->
+    <!-- Initialize category page - use localStorage for faster loading -->
     <script type="module">
         // Note: initFirebase is available as window.initFirebase (global function)
         
-        async function waitForFunction(funcName, timeout = 15000) {
+        async function waitForFunction(funcName, timeout = 5000) {
             const startTime = Date.now();
             while (Date.now() - startTime < timeout) {
                 if (typeof window[funcName] === 'function') {
@@ -194,24 +194,28 @@
             try {
                 console.log('Category page: Starting initialization...');
                 
-                // Wait for main.js functions to be available (up to 15 seconds)
+                // Wait for main.js functions to be available (max 5 seconds)
                 console.log('Waiting for loadCategoryProducts...');
                 await waitForFunction('loadCategoryProducts');
                 console.log('main.js functions ready');
                 
-                // Wait for Firebase to be available
-                console.log('Waiting for initFirebase...');
-                await waitForFunction('initFirebase');
-                console.log('Firebase ready');
-                
-                // Initialize Firebase if not already done
+                // Try to initialize Firebase but don't wait too long
+                console.log('Attempting Firebase initialization...');
                 if (typeof initFirebase === 'function') {
-                    await initFirebase();
-                    console.log('Category page: Firebase initialized');
+                    // Try Firebase but continue even if it fails
+                    try {
+                        await Promise.race([
+                            initFirebase(),
+                            new Promise(resolve => setTimeout(resolve, 3000)) // 3 second timeout
+                        ]);
+                        console.log('Category page: Firebase initialized or timeout');
+                    } catch (e) {
+                        console.log('Firebase initialization failed, continuing with localStorage:', e.message);
+                    }
                 }
                 
-                // Small delay to ensure Firebase is fully initialized
-                await new Promise(resolve => setTimeout(resolve, 200));
+                // Small delay
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
                 // Initialize UI
                 console.log('Initializing filter sidebar...');
