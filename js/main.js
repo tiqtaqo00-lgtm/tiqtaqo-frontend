@@ -128,7 +128,7 @@ const collectionIcons = {
     },
     'casquettes': {
         icon: 'fa-hat-cowboy',  // Fallback
-        customIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#FFD700"><ellipse cx="50" cy="65" rx="38" ry="8"/><path d="M15 60 Q15 35 50 35 Q85 35 85 60" fill="#FFD700"/><path d="M12 60 Q12 45 50 45 Q88 45 88 60 Q88 68 50 68 Q12 68 12 60" fill="#E5C100"/><rect x="45" y="55" width="10" height="8" rx="2" fill="#FFD700"/><path d="M50 35 Q50 25 55 25 L75 30 Q78 32 75 35 L55 35 Q50 35 50 35" fill="#FFD700"/></svg>',
+        customIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#FFD700"><path d="M20 58 Q20 35 50 35 Q80 35 80 58 Q80 65 50 65 Q20 65 20 58" fill="#FFD700"/><path d="M18 58 Q18 42 50 42 Q82 42 82 58 Q82 63 50 63 Q18 63 18 58" fill="#E5C100"/><ellipse cx="50" cy="60" rx="30" ry="4" fill="#FFD700"/></svg>',
         gradient: 'linear-gradient(135deg, #ff6a00 0%, #ee0979 100%)',
         description: 'Casquettes élégantes pour un style décontracté'
     }
@@ -244,9 +244,14 @@ async function loadCollections() {
             ? iconData.customIcon 
             : `<i class="fas ${iconData.icon}"></i>`;
         
+        // Special styling for casquettes category - add border and glow
+        const cardImageStyle = category.id === 'casquettes' 
+            ? `background: ${iconData.gradient}; border: 2px solid #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); border-radius: 50%;` 
+            : `background: ${iconData.gradient};`;
+        
         return `
             <div class="collection-card" onclick="location.href='${linkUrl}'">
-                <div class="card-image" style="background: ${iconData.gradient};">
+                <div class="card-image" style="${cardImageStyle}">
                     ${iconHtml}
                 </div>
                 <h3>${category.name}</h3>
