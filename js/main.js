@@ -127,8 +127,8 @@ const collectionIcons = {
         description: 'Élégantes boîtes de rangement pour vos précieuses montres'
     },
     'casquettes': {
-        icon: 'fa-hat-cowboy',  // Fallback
-        customIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="40" fill="#FFD700" stroke="#E5C100" stroke-width="3"/><ellipse cx="50" cy="50" rx="38" ry="34" fill="#FFD700"/><ellipse cx="50" cy="52" rx="15" ry="12" fill="#FFF8DC" stroke="#E5C100" stroke-width="1"/></svg>',
+        icon: 'fa-hat-cowboy',
+        customIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="60" height="60"><path d="M15 55 Q15 30 50 30 Q85 30 85 55" fill="#FFD700"/><path d="M10 55 Q10 40 50 40 Q90 40 90 55 Q90 62 50 62 Q10 62 10 55" fill="#E5C100"/></svg>',
         gradient: 'linear-gradient(135deg, #ff6a00 0%, #ee0979 100%)',
         description: 'Casquettes élégantes pour un style décontracté'
     }
@@ -244,10 +244,8 @@ async function loadCollections() {
             ? iconData.customIcon 
             : `<i class="fas ${iconData.icon}"></i>`;
         
-        // Special styling for casquettes category - add border and glow
-        const cardImageStyle = category.id === 'casquettes' 
-            ? `background: ${iconData.gradient}; border: 2px solid #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); border-radius: 50%;` 
-            : `background: ${iconData.gradient};`;
+        // Use normal styling for all categories
+        const cardImageStyle = `background: ${iconData.gradient};`;
         
         return `
             <div class="collection-card" onclick="location.href='${linkUrl}'">
