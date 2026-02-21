@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
         body {
             background-color: #f5f5f5;
@@ -1050,7 +1051,46 @@
         </div>
     </div>
 
+    <!-- Image Cropper Modal -->
+    <div id="cropperModal" class="modal" style="z-index: 2000;">
+        <div class="modal-content" style="max-width: 800px; max-height: 95vh;">
+            <div class="modal-header">
+                <h2><i class="fas fa-crop-alt" style="color: var(--gold); margin-right: 10px;"></i> Recadrer l'image</h2>
+                <button class="close-modal" onclick="closeCropperModal()">&times;</button>
+            </div>
+            <div style="padding: 10px;">
+                <p style="margin-bottom: 15px; color: #666; font-size: 14px;">
+                    <i class="fas fa-info-circle"></i> Faites glisser les coins pour recadrer l'image. Ceci évite la distorsion sur le site.
+                </p>
+                <div style="max-height: 500px; overflow: hidden; border-radius: 8px; border: 2px solid #ddd;">
+                    <img id="cropperImage" style="max-width: 100%; display: block;">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center; flex-wrap: wrap;">
+                    <button type="button" onclick="rotateCropper(-90)" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-rotate-left"></i> Rotation gauche
+                    </button>
+                    <button type="button" onclick="rotateCropper(90)" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-rotate-right"></i> Rotation droite
+                    </button>
+                    <button type="button" onclick="flipHorizontal()" style="padding: 10px 20px; background: #9b59b6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-arrows-alt-h"></i> Retourner H
+                    </button>
+                    <button type="button" onclick="flipVertical()" style="padding: 10px 20px; background: #9b59b6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-arrows-alt-v"></i> Retourner V
+                    </button>
+                </div>
+                <div style="display: flex; gap: 15px; margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" class="btn-cancel" onclick="closeCropperModal()">Annuler</button>
+                    <button type="button" class="btn-submit" onclick="applyCrop()">
+                        <i class="fas fa-check"></i> Appliquer le recadrage
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Load admin.js as regular script (not module) for proper window access -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

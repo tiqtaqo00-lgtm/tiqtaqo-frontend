@@ -985,29 +985,6 @@ function editCategory(id) {
     }
 }
 
-// Handle multiple image upload
-function handleImageUpload(event) {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        
-        // Check if preview container already has images (editing mode)
-        if (previewContainer.innerHTML === '' && !document.getElementById('productId').value) {
-            previewContainer.style.display = 'none';
-        }
-        
-        Array.from(files).forEach((file, index) => {
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    addImageToPreview(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-}
-
 // Update image count display
 function updateImageCount() {
     const previewContainer = document.getElementById('imagePreviewContainer');
@@ -1355,7 +1332,155 @@ window.closeCategoryModal = closeCategoryModal;
 window.searchProducts = searchProducts;
 window.clearProductSearch = clearProductSearch;
 
+// ============================================
+// Image Cropper Functions
+// ============================================
+let cropper = null;
+let currentCropperFile = null;
+
+// Open cropper modal with image
+function openCropperModal(imageSrc, file = null) {
+    const modal = document.getElementById('cropperModal');
+    const image = document.getElementById('cropperImage');
+    
+    currentCropperFile = file;
+    
+    // Set image source
+    image.src = imageSrc;
+    
+    // Show modal
+    modal.style.display = 'flex';
+    
+    // Destroy previous cropper if exists
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    
+    // Initialize new cropper
+    setTimeout(() => {
+        cropper = new Cropper(image, {
+            aspectRatio: 1, // Square crop by default
+            viewMode: 1,
+            autoCropArea: 0.9,
+            responsive: true,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+            ready() {
+                console.log('Cropper is ready');
+            }
+        });
+    }, 100);
+}
+
+// Close cropper modal
+function closeCropperModal() {
+    const modal = document.getElementById('cropperModal');
+    modal.style.display = 'none';
+    
+    // Destroy cropper
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    currentCropperFile = null;
+}
+
+// Rotate cropper image
+function rotateCropper(degree) {
+    if (cropper) {
+        cropper.rotate(degree);
+    }
+}
+
+// Flip horizontal
+function flipHorizontal() {
+    if (cropper) {
+        cropper.scaleX(-cropper.getData().scaleX || -1);
+    }
+}
+
+// Flip vertical
+function flipVertical() {
+    if (cropper) {
+        cropper.scaleY(-cropper.getData().scaleY || -1);
+    }
+}
+
+// Apply crop and add to preview
+function applyCrop() {
+    if (!cropper) {
+        alert('Erreur: Le cropper n\'est pas initialisé');
+        return;
+    }
+    
+    // Get cropped canvas
+    const canvas = cropper.getCroppedCanvas({
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+    });
+    
+    if (canvas) {
+        // Convert to data URL
+        const croppedImage = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Add to preview
+        addImageToPreview(croppedImage);
+        
+        // Close modal
+        closeCropperModal();
+        
+        console.log('Image cropped successfully');
+    } else {
+        alert('Erreur lors du recadrage');
+    }
+}
+
+// Modified handleImageUpload to open cropper for each image
+function handleImageUpload(event) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        
+        // Check if preview container already has images (editing mode)
+        if (previewContainer.innerHTML === '' && !document.getElementById('productId').value) {
+            previewContainer.style.display = 'none';
+        }
+        
+        // Process each file
+        Array.from(files).forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Open cropper for each image
+                    openCropperModal(e.target.result, file);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    // Clear input so same file can be selected again
+    event.target.value = '';
+}
+
+// Export cropper functions to window
+window.openCropperModal = openCropperModal;
+window.closeCropperModal = closeCropperModal;
+window.rotateCropper = rotateCropper;
+window.flipHorizontal = flipHorizontal;
+window.flipVertical = flipVertical;
+window.applyCrop = applyCrop;
+
+// ============================================
 // Firebase Configuration
+// ============================================
 const firebaseConfig = {
     apiKey: "AIzaSyAmJp754L3V_AAUl6lV4LzE_dUCEFaX_nA",
     authDomain: "tiqtaqo-store.firebaseapp.com",
